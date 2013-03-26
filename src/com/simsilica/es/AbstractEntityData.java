@@ -225,7 +225,6 @@ public abstract class AbstractEntityData implements ObservableEntityData
     public void releaseEntitySet( EntitySet entities )
     {
         entitySets.remove(entities);
-//System.out.println( "Entity sets remaining:" + entitySets.size() );            
     }
  
     @Override
@@ -244,9 +243,6 @@ public abstract class AbstractEntityData implements ObservableEntityData
  
     protected void entityChange( EntityChange change )
     {
-//if( change.getComponent() != null && !"WorldAge".equals(change.getComponent().getClass().getSimpleName()) )    
-//    System.out.println( "entityChange(" + change + ")" );    
-//System.out.println( "listeners:" + entityListeners.size() + "  sets:" + entitySets.size() );    
         for( EntityComponentListener l : entityListeners )
             {
             l.componentChange( change );
