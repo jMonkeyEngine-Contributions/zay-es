@@ -35,7 +35,6 @@
 package com.simsilica.es.base;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.simsilica.es.ChangeQueue;
 import com.simsilica.es.ComponentFilter;
 import com.simsilica.es.Entity;
 import com.simsilica.es.EntityChange;
@@ -46,6 +45,9 @@ import com.simsilica.es.EntityProcessor;
 import com.simsilica.es.EntityProcessorRunnable;
 import com.simsilica.es.EntitySet;
 import com.simsilica.es.ObservableEntityData;
+import com.simsilica.es.PersistentComponent;
+import com.simsilica.es.StringIndex;
+import com.simsilica.es.sql.SqlComponentHandler;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -57,25 +59,38 @@ import com.simsilica.util.Reporter;
  *  @version   $Revision$
  *  @author    Paul Speed
  */
-public abstract class AbstractEntityData implements ObservableEntityData
+public class DefaultEntityData implements ObservableEntityData
 {
+    private Map<Class, ComponentHandler> handlers = new ConcurrentHashMap<Class, ComponentHandler>();    
+    private EntityIdGenerator idGenerator;
+    private StringIndex stringIndex;
+
     /**
      *  Keeps the unreleased entity sets so that we can give
      *  them the change updates relevant to them.
      */
-    private List<DefaultEntitySet> entitySets = new CopyOnWriteArrayList<DefaultEntitySet>();     
-    
+    private List<DefaultEntitySet> entitySets = new CopyOnWriteArrayList<DefaultEntitySet>();         
     private List<EntityComponentListener> entityListeners = new CopyOnWriteArrayList<EntityComponentListener>();      
     
     private ExecutorService executor;
     
-    protected AbstractEntityData()
+    public DefaultEntityData()
     {
         ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("EntityProc-%d").setDaemon(false).build();     
         this.executor = Executors.newFixedThreadPool(4, tf); 
         
         ReportSystem.registerCacheReporter( new EntitySetsReporter() );
     }        
+ 
+    protected void setIdGenerator( EntityIdGenerator idGenerator )
+    {
+        this.idGenerator = idGenerator;
+    }
+
+    protected void setStringIndex( StringIndex stringIndex )
+    {
+        this.stringIndex = stringIndex;
+    }
  
     @Override
     public void addEntityComponentListener( EntityComponentListener l )
@@ -99,6 +114,106 @@ public abstract class AbstractEntityData implements ObservableEntityData
     public void execute( EntityProcessor proc )
     {
         executor.submit( new EntityProcessorRunnable(proc, this) );
+    }
+
+    @Override
+    public EntityId createEntity()
+    {
+        return new EntityId(idGenerator.nextEntityId());
+    }
+
+    @Override
+    public void removeEntity( EntityId entityId )
+    {
+        // Note: because we only add the ComponentHandlers when
+        // we encounter the component types... it's possible that
+        // the entity stays orphaned with a few components if we
+        // have never accessed any of them.  SqlEntityData should
+        // probably specifically be given types someday.  FIXME
+    
+        // Remove all of its components
+        for( Class c : handlers.keySet() )
+            removeComponent( entityId, c );
+    }
+
+    @Override
+    public StringIndex getStrings()
+    {
+        return stringIndex;
+    }
+    
+    /**
+     *  When no specific type handler exists, this attempts to
+     *  find an appropriate handler.  Default implementation returns
+     *  a new MapComponentHandler.
+     */
+    protected ComponentHandler lookupDefaultHandler( Class type )
+    {
+        return new MapComponentHandler();
+    }
+ 
+    protected ComponentHandler getHandler( Class type )
+    {
+        ComponentHandler result = handlers.get(type);
+        if( result == null )
+            {
+            // A little double checked locking to make sure we 
+            // don't create a handler twice
+            synchronized( this )
+                {
+                result = handlers.get(type);
+                if( result == null )
+                    {
+                    result = lookupDefaultHandler(type);
+                    handlers.put(type, result);
+                    }
+                }
+            }
+        return result;             
+    }
+
+    @Override
+    public <T extends EntityComponent> T getComponent( EntityId entityId, Class<T> type )
+    {
+        ComponentHandler handler = getHandler(type);
+        return (T)handler.getComponent( entityId );
+    }
+    
+    @Override
+    public void setComponent( EntityId entityId, EntityComponent component )
+    {
+        ComponentHandler handler = getHandler(component.getClass());
+        handler.setComponent( entityId, component );
+        
+        // Can now update the entity sets that care
+        entityChange( new EntityChange( entityId, component ) ); 
+    }
+    
+    @Override
+    public boolean removeComponent( EntityId entityId, Class type )  
+    {
+        ComponentHandler handler = getHandler(type);
+        boolean result = handler.removeComponent(entityId);
+        
+        // Can now update the entity sets that care
+        entityChange( new EntityChange( entityId, type ) );
+        
+        return result; 
+    }
+
+    protected EntityId findSingleEntity( ComponentFilter filter )
+    {
+        return getHandler(filter.getComponentType()).findEntity(filter);
+    }
+
+    protected Set<EntityId> getEntityIds( Class type )
+    {
+        return getHandler(type).getEntities();
+    }
+
+    protected Set<EntityId> getEntityIds( Class type, ComponentFilter filter )
+    {
+        return getHandler(type).getEntities( filter );
     }
 
     protected DefaultEntitySet createSet( ComponentFilter filter, Class... types )
@@ -129,10 +244,6 @@ public abstract class AbstractEntityData implements ObservableEntityData
         return new DefaultEntity( this, entityId, values, types );            
     }
  
-    protected abstract Set<EntityId> getEntityIds( Class type, ComponentFilter filter );
-    
-    protected abstract Set<EntityId> getEntityIds( Class type );    
-    
     @Override
     public EntitySet getEntities( Class... types )
     {
@@ -170,8 +281,6 @@ public abstract class AbstractEntityData implements ObservableEntityData
             return null;
         return filter; 
     }
-
-    protected abstract EntityId findSingleEntity( ComponentFilter filter );
 
     @Override
     public EntityId findEntity( ComponentFilter filter, Class... types )
@@ -230,10 +339,9 @@ public abstract class AbstractEntityData implements ObservableEntityData
         return results;
     }
 
-    @Override
-    public void releaseEntitySet( EntitySet entities )
+    protected void releaseEntitySet( EntitySet entities )
     {
-        entitySets.remove(entities);
+        entitySets.remove((DefaultEntitySet)entities);
     }
  
     protected void entityChange( EntityChange change )

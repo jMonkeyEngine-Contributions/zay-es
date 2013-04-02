@@ -60,7 +60,6 @@ public interface EntityData
     
     public EntitySet getEntities( Class... types );
     public EntitySet getEntities( ComponentFilter filter, Class... types );
-    public void releaseEntitySet( EntitySet entities );
 
     public StringIndex getStrings();
  

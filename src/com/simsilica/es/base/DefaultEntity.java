@@ -37,7 +37,7 @@ package com.simsilica.es.base;
 import com.simsilica.es.Entity;
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.EntityId;
-import com.simsilica.es.base.AbstractEntityData;
+import com.simsilica.es.base.DefaultEntityData;
 import java.util.*;
 
 /**
@@ -49,13 +49,13 @@ import java.util.*;
  */
 public class DefaultEntity implements Entity
 {
-    private AbstractEntityData ed;    
+    private DefaultEntityData ed;    
     private EntityId id;
     private EntityComponent[] components;
 
     private Class[] types; // temporarily for validating component types
 
-    public DefaultEntity( AbstractEntityData ed, EntityId id, EntityComponent[] components, Class[] types )
+    public DefaultEntity( DefaultEntityData ed, EntityId id, EntityComponent[] components, Class[] types )
     {
         this.ed = ed;
         this.id = id;

@@ -34,6 +34,7 @@
 
 package com.simsilica.es.sql;
 
+import com.simsilica.es.base.EntityIdGenerator;
 import java.sql.*;
 
 /**
@@ -42,7 +43,7 @@ import java.sql.*;
  *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class PersistentEntityIdGenerator
+public class PersistentEntityIdGenerator implements EntityIdGenerator
 {
     private SqlEntityData parent;
     private String tableName = "ENTITY_ID";
@@ -50,6 +51,8 @@ public class PersistentEntityIdGenerator
 
     protected PersistentEntityIdGenerator( SqlEntityData parent ) throws SQLException
     {
+        this.parent = parent;
+        
         // See if the table exists
         SqlSession session = parent.getSession();
         DatabaseMetaData md = session.getConnection().getMetaData();

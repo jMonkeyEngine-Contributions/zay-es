@@ -59,7 +59,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
     private ConcurrentLinkedQueue<EntityChange> changes 
                     = new ConcurrentLinkedQueue<EntityChange>();
     
-    private AbstractEntityData ed;
+    private DefaultEntityData ed;
     private ComponentFilter mainFilter; // for now anyway
     private ComponentFilter[] filters;    
     private Class[] types;
@@ -77,7 +77,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
     // We could treat types as filters here too and just convert
     // them to raw classes on input.
     
-    public DefaultEntitySet( AbstractEntityData ed, ComponentFilter filter, Class[] types )
+    public DefaultEntitySet( DefaultEntityData ed, ComponentFilter filter, Class[] types )
     {
         this.ed = ed;
         this.types = types;

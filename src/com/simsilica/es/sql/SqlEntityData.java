@@ -34,15 +34,9 @@
 
 package com.simsilica.es.sql;
 
-import com.simsilica.es.base.MapComponentHandler;
 import com.simsilica.es.base.ComponentHandler;
-import com.simsilica.es.EntityChange;
 import com.simsilica.es.PersistentComponent;
-import com.simsilica.es.base.AbstractEntityData;
-import com.simsilica.es.EntityId;
-import com.simsilica.es.EntityComponent;
-import com.simsilica.es.StringIndex;
-import com.simsilica.es.ComponentFilter;
+import com.simsilica.es.base.DefaultEntityData;
 import java.io.File;
 import java.sql.*;
 import java.util.*;
@@ -58,7 +52,7 @@ import org.apache.log4j.Logger;
  *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class SqlEntityData extends AbstractEntityData
+public class SqlEntityData extends DefaultEntityData
 {
     static Logger log = Logger.getLogger(SqlEntityData.class);
     
@@ -66,9 +60,6 @@ public class SqlEntityData extends AbstractEntityData
     private ThreadLocal<SqlSession> cachedSession = new ThreadLocal<SqlSession>();
  
     private Map<Class, ComponentHandler> handlers = new ConcurrentHashMap<Class, ComponentHandler>();    
-    private PersistentEntityIdGenerator idGenerator;
- 
-    private SqlStringIndex stringIndex;
 
     // Somehow we want to be able to query across multiple tables
     // if we can.  So if all of the components are persistent, this
@@ -93,16 +84,13 @@ public class SqlEntityData extends AbstractEntityData
             throw new SQLException( "Driver not found for: org.hsqldb.jdbc.JDBCDriver", e ); 
             }
         
-        SqlSession session = getSession();
-        
         // In a stand-alone client we will want a very quick write delay
         // to avoid crash-related mayhem.
         execute( "SET FILES WRITE DELAY " + writeDelay + " MILLIS" );
         execute( "SET FILES DEFRAG 50" );
                
-        idGenerator = PersistentEntityIdGenerator.create( this );
-        
-        stringIndex = new SqlStringIndex( this, 100 ); 
+        setIdGenerator( PersistentEntityIdGenerator.create( this ) ); 
+        setStringIndex( new SqlStringIndex( this, 100 ) ); 
     }
  
     protected void execute( String statement ) throws SQLException 
@@ -138,11 +126,13 @@ public class SqlEntityData extends AbstractEntityData
         cachedSession.set(session);        
         return session;
     } 
- 
+
     @Override
-    public StringIndex getStrings()
+    protected ComponentHandler lookupDefaultHandler( Class type )
     {
-        return stringIndex;
+        if( PersistentComponent.class.isAssignableFrom(type) )
+            return new SqlComponentHandler(this, type);
+        return super.lookupDefaultHandler(type);
     }
  
     @Override
@@ -162,94 +152,4 @@ public class SqlEntityData extends AbstractEntityData
             }
     }
     
-    @Override
-    public EntityId createEntity()
-    {
-        return new EntityId(idGenerator.nextEntityId());
-    }
-
-    @Override
-    public void removeEntity( EntityId entityId )
-    {
-        // Note: because we only add the ComponentHandlers when
-        // we encounter the component types... it's possible that
-        // the entity stays orphaned with a few components if we
-        // have never accessed any of them.  SqlEntityData should
-        // probably specifically be given types someday.  FIXME
-    
-        // Remove all of its components
-        for( Class c : handlers.keySet() )
-            removeComponent( entityId, c );
-    }
-
-    protected ComponentHandler getHandler( Class type )
-    {
-        ComponentHandler result = handlers.get(type);
-        if( result == null )
-            {
-            // A little double checked locking to make sure we 
-            // don't create a handler twice
-            synchronized( this )
-                {
-                result = handlers.get(type);
-                if( result == null )
-                    {
-                    if( PersistentComponent.class.isAssignableFrom(type) )
-                        result = new SqlComponentHandler( this, type );
-                    else
-                        result = new MapComponentHandler();
-                    handlers.put(type, result);
-                    }
-                }
-            }
-        return result;             
-    }
-
-    @Override
-    public <T extends EntityComponent> T getComponent( EntityId entityId, Class<T> type )
-    {
-        ComponentHandler handler = getHandler(type);
-        return (T)handler.getComponent( entityId );
-    }
-    
-    @Override
-    public void setComponent( EntityId entityId, EntityComponent component )
-    {
-        ComponentHandler handler = getHandler(component.getClass());
-        handler.setComponent( entityId, component );
-        
-        // Can now update the entity sets that care
-        entityChange( new EntityChange( entityId, component ) ); 
-    }
-    
-    @Override
-    public boolean removeComponent( EntityId entityId, Class type )  
-    {
-        ComponentHandler handler = getHandler(type);
-        boolean result = handler.removeComponent(entityId);
-        
-        // Can now update the entity sets that care
-        entityChange( new EntityChange( entityId, type ) );
-        
-        return result; 
-    }
-
-    @Override
-    protected EntityId findSingleEntity( ComponentFilter filter )
-    {
-        return getHandler(filter.getComponentType()).findEntity(filter);
-    }
-
-    @Override
-    protected Set<EntityId> getEntityIds( Class type )
-    {
-        return getHandler(type).getEntities();
-    }
-
-    @Override
-    protected Set<EntityId> getEntityIds( Class type, ComponentFilter filter )
-    {
-        return getHandler(type).getEntities( filter );
-    }
-
 }
