@@ -32,76 +32,25 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.simsilica.es.sql;
+package com.simsilica.es.base;
 
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.ComponentFilter;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Set;
 
 
 /**
- *  Map-based component handler for in-memory components.
  *
  *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class MapComponentHandler<T extends EntityComponent> implements ComponentHandler<T>
+public interface ComponentHandler<T extends EntityComponent>
 {
-    private Map<EntityId,T> components = new ConcurrentHashMap<EntityId,T>();
- 
-    public MapComponentHandler()
-    {
-    }
-    
-    @Override
-    public void setComponent( EntityId entityId, T component )
-    {
-        components.put(entityId, component);
-    }
-    
-    @Override
-    public boolean removeComponent( EntityId entityId )
-    {
-        return components.remove(entityId) != null;
-    }
-    
-    @Override
-    public T getComponent( EntityId entityId )
-    {
-        return components.get(entityId);
-    }
-    
-    @Override
-    public Set<EntityId> getEntities()
-    {
-        return components.keySet();
-    } 
-
-    @Override
-    public Set<EntityId> getEntities( ComponentFilter filter )
-    {        
-        if( filter == null )
-            return components.keySet();
-               
-        Set<EntityId> results = new HashSet<EntityId>();
-        for( Map.Entry<EntityId,T> e : components.entrySet() )
-            {
-            if( filter.evaluate( (EntityComponent)e.getValue() ) )
-                results.add(e.getKey());
-            }
-        return results;
-    }
-    
-    @Override
-    public EntityId findEntity( ComponentFilter filter )
-    {
-        for( Map.Entry<EntityId,T> e : components.entrySet() )
-            {
-            if( filter == null || filter.evaluate( (EntityComponent)e.getValue() ) )
-                return e.getKey();
-            }
-        return null;
-    }
+    public void setComponent( EntityId entityId, T component );
+    public boolean removeComponent( EntityId entityId );
+    public T getComponent( EntityId entityId );
+    public Set<EntityId> getEntities(); 
+    public Set<EntityId> getEntities( ComponentFilter filter );
+    public EntityId findEntity( ComponentFilter filter ); 
 }

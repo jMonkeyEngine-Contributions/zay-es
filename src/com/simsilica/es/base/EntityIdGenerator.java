@@ -32,25 +32,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.simsilica.es.sql;
-
-import com.simsilica.es.EntityId;
-import com.simsilica.es.EntityComponent;
-import com.simsilica.es.ComponentFilter;
-import java.util.Set;
-
+package com.simsilica.es.base;
 
 /**
+ *  Hands out new IDs in an implementation specific way.
  *
  *  @version   $Revision$
  *  @author    Paul Speed
  */
-public interface ComponentHandler<T extends EntityComponent>
+public interface EntityIdGenerator
 {
-    public void setComponent( EntityId entityId, T component );
-    public boolean removeComponent( EntityId entityId );
-    public T getComponent( EntityId entityId );
-    public Set<EntityId> getEntities(); 
-    public Set<EntityId> getEntities( ComponentFilter filter );
-    public EntityId findEntity( ComponentFilter filter ); 
+    public long nextEntityId(); 
 }
+

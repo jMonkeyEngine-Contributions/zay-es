@@ -42,14 +42,16 @@ import java.sql.*;
  *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class EntityIdGenerator
+public class PersistentEntityIdGenerator
 {
+    private SqlEntityData parent;
     private String tableName = "ENTITY_ID";
     private long entityId;
 
-    protected EntityIdGenerator( SqlSession session ) throws SQLException
+    protected PersistentEntityIdGenerator( SqlEntityData parent ) throws SQLException
     {
         // See if the table exists
+        SqlSession session = parent.getSession();
         DatabaseMetaData md = session.getConnection().getMetaData();
         ResultSet rs = md.getColumns( null, "PUBLIC", tableName, null );
         try
@@ -93,9 +95,9 @@ public class EntityIdGenerator
         st.close();    
     }
 
-    public static EntityIdGenerator create( SqlSession session ) throws SQLException
+    public static PersistentEntityIdGenerator create( SqlEntityData parent ) throws SQLException
     {
-        return new EntityIdGenerator(session); 
+        return new PersistentEntityIdGenerator(parent); 
     } 
     
     protected void loadId( SqlSession session ) throws SQLException
@@ -115,23 +117,31 @@ public class EntityIdGenerator
             }    
     }
  
-    public synchronized long nextEntityId( SqlSession session ) throws SQLException
+    public synchronized long nextEntityId() 
     {
         long result = entityId++;
-        Statement st = session.getConnection().createStatement();
         try
             {
-            // Write the next value
-            String sql = "UPDATE " + tableName + " SET entityId=" + entityId + " WHERE id=0";
-            int update = st.executeUpdate(sql);
-            if( update != 1 )
-                throw new SQLException( "EntityID sequence not updated." );
-            return result;
+            SqlSession session = parent.getSession();        
+            Statement st = session.getConnection().createStatement();
+            try
+                {
+                // Write the next value
+                String sql = "UPDATE " + tableName + " SET entityId=" + entityId + " WHERE id=0";
+                int update = st.executeUpdate(sql);
+                if( update != 1 )
+                    throw new SQLException( "EntityID sequence not updated." );
+                return result;
+                }
+            finally
+                {
+                st.close();
+                }
             }
-        finally
+        catch( SQLException e )
             {
-            st.close();
-            }
+            throw new RuntimeException( "Error persisting entity ID", e );
+            }                
     }
     
 }

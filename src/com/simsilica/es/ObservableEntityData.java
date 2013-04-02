@@ -48,15 +48,4 @@ public interface ObservableEntityData extends EntityData
 {
     public void addEntityComponentListener( EntityComponentListener l );
     public void removeEntityComponentListener( EntityComponentListener l );
-    
-    // This is technically anti-ES to do this.  The thing is that
-    // for something like ropes and springs that connect multiple
-    // entities, it's cheaper than trying to coordinate entity sets
-    // for every entity or be able to change interest on the fly.
-    // maybe when real physics networking is implemented there will
-    // be an easy way to treat physical links like the other buffered
-    // position data so that the client will only see data for their
-    // zone.  In fact, it's pretty good thought that might be true.     
-    public ChangeQueue getChangeQueue( Class... componentType );
-    public void releaseChangeQueue( ChangeQueue queue );   
 }

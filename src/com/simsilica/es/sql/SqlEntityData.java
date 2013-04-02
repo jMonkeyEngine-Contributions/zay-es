@@ -34,9 +34,11 @@
 
 package com.simsilica.es.sql;
 
+import com.simsilica.es.base.MapComponentHandler;
+import com.simsilica.es.base.ComponentHandler;
 import com.simsilica.es.EntityChange;
 import com.simsilica.es.PersistentComponent;
-import com.simsilica.es.AbstractEntityData;
+import com.simsilica.es.base.AbstractEntityData;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.StringIndex;
@@ -64,7 +66,7 @@ public class SqlEntityData extends AbstractEntityData
     private ThreadLocal<SqlSession> cachedSession = new ThreadLocal<SqlSession>();
  
     private Map<Class, ComponentHandler> handlers = new ConcurrentHashMap<Class, ComponentHandler>();    
-    private EntityIdGenerator idGenerator;
+    private PersistentEntityIdGenerator idGenerator;
  
     private SqlStringIndex stringIndex;
 
@@ -98,7 +100,7 @@ public class SqlEntityData extends AbstractEntityData
         execute( "SET FILES WRITE DELAY " + writeDelay + " MILLIS" );
         execute( "SET FILES DEFRAG 50" );
                
-        idGenerator = EntityIdGenerator.create( session );
+        idGenerator = PersistentEntityIdGenerator.create( this );
         
         stringIndex = new SqlStringIndex( this, 100 ); 
     }
@@ -163,14 +165,7 @@ public class SqlEntityData extends AbstractEntityData
     @Override
     public EntityId createEntity()
     {
-        try
-            {
-            return new EntityId(idGenerator.nextEntityId(getSession()));
-            }
-        catch( SQLException e )
-            {
-            throw new RuntimeException( "Database error", e );
-            }
+        return new EntityId(idGenerator.nextEntityId());
     }
 
     @Override

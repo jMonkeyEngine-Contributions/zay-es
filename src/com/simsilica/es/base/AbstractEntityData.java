@@ -32,9 +32,20 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.simsilica.es;
+package com.simsilica.es.base;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.simsilica.es.ChangeQueue;
+import com.simsilica.es.ComponentFilter;
+import com.simsilica.es.Entity;
+import com.simsilica.es.EntityChange;
+import com.simsilica.es.EntityComponent;
+import com.simsilica.es.EntityComponentListener;
+import com.simsilica.es.EntityId;
+import com.simsilica.es.EntityProcessor;
+import com.simsilica.es.EntityProcessorRunnable;
+import com.simsilica.es.EntitySet;
+import com.simsilica.es.ObservableEntityData;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -52,7 +63,7 @@ public abstract class AbstractEntityData implements ObservableEntityData
      *  Keeps the unreleased entity sets so that we can give
      *  them the change updates relevant to them.
      */
-    private List<EntitySet> entitySets = new CopyOnWriteArrayList<EntitySet>();     
+    private List<DefaultEntitySet> entitySets = new CopyOnWriteArrayList<DefaultEntitySet>();     
     
     private List<EntityComponentListener> entityListeners = new CopyOnWriteArrayList<EntityComponentListener>();      
     
@@ -60,8 +71,6 @@ public abstract class AbstractEntityData implements ObservableEntityData
     
     protected AbstractEntityData()
     {
-        DefaultEntity.ed = this;
- 
         ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("EntityProc-%d").setDaemon(false).build();     
         this.executor = Executors.newFixedThreadPool(4, tf); 
         
@@ -92,9 +101,9 @@ public abstract class AbstractEntityData implements ObservableEntityData
         executor.submit( new EntityProcessorRunnable(proc, this) );
     }
 
-    protected EntitySet createSet( ComponentFilter filter, Class... types )
+    protected DefaultEntitySet createSet( ComponentFilter filter, Class... types )
     {
-        EntitySet set = new EntitySet( this, filter, types );
+        DefaultEntitySet set = new DefaultEntitySet( this, filter, types );
         entitySets.add(set);
         return set;
     }
@@ -117,7 +126,7 @@ public abstract class AbstractEntityData implements ObservableEntityData
         EntityComponent[] values = new EntityComponent[types.length]; 
         for( int i = 0; i < values.length; i++ )
             values[i] = getComponent( entityId, types[i] );
-        return new DefaultEntity( entityId, values, types );            
+        return new DefaultEntity( this, entityId, values, types );            
     }
  
     protected abstract Set<EntityId> getEntityIds( Class type, ComponentFilter filter );
@@ -148,7 +157,7 @@ public abstract class AbstractEntityData implements ObservableEntityData
                 buffer[i] = getComponent( id, types[i] );
                 
             // Now create the entity
-            DefaultEntity e = new DefaultEntity( id, buffer.clone(), types );
+            DefaultEntity e = new DefaultEntity( this, id, buffer.clone(), types );
             results.add(e);
             }
             
@@ -216,7 +225,7 @@ public abstract class AbstractEntityData implements ObservableEntityData
     @Override
     public EntitySet getEntities( ComponentFilter filter, Class... types )
     {
-        EntitySet results = createSet( filter, types );
+        DefaultEntitySet results = createSet( filter, types );
         results.loadEntities(false);
         return results;
     }
@@ -227,20 +236,6 @@ public abstract class AbstractEntityData implements ObservableEntityData
         entitySets.remove(entities);
     }
  
-    @Override
-    public ChangeQueue getChangeQueue( Class... componentTypes )
-    {
-        ChangeQueue queue = new ChangeQueue(this, componentTypes);
-        addEntityComponentListener(queue.getListener());
-        return queue;
-    }  
- 
-    @Override
-    public void releaseChangeQueue( ChangeQueue queue )
-    {
-        removeEntityComponentListener(queue.getListener());
-    }
- 
     protected void entityChange( EntityChange change )
     {
         for( EntityComponentListener l : entityListeners )
@@ -248,7 +243,7 @@ public abstract class AbstractEntityData implements ObservableEntityData
             l.componentChange( change );
             }
     
-        for( EntitySet set : entitySets )
+        for( DefaultEntitySet set : entitySets )
             {
             set.entityChange(change);
             }       

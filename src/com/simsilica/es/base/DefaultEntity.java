@@ -32,8 +32,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.simsilica.es;
+package com.simsilica.es.base;
 
+import com.simsilica.es.Entity;
+import com.simsilica.es.EntityComponent;
+import com.simsilica.es.EntityId;
+import com.simsilica.es.base.AbstractEntityData;
 import java.util.*;
 
 /**
@@ -45,15 +49,15 @@ import java.util.*;
  */
 public class DefaultEntity implements Entity
 {
-    protected static AbstractEntityData ed;
-    
+    private AbstractEntityData ed;    
     private EntityId id;
     private EntityComponent[] components;
 
     private Class[] types; // temporarily for validating component types
 
-    public DefaultEntity( EntityId id, EntityComponent[] components, Class[] types )
+    public DefaultEntity( AbstractEntityData ed, EntityId id, EntityComponent[] components, Class[] types )
     {
+        this.ed = ed;
         this.id = id;
         this.components = components;
         this.types = types;

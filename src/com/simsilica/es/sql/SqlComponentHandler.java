@@ -34,6 +34,7 @@
 
 package com.simsilica.es.sql;
 
+import com.simsilica.es.base.ComponentHandler;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.ComponentFilter;

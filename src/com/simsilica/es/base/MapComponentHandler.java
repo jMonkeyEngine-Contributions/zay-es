@@ -32,53 +32,76 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.simsilica.es;
+package com.simsilica.es.base;
 
+import com.simsilica.es.EntityId;
+import com.simsilica.es.EntityComponent;
+import com.simsilica.es.ComponentFilter;
 import java.util.*;
 import java.util.concurrent.*;
 
 
 /**
+ *  Map-based component handler for in-memory components.
  *
  *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class ChangeQueue extends ConcurrentLinkedQueue<EntityChange>
+public class MapComponentHandler<T extends EntityComponent> implements ComponentHandler<T>
 {
-    private ObservableEntityData parent;
-    private QueueChangeListener listener;
-    
-    public ChangeQueue( ObservableEntityData parent, Class... types )
+    private Map<EntityId,T> components = new ConcurrentHashMap<EntityId,T>();
+ 
+    public MapComponentHandler()
     {
-        this.parent = parent;
-        this.listener = new QueueChangeListener(types);
-        parent.addEntityComponentListener(listener);
     }
+    
+    @Override
+    public void setComponent( EntityId entityId, T component )
+    {
+        components.put(entityId, component);
+    }
+    
+    @Override
+    public boolean removeComponent( EntityId entityId )
+    {
+        return components.remove(entityId) != null;
+    }
+    
+    @Override
+    public T getComponent( EntityId entityId )
+    {
+        return components.get(entityId);
+    }
+    
+    @Override
+    public Set<EntityId> getEntities()
+    {
+        return components.keySet();
+    } 
 
-    protected EntityComponentListener getListener()
-    {
-        return listener;
+    @Override
+    public Set<EntityId> getEntities( ComponentFilter filter )
+    {        
+        if( filter == null )
+            return components.keySet();
+               
+        Set<EntityId> results = new HashSet<EntityId>();
+        for( Map.Entry<EntityId,T> e : components.entrySet() )
+            {
+            if( filter.evaluate( (EntityComponent)e.getValue() ) )
+                results.add(e.getKey());
+            }
+        return results;
     }
     
-    public void release()
+    @Override
+    public EntityId findEntity( ComponentFilter filter )
     {
-        parent.removeEntityComponentListener(listener);
+        for( Map.Entry<EntityId,T> e : components.entrySet() )
+            {
+            if( filter == null || filter.evaluate( (EntityComponent)e.getValue() ) )
+                return e.getKey();
+            }
+        return null;
     }
-    
-    protected class QueueChangeListener implements EntityComponentListener
-    {
-        private Set<Class> types = new HashSet<Class>();
-        public QueueChangeListener( Class... types )
-        {
-            this.types.addAll( Arrays.asList(types) );
-        }
-        
-        @Override
-        public void componentChange( EntityChange change )
-        {
-            if( types.contains( change.getComponentType() ) )
-                add(change);
-        }
-    }
-     
 }
