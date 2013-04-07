@@ -32,13 +32,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.simsilica.es;
+package com.simsilica.es.filter;
 
 import com.google.common.base.Objects;
 import java.lang.reflect.*;
 
 
 import com.jme3.network.serializing.Serializable;
+import com.simsilica.es.ComponentFilter;
+import com.simsilica.es.EntityComponent;
 
 /**
  *

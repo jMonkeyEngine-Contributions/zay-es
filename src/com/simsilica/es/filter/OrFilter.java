@@ -32,38 +32,40 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.simsilica.es;
+package com.simsilica.es.filter;
 
 import java.util.*;
 
 import com.jme3.network.serializing.Serializable;
+import com.simsilica.es.ComponentFilter;
+import com.simsilica.es.EntityComponent;
 
 /**
- *  An AND filter that requires all component filters to be of
+ *  An OR filter that requires all component filters to be of
  *  the same type as the outer filter.
  *
  *  @version   $Revision$
  *  @author    Paul Speed
  */
 @Serializable
-public class AndFilter<T extends EntityComponent> implements ComponentFilter<T>
+public class OrFilter<T extends EntityComponent> implements ComponentFilter<T>
 {
     private Class<T> type;
     private ComponentFilter<? extends T>[] operands;
     
-    public AndFilter()
+    public OrFilter()
     {
     }
     
-    public AndFilter( Class<T> type, ComponentFilter<? extends T>... operands )
+    public OrFilter( Class<T> type, ComponentFilter<? extends T>... operands )
     {
         this.type = type;
         this.operands = operands;
     }
 
-    public static <T extends EntityComponent> AndFilter<T> create( Class<T> type, ComponentFilter<? extends T>... operands )
+    public static <T extends EntityComponent> OrFilter<T> create( Class<T> type, ComponentFilter<? extends T>... operands )
     {
-        return new AndFilter<T>(type, operands);
+        return new OrFilter<T>(type, operands);
     }
 
     public ComponentFilter<? extends T>[] getOperands()
@@ -91,18 +93,18 @@ public class AndFilter<T extends EntityComponent> implements ComponentFilter<T>
  
         for( ComponentFilter f : operands )
             {
-            if( !f.evaluate(c) )
+            if( f.evaluate(c) )
                 {
-                return false;
+                return true;
                 }
             }
-        return true;                    
+        return false;                    
     }
     
     @Override
     public String toString()
     {
-        return "AndFilter[" + Arrays.asList(operands) + "]";
+        return "OrFilter[" + Arrays.asList(operands) + "]";
     }
 }
 

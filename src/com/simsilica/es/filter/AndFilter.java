@@ -32,17 +32,79 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.simsilica.es;
+package com.simsilica.es.filter;
 
+import java.util.*;
+
+import com.jme3.network.serializing.Serializable;
+import com.simsilica.es.ComponentFilter;
+import com.simsilica.es.EntityComponent;
 
 /**
- *  Represents a component that should not be sent over the
- *  network from the client to the server but can otherwise
- *  be added on the client or server if needed.
+ *  An AND filter that requires all component filters to be of
+ *  the same type as the outer filter.
  *
  *  @version   $Revision$
  *  @author    Paul Speed
  */
-public interface TransientComponent extends EntityComponent
+@Serializable
+public class AndFilter<T extends EntityComponent> implements ComponentFilter<T>
 {
+    private Class<T> type;
+    private ComponentFilter<? extends T>[] operands;
+    
+    public AndFilter()
+    {
+    }
+    
+    public AndFilter( Class<T> type, ComponentFilter<? extends T>... operands )
+    {
+        this.type = type;
+        this.operands = operands;
+    }
+
+    public static <T extends EntityComponent> AndFilter<T> create( Class<T> type, ComponentFilter<? extends T>... operands )
+    {
+        return new AndFilter<T>(type, operands);
+    }
+
+    public ComponentFilter<? extends T>[] getOperands()
+    {
+        return operands;
+    }
+
+    @Override
+    public Class<T> getComponentType()
+    {
+        return type;
+    }
+    
+    @Override
+    public boolean evaluate( EntityComponent c )
+    {
+        if( !type.isInstance(c) )
+            {
+            return false;
+            }
+        if( operands == null )
+            {
+            return true;
+            }
+ 
+        for( ComponentFilter f : operands )
+            {
+            if( !f.evaluate(c) )
+                {
+                return false;
+                }
+            }
+        return true;                    
+    }
+    
+    @Override
+    public String toString()
+    {
+        return "AndFilter[" + Arrays.asList(operands) + "]";
+    }
 }
+

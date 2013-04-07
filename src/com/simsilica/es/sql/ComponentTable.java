@@ -35,11 +35,11 @@
 package com.simsilica.es.sql;
 
 import com.google.common.base.Joiner;
-import com.simsilica.es.AndFilter;
-import com.simsilica.es.FieldFilter;
+import com.simsilica.es.filter.AndFilter;
+import com.simsilica.es.filter.FieldFilter;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntityComponent;
-import com.simsilica.es.OrFilter;
+import com.simsilica.es.filter.OrFilter;
 import com.simsilica.es.ComponentFilter;
 import java.sql.*;
 import java.util.*;
