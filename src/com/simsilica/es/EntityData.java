@@ -62,7 +62,6 @@ public interface EntityData
     public EntitySet getEntities( ComponentFilter filter, Class... types );
 
     public StringIndex getStrings();
- 
-    public void execute( EntityProcessor proc );
+    
     public void close();  
 }

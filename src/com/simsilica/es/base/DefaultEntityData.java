@@ -34,20 +34,15 @@
 
 package com.simsilica.es.base;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.simsilica.es.ComponentFilter;
 import com.simsilica.es.Entity;
 import com.simsilica.es.EntityChange;
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.EntityComponentListener;
 import com.simsilica.es.EntityId;
-import com.simsilica.es.EntityProcessor;
-import com.simsilica.es.EntityProcessorRunnable;
 import com.simsilica.es.EntitySet;
 import com.simsilica.es.ObservableEntityData;
-import com.simsilica.es.PersistentComponent;
 import com.simsilica.es.StringIndex;
-import com.simsilica.es.sql.SqlComponentHandler;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -72,13 +67,8 @@ public class DefaultEntityData implements ObservableEntityData
     private List<DefaultEntitySet> entitySets = new CopyOnWriteArrayList<DefaultEntitySet>();         
     private List<EntityComponentListener> entityListeners = new CopyOnWriteArrayList<EntityComponentListener>();      
     
-    private ExecutorService executor;
-    
     public DefaultEntityData()
     {
-        ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("EntityProc-%d").setDaemon(false).build();     
-        this.executor = Executors.newFixedThreadPool(4, tf); 
-        
         ReportSystem.registerCacheReporter( new EntitySetsReporter() );
     }        
  
@@ -107,14 +97,7 @@ public class DefaultEntityData implements ObservableEntityData
     @Override
     public void close()
     {    
-        executor.shutdownNow();
     }  
-
-    @Override
-    public void execute( EntityProcessor proc )
-    {
-        executor.submit( new EntityProcessorRunnable(proc, this) );
-    }
 
     @Override
     public EntityId createEntity()
