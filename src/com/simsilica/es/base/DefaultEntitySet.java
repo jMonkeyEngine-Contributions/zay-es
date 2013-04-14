@@ -54,7 +54,9 @@ public class DefaultEntitySet extends AbstractSet<Entity>
 {
     static Logger log = Logger.getLogger(EntitySet.class);
 
-    private HashMap<EntityId,Entity> entities = new HashMap<EntityId,Entity>();
+    // Concurrent hash map because the change set accumulation
+    // checks the map for entity ID existence.
+    private Map<EntityId,Entity> entities = new ConcurrentHashMap<EntityId,Entity>();
  
     private ConcurrentLinkedQueue<EntityChange> changes 
                     = new ConcurrentLinkedQueue<EntityChange>();
@@ -863,8 +865,8 @@ public class DefaultEntitySet extends AbstractSet<Entity>
                     // Because we wasted a lot of time for something
                     // that should be filtered in most cases... usually
                     // it's a bug when it isn't.
-                    if( rechecking )
-                        log.warn( "Non-matching component:" + array[i] + " for entity:" + e );
+                    //if( rechecking )
+                    //    log.warn( "Non-matching component:" + array[i] + " for entity:" + e );
                     return false;
                     }                    
                 }
