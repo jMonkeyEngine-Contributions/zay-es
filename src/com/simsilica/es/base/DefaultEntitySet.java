@@ -36,8 +36,7 @@ package com.simsilica.es.base;
 
 import com.simsilica.es.*;
 import java.util.*;
-import java.util.concurrent.*;
-
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.log4j.Logger;
 
 
@@ -56,10 +55,10 @@ public class DefaultEntitySet extends AbstractSet<Entity>
 
     // Concurrent hash map because the change set accumulation
     // checks the map for entity ID existence.
-    private Map<EntityId,Entity> entities = new ConcurrentHashMap<EntityId,Entity>();
+    private Map<EntityId,Entity> entities = new HashMap<EntityId,Entity>();
  
     private ConcurrentLinkedQueue<EntityChange> changes 
-                    = new ConcurrentLinkedQueue<EntityChange>();
+                    = new ConcurrentLinkedQueue<EntityChange>(); 
     
     private DefaultEntityData ed;
     private ComponentFilter mainFilter; // for now anyway
@@ -384,28 +383,6 @@ public class DefaultEntitySet extends AbstractSet<Entity>
         return true;
     }
 
-    protected void filterUpdates( Set<EntityChange> updates )
-    {
-        if( updates == null )
-            return;
-            
-        // Fix the updates set by removing changes for removed
-        // entities
-        /*for( Iterator<EntityChange> it = updates.iterator(); it.hasNext(); )
-            {
-            EntityChange e = it.next();
-            if( !entities.containsKey(e.getEntityId()) )
-                it.remove(); 
-            }*/
-        // The above is wrong-headed because the changes we remove
-        // might have been good changes for another entity set.
-        
-        // Note: there is another way to do that if we care.  Each
-        // set would only _add_ the things that were changes to existing
-        // entities that didn't cause a remove.  They would not post-filter
-        // the global set!!
-    }
- 
     public boolean hasFilterChanged()
     {
         return filtersChanged;
@@ -456,8 +433,6 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             loadEntities( true );
             }
  
-        filterUpdates( updates );
-                                       
         return !addedEntities.isEmpty() || !changedEntities.isEmpty() || !removedEntities.isEmpty();                        
     }     
  
@@ -553,96 +528,30 @@ public class DefaultEntitySet extends AbstractSet<Entity>
                 log.trace( "   not our type." );
             return false;  // doesn't matter to us
             }
-
-        // Is it about an entity that we already have?
-        Entity e = entities.get(change.getEntityId());
-        if( e != null )
-            {
-            // The component is a type we're interested in about an
-            // entity we have... the pure definition of a relevant
-            // change even if (especially if) that change will remove
-            // it from this set
-            // No further checking is needed.
-            if( log.isTraceEnabled() )
-                log.trace( "   We already have it, so we care." );            
-            return true;
-            }
-
-        // So now we are to the case of an entity that we don't
-        // have but a component type we are interested in.  The
-        // component change might add this entity to the set.
-        //
-        // There are a few cases here:
-        // 1) the entity has all of the components to be in this
-        //    set and this is the change that will make it.
-        // 2) the entity does not have all of the components to be
-        //    in this set but this is one of the changes that would
-        //    bring it closer.
-        // 3) this change would definitely not be relevant to set
-        //    inclusion.
-        //
-        // It may take several component changes before the entity
-        // is ready to be included in this set.  We only truly
-        // need to know about the last one but the apply loop is
-        // already doing this check and it has the opportunity to
-        // do it more efficiently by caching previous look-ups.
-        //
-        // so the best we can do is eliminate the ones that would
-        // definitely not apply
-        // ...and if we have no filters, we should assume that they
-        // all might
-        // (I think the old code wasn't so great about this but it
-        //  only had one filter to worry about and my use-cases have
-        //  so far been limited.  I believe it would have failed
-        //  if there was an inLeaf and the position wasn't the last
-        //  or next to last to change.  No.  It's just weird... it
-        //  looks up the position every time so it includes each
-        //  change for an entity matching the filter so far.
-        //  That's not a bad way to go but could be expensive for
-        //  many filters.)
-        if( filters == null )
-            {
-            if( log.isTraceEnabled() )
-                log.trace( "   No special filters, so we care." );            
-            return true;  /// nothing more to check
-            }
-            
- 
-        /*        
-            The problem with the below checks is that they don't
-            take into account that we may have already seen components
-            for the entity that would cause it to be added... and just
-            haven't called applyChanges() yet.
-            
-            The following checks would then cause us to miss changes that
-            would remove the entity from the set again.  We'd have to
-            keep a lot more change-related book keeping (and keep it
-            in sync with the change list) to avoid it.
              
-        // If the component is being removed... we really don't
-        // care about that.
-        EntityComponent newValue = change.getComponent();
-        if( newValue == null )
-            {
-            if( log.isTraceEnabled() )
-                log.trace( "   It's a removal of a component for an entity we don't care about yet." );            
-            return false;
-            }
-
-        // If it's not a matching component then it can't possibly
-        // be relevant. 
-        if( !isMatchingComponent(newValue) )
-            {
-            if( log.isTraceEnabled() )
-                log.trace( "   It's a non-matching component for an entity we don't care about yet." );            
-            return false;
-            }
-        */
-
-        // Hmmm... though this does mean that we see lots of events
-        // for entities that we don't care about and probably won't.
-        if( log.isTraceEnabled() )
-            log.trace( "It might be relevant." );
+        // There use to be a bunch of logic here trying to determine
+        // if a change is relevant to an entity we have or might have.
+        // It can be made to work but not without a lot of threading
+        // care.  Changes come in from all over and right now we
+        // nicely shove them into a queue and forget about them.
+        // If we decide to do the book-keeping then we have to track
+        // entity ID interest as well.  If we see a change that matches
+        // our filter and is related to an entity we don't have then
+        // we need to add that entity to an interest set.  If we see
+        // the same component and it no longer matches the filter then
+        // we know we'd need to keep it.
+        // This is all in the interest of minimizing the amount of
+        // component retrieval required during applyChanges().
+        // This book-keeping then needs to be in sync with the change
+        // queue and event checking to make sure threads aren't stomping
+        // all over themselves.
+        // And at the end of the day, most of the time processing an
+        // irrelevant change isn't that expensive.  At worst we'll create
+        // an entity just to throw it away but the most common use-case
+        // is when one component changes often.  In that case, when
+        // we filter it out in Transaction.addChange() we've avoided the
+        // extra work.  And that side is single-threaded and has a consisent
+        // state.              
                         
         // We might care
         return true;
@@ -727,23 +636,6 @@ public class DefaultEntitySet extends AbstractSet<Entity>
         Map<EntityId,DefaultEntity> adds = new HashMap<EntityId,DefaultEntity>();
         Set<EntityId> mods = new HashSet<EntityId>();
         
-        public void directRemove( EntityId id )
-        {
-            // These worry me.  I'm not sure when it is appropriate
-            // to process them.  For now we will directly remove them
-            // because it's the only way I can see to make the state
-            // right.  But really that seems off to me
-            Entity e = remove( id );
-            if( e != null )
-                removedEntities.add(e);                                     
-        }
-        
-        public void directAdd( Entity e )
-        {
-            if( add( e ) )
-                addedEntities.add(e);
-        }
-        
         public void addChange( EntityChange change, Set<EntityChange> updates )
         {
             EntityId id = change.getEntityId();
@@ -771,11 +663,21 @@ public class DefaultEntitySet extends AbstractSet<Entity>
                     // otherwise we might have to retrieve them again.  We
                     // could get lots of changes for this entity and we will
                     // validate what we have in the completion loop.
+                    // ...BUT...
+                    // On the other hand, we might not get any more changes
+                    // for this entity at all and if the component didn't match
+                    // then we created the entity for nothing.  This is an
+                    // extremely common use-case for the types of components most
+                    // likely to be spammed and filtered.
+                    if( !isMatchingComponent(comp) )
+                        {
+                        return;
+                        }
                     
                     // Else we need to add it.
                 
                     // Create an empty entity with the right number
-                    // of components.                
+                    // of components.
                     e = new DefaultEntity( ed, id, new EntityComponent[types.length], types );
                     adds.put( id, e );
                     }               
@@ -823,7 +725,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             // Try to make it complete if is isn't already.
             // We need to recheck the components against the
             // filters because we do no prefiltering on changes.
-            // Technically, we should get changes from components
+            // Technically, we shouldn't get changes from components
             // that don't match but it is better to be safe.
             // For example, there is a "bug" at the moment where
             // direct removes are happening before the transaction
@@ -841,7 +743,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
                     {
                     // Fill it in 
                     if( log.isDebugEnabled() )
-                        log.debug( "Pulling component type:" + types[i] + " for id:" + e.getId() );                   
+                        log.debug( "Pulling component type:" + types[i] + " for id:" + e.getId() );
                     array[i] = ed.getComponent( e.getId(), types[i] );
                 
                     // If we get nothing back then this entity can't be completed
