@@ -69,7 +69,13 @@ public class DefaultEntityData implements ObservableEntityData
     
     public DefaultEntityData()
     {
+        this( new DefaultEntityIdGenerator() );
+    }
+    
+    public DefaultEntityData( EntityIdGenerator idGenerator )
+    {    
         ReportSystem.registerCacheReporter( new EntitySetsReporter() );
+        this.idGenerator = idGenerator;
     }        
  
     protected void setIdGenerator( EntityIdGenerator idGenerator )

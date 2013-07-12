@@ -59,12 +59,6 @@ public class SqlEntityData extends DefaultEntityData
     private String dbPath;
     private ThreadLocal<SqlSession> cachedSession = new ThreadLocal<SqlSession>();
  
-    private Map<Class, ComponentHandler> handlers = new ConcurrentHashMap<Class, ComponentHandler>();    
-
-    // Somehow we want to be able to query across multiple tables
-    // if we can.  So if all of the components are persistent, this
-    // should give us a leg up.  But maybe it doesn't matter in practice.
- 
     public SqlEntityData( File dbPath, long writeDelay ) throws SQLException
     {
         this( dbPath.toURI().toString(), writeDelay );
@@ -72,6 +66,8 @@ public class SqlEntityData extends DefaultEntityData
     
     public SqlEntityData( String dbPath, long writeDelay ) throws SQLException
     {
+        super(null);
+        
         this.dbPath = dbPath;
 
         try
