@@ -76,6 +76,7 @@ public class ShipControlState extends BaseAppState
     private double thrustInterval = 0.25;
 
     private AudioNode shoot;
+    private AudioNode thrust;
 
     private Vector3f accel = new Vector3f();
 
@@ -94,10 +95,14 @@ public class ShipControlState extends BaseAppState
                                       ShipFunctions.F_TURN,
                                       ShipFunctions.F_THRUST);
         inputMapper.addStateListener(this,
+                                     ShipFunctions.F_THRUST,
                                      ShipFunctions.F_SHOOT);
 
         shoot = new AudioNode(app.getAssetManager(), "Sounds/shoot.ogg", false);
         shoot.setReverbEnabled(false);
+        thrust = new AudioNode(app.getAssetManager(), "Sounds/thrust.ogg", false);
+        thrust.setReverbEnabled(false);
+        thrust.setLooping(true);
     }
 
     @Override
@@ -107,6 +112,7 @@ public class ShipControlState extends BaseAppState
                                          ShipFunctions.F_TURN,
                                          ShipFunctions.F_THRUST);
         inputMapper.removeStateListener(this,
+                                        ShipFunctions.F_THRUST,
                                         ShipFunctions.F_SHOOT);
     }
 
@@ -187,6 +193,12 @@ public class ShipControlState extends BaseAppState
 
             // Play the sound effect
             shoot.playInstance();
+        } else if( func == ShipFunctions.F_THRUST ) {
+            if( value == InputState.POSITIVE ) {
+                thrust.play();
+            } else {
+                thrust.stop();
+            }
         }
     }
 
