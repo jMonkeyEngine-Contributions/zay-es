@@ -35,6 +35,7 @@
 package panic;
 
 import com.jme3.app.Application;
+import com.jme3.audio.AudioNode;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.simsilica.es.EntityData;
@@ -74,6 +75,7 @@ public class ShipControlState extends BaseAppState
     private double lastThrustTime = 0.25;
     private double thrustInterval = 0.25;
 
+    private AudioNode shoot;
 
     private Vector3f accel = new Vector3f();
 
@@ -93,6 +95,9 @@ public class ShipControlState extends BaseAppState
                                       ShipFunctions.F_THRUST);
         inputMapper.addStateListener(this,
                                      ShipFunctions.F_SHOOT);
+
+        shoot = new AudioNode(app.getAssetManager(), "Sounds/shoot.ogg", false);
+        shoot.setReverbEnabled(false);
     }
 
     @Override
@@ -179,6 +184,9 @@ public class ShipControlState extends BaseAppState
                              new ModelType(PanicModelFactory.MODEL_BULLET),
                              new CollisionShape(0.01f),
                              new Decay(bulletDecay));
+
+            // Play the sound effect
+            shoot.playInstance();
         }
     }
 

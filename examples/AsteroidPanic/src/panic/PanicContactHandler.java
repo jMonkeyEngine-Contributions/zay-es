@@ -34,6 +34,8 @@
 
 package panic;
 
+import com.jme3.asset.AssetManager;
+import com.jme3.audio.AudioNode;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
@@ -62,6 +64,12 @@ public class PanicContactHandler implements ContactHandler {
 
     private float minRadius = PanicConstants.minAsteroidRadius;
 
+    // For now... included here directly
+    private AudioNode bump1;
+    private AudioNode bump2;
+    private AudioNode boom1;
+    private AudioNode boom2;
+
     public PanicContactHandler() {
     }
 
@@ -77,6 +85,16 @@ public class PanicContactHandler implements ContactHandler {
         }
 
         this.ed = state.getApplication().getStateManager().getState(EntityDataState.class).getEntityData();
+
+        AssetManager assets = state.getApplication().getAssetManager();
+        bump1 = new AudioNode(assets, "Sounds/low-bang.ogg", false);
+        bump1.setReverbEnabled(false);
+        bump2 = new AudioNode(assets, "Sounds/high-bang.ogg", false);
+        bump2.setReverbEnabled(false);
+        boom1 = new AudioNode(assets, "Sounds/boom1.ogg", false);
+        boom1.setReverbEnabled(false);
+        boom2 = new AudioNode(assets, "Sounds/boom2.ogg", false);
+        boom2.setReverbEnabled(false);
     }
 
     protected float getInvMass( Entity e ) {
@@ -173,6 +191,8 @@ public class PanicContactHandler implements ContactHandler {
                              new Decay(500));
         }
 
+        // Make an explosion sound
+        boom1.playInstance();
     }
 
     protected void bulletCollision( Entity bullet, Entity other, ModelType type, Vector3f cp, Vector3f cn, float penetration )
@@ -256,6 +276,9 @@ public class PanicContactHandler implements ContactHandler {
                              new ModelType(PanicModelFactory.MODEL_DEBRIS),
                              new Decay(500));
         }
+
+        // Make an explosion sound
+        boom2.playInstance();
     }
 
     public void handleContact( Entity e1, Entity e2, Vector3f cp, Vector3f cn, float penetration )
@@ -278,6 +301,28 @@ public class PanicContactHandler implements ContactHandler {
             bulletCollision(e1, e2, t2, cp, cn, penetration);
         } else if( PanicModelFactory.MODEL_BULLET.equals(t2.getType()) ) {
             bulletCollision(e2, e1, t1, cp, cn.mult(-1), penetration);
+        } else {
+            // Assume asteroid to asteroid
+
+            // Check the sizes
+            CollisionShape shape1 = e1.get(CollisionShape.class);
+            float r1 = shape1 == null ? 0.01f : shape1.getRadius();
+            CollisionShape shape2 = e2.get(CollisionShape.class);
+            float r2 = shape2 == null ? 0.01f : shape2.getRadius();
+
+            boolean smallImpact = false;
+            if( r1 < 0.3 || r2 < 0.3 ) {
+                smallImpact = true;
+            }
+            if( r1 < 0.6 && r2 < 0.6 ) {
+                smallImpact = true;
+            }
+
+            if( smallImpact ) {
+                bump2.playInstance();
+            } else {
+                bump1.playInstance();
+            }
         }
     }
 }
