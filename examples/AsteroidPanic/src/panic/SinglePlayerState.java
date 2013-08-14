@@ -35,6 +35,9 @@
 package panic;
 
 import com.jme3.app.Application;
+import com.jme3.asset.AssetManager;
+import com.jme3.audio.AudioNode;
+import com.jme3.audio.AudioSource.Status;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.simsilica.es.Entity;
@@ -101,6 +104,8 @@ public class SinglePlayerState extends BaseAppState {
     private int titleIndex;
     private long lastMessageTime;
 
+    private AudioNode music;
+
     public SinglePlayerState() {
     }
 
@@ -121,6 +126,7 @@ public class SinglePlayerState extends BaseAppState {
                 break;
             case Starting:
                 resetShip(false, true);
+                startMusic();
                 break;
             case Joining:
                 resetShip(true, true);
@@ -129,10 +135,13 @@ public class SinglePlayerState extends BaseAppState {
                 player.setInvincible(false);
                 break;
             case Death:
+                stopMusic();
                 break;
             case EndLevel:
+                stopMusic();
                 break;
             case GameOver:
+                stopMusic();
                 break;
         }
     }
@@ -162,6 +171,9 @@ public class SinglePlayerState extends BaseAppState {
                     if( asteroids.isEmpty() ) {
                         setState(GameState.EndLevel, "Level Cleared");
                     }
+                } else {
+                    // Have to keep doing it so it loops
+                    startMusic();
                 }
                 break;
             case Death:
@@ -262,6 +274,23 @@ public class SinglePlayerState extends BaseAppState {
                              new Mass(radius),
                              new ModelType(PanicModelFactory.MODEL_ASTEROID));
             }
+    }
+
+    protected void startMusic() {
+        if( music == null || music.getStatus() == Status.Stopped ) {
+            AssetManager assets = getApplication().getAssetManager();
+            music = new AudioNode(assets, "Sounds/panic-ambient.ogg", true);
+            music.setReverbEnabled(false);
+            music.setPositional(false);
+            music.play();
+        }
+    }
+
+    protected void stopMusic() {
+        if( music != null ) {
+            music.stop();
+            music = null;
+        }
     }
 
     @Override
