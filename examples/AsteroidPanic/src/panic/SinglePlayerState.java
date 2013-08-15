@@ -282,7 +282,7 @@ public class SinglePlayerState extends BaseAppState {
             music = new AudioNode(assets, "Sounds/panic-ambient.ogg", true);
             music.setReverbEnabled(false);
             music.setPositional(false);
-            music.setVolume(0.7f);
+            music.setVolume(0.6f);
             music.play();
         }
     }
