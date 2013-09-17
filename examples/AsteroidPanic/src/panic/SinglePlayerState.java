@@ -37,7 +37,7 @@ package panic;
 import com.jme3.app.Application;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioNode;
-import com.jme3.audio.AudioSource.Status;
+import com.jme3.audio.AudioSource;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.simsilica.es.Entity;
@@ -277,7 +277,7 @@ public class SinglePlayerState extends BaseAppState {
     }
 
     protected void startMusic() {
-        if( music == null || music.getStatus() == Status.Stopped ) {
+        if( music == null || music.getStatus() == AudioSource.Status.Stopped ) {
             AssetManager assets = getApplication().getAssetManager();
             music = new AudioNode(assets, "Sounds/panic-ambient.ogg", true);
             music.setReverbEnabled(false);

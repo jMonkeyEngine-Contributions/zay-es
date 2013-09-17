@@ -37,7 +37,7 @@ package panic;
 import com.jme3.app.Application;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioNode;
-import com.jme3.audio.AudioSource.Status;
+import com.jme3.audio.AudioSource;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.simsilica.lemur.Button;
@@ -115,7 +115,7 @@ public class MainMenuState extends BaseAppState {
     }
 
     protected void startMusic() {
-        if( music == null || music.getStatus() == Status.Stopped ) {
+        if( music == null || music.getStatus() == AudioSource.Status.Stopped ) {
             AssetManager assets = getApplication().getAssetManager();
             music = new AudioNode(assets, "Sounds/panic-menu-theme.ogg", true);
             music.setReverbEnabled(false);
