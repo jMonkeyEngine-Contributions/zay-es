@@ -61,6 +61,8 @@ public class PlayerState extends BaseAppState
     private EntityId player;
     
     private Spatial monkey;
+    private Quaternion cameraAngle;
+    private Vector3f cameraDelta;
  
     public PlayerState( GameClient client ) {
         this.client = client;
@@ -78,7 +80,13 @@ public class PlayerState extends BaseAppState
                                       PlayerFunctions.F_SOUTH,
                                       PlayerFunctions.F_EAST,
                                       PlayerFunctions.F_WEST);
-                
+ 
+        cameraAngle = new Quaternion().fromAngles(FastMath.QUARTER_PI * 1.3f, FastMath.PI, 0);
+        cameraDelta = cameraAngle.mult(Vector3f.UNIT_Z);
+        cameraDelta.multLocal(-12);
+        
+        // Back it up a little so the framing is more even
+        cameraDelta.addLocal(0, -1, 0);                
     }
 
     @Override
@@ -99,7 +107,8 @@ public class PlayerState extends BaseAppState
         if( monkey != null ) {
             Vector3f loc = cam.getLocation();
             loc.set(monkey.getLocalTranslation());
-            loc.addLocal(0, 7, 7);
+            //loc.addLocal(0, 7, 7);
+            loc.addLocal(cameraDelta);
             cam.setLocation(loc);
         }       
     }
@@ -113,7 +122,7 @@ public class PlayerState extends BaseAppState
         monkey = getState(ModelState.class).getSpatial(player);
  
         Camera cam = getApplication().getCamera();       
-        cam.setRotation(new Quaternion().fromAngles(FastMath.QUARTER_PI, FastMath.PI, 0));
+        cam.setRotation(cameraAngle);
     }
 
     @Override
