@@ -38,6 +38,9 @@ import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState.BlendMode;
+import com.jme3.material.RenderState.TestFunction;
+import com.jme3.math.ColorRGBA;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
@@ -66,11 +69,12 @@ public class MazeState extends BaseAppState {
 
     protected void generateMazeGeometry() {
         float mazeScale = 2;
-        Mesh mesh = MeshGenerator.generateMesh(maze, mazeScale, mazeScale);
                 
-        Geometry geom = new Geometry("maze", mesh);
 
         GuiGlobals globals = GuiGlobals.getInstance();
+        
+        Mesh mesh = MeshGenerator.generateMesh(maze, mazeScale, mazeScale);
+        Geometry geom = new Geometry("maze", mesh);
         Texture tex = globals.loadTexture("Textures/trap-atlas.png", true, true );
         Material mat = globals.createMaterial(tex, true).getMaterial();
         mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
@@ -78,7 +82,22 @@ public class MazeState extends BaseAppState {
         geom.setMaterial(mat);
         geom.move(-mazeScale * 0.5f, 0, -mazeScale * 0.5f);
 
-        mazeRoot.attachChild(geom); 
+        mazeRoot.attachChild(geom);
+        
+        Mesh aoMesh = MeshGenerator.generateAmbientOcclusion(maze, mazeScale, mazeScale);
+        geom = new Geometry("maze", aoMesh);
+        tex = globals.loadTexture("Textures/ao-halo-alpha.png", true, true );
+        mat = globals.createMaterial(tex, false).getMaterial();
+        mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+        mat.getAdditionalRenderState().setDepthFunc(TestFunction.Equal);
+        //mat.setFloat("AlphaDiscardThreshold", 0.1f);
+        mat.setColor("Color", ColorRGBA.Black);
+        geom.setMaterial(mat);
+        geom.move(-mazeScale * 0.5f, 0, -mazeScale * 0.5f);
+        geom.setQueueBucket(Bucket.Transparent);
+
+        mazeRoot.attachChild(geom);
+         
     }
 
     @Override

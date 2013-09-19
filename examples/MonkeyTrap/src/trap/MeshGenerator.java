@@ -255,6 +255,151 @@ public class MeshGenerator
  
         return result;
     }
+
+    public static Mesh generateAmbientOcclusion( Maze maze, float xScale, float yScale ) {
+            
+        int xSize = maze.getWidth();
+        int ySize = maze.getHeight();    
+ 
+        List<Wall> walls = new ArrayList<Wall>();
+        List<Floor> floors = new ArrayList<Floor>();     
+ 
+        for( int x = 1; x < xSize - 1; x++ ) {
+            for( int y = 1; y < ySize - 1; y++ ) {
+ 
+                // We only render empty spaces               
+                int v = maze.get(x,y);
+                if( maze.isSolid(v) ) {
+                    continue;
+                }
+                                               
+                floors.add(new Floor(x,y));
+                                               
+                // Simple for now... just find solid sides
+                for( int d = 0; d < 4; d++ ) {
+                    int neighbor = maze.get(d,x,y);
+                    if( !maze.isSolid(neighbor) ) {
+                        continue;
+                    }
+                    // Generate a size for this direction
+                    walls.add(new Wall(x, y, d));
+                }
+            }
+        }
+ 
+        // Now build the buffers and mesh
+        int vertCount = walls.size() * 4 + floors.size() * 4;
+        int quadCount = walls.size() + floors.size();
+        
+        FloatBuffer pos = BufferUtils.createVector3Buffer(vertCount);
+        FloatBuffer normals = BufferUtils.createVector3Buffer(vertCount);
+        FloatBuffer texes = BufferUtils.createVector2Buffer(vertCount);
+        ShortBuffer indexes = BufferUtils.createShortBuffer(quadCount * 2 * 3);
+        
+        short[] indexArray = { 0, 1, 2, 0, 2, 3 };
+        short[] revIndexArray = { 0, 2, 1, 0, 3, 2 };
+        short baseIndex = 0;
+ 
+        // Add all of the floors first
+        for( Floor f : floors ) {
+            int vIndex = 0;
+            for( int i = 0; i < 4; i++ ) {
+                
+                float x = f.x * xScale + floorVerts[vIndex++] * xScale;
+                float y = 0 + floorVerts[vIndex++] * yScale;
+                float z = f.y * yScale + floorVerts[vIndex++] * xScale;
+ 
+                pos.put(x);
+                pos.put(y);
+                pos.put(z);
+                
+                normals.put(upNormal);
+            }
+
+            // See what's around us
+            boolean north = maze.isSolid(maze.get(0, f.x, f.y));
+            boolean south = maze.isSolid(maze.get(1, f.x, f.y));
+            boolean east = maze.isSolid(maze.get(2, f.x, f.y));
+            boolean west = maze.isSolid(maze.get(3, f.x, f.y));
+            
+            texes.put(west ? 0 : 0.5f).put(south ? 0 : 0.5f);                            
+            texes.put(east ? 1 : 0.5f).put(south ? 0 : 0.5f);                            
+            texes.put(east ? 1 : 0.5f).put(north ? 1 : 0.5f);                           
+            texes.put(west ? 0 : 0.5f).put(north ? 1 : 0.5f);
+ 
+            for( int i = 0; i < 6; i++ ) {              
+                indexes.put((short)(baseIndex + indexArray[i]));
+            }                        
+            baseIndex += 4; 
+        }
+        
+        for( Wall w : walls ) {
+            float[] vs = wallVerts[w.dir];
+            float[] ns = wallNorms[w.dir];
+            int vIndex = 0;
+            for( int i = 0; i < 4; i++ ) {
+                
+                float x = w.x * xScale + vs[vIndex++] * xScale;
+                float y = 0 + vs[vIndex++] * yScale;
+                float z = w.y * yScale + vs[vIndex++] * xScale;
+ 
+                pos.put(x);
+                pos.put(y);
+                pos.put(z);
+                
+                normals.put(ns);
+            }
+            
+            boolean north = maze.isSolid(maze.get(0, w.x, w.y));
+            boolean south = maze.isSolid(maze.get(1, w.x, w.y));
+            boolean east = maze.isSolid(maze.get(2, w.x, w.y));
+            boolean west = maze.isSolid(maze.get(3, w.x, w.y));
+            
+            boolean up = false;
+            boolean down = true;
+            boolean left = false;
+            boolean right = false;
+            
+            switch(w.dir) {
+                case 0:
+                    left = west;
+                    right = east;
+                    break; 
+                case 1:
+                    left = east;
+                    right = west;
+                    break;
+                case 2:
+                    left = north;
+                    right = south;
+                    break;
+                case 3:
+                    left = south;
+                    right = north;
+                    break;
+            }
+            
+            texes.put(left ? 0 : 0.5f).put(down ? 0 : 0.5f);                            
+            texes.put(right ? 1 : 0.5f).put(down ? 0 : 0.5f);                            
+            texes.put(right ? 1 : 0.5f).put(up ? 1 : 0.5f);                           
+            texes.put(left ? 0 : 0.5f).put(up ? 1 : 0.5f);
+ 
+            for( int i = 0; i < 6; i++ ) {              
+                indexes.put((short)(baseIndex + indexArray[i]));
+            }                        
+            baseIndex += 4;
+        }
+
+        Mesh result = new Mesh();
+        result.setBuffer(Type.Position, 3, pos);
+        result.setBuffer(Type.Normal, 3, normals);
+        result.setBuffer(Type.TexCoord, 2, texes); 
+        result.setBuffer(Type.Index, 3, indexes);
+        
+        result.updateBound();
+ 
+        return result;
+    }
     
     private static class Wall {
         int x;
