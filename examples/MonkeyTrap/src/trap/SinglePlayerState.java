@@ -95,7 +95,7 @@ public class SinglePlayerState extends BaseAppState
         Vector3f location = new Vector3f(maze.getXSeed() * 2, 0, maze.getYSeed() * 2);
         System.out.println( "Setting player to location:" + location );
         ed.setComponent(player, new Position(location));        
-        ed.setComponent(player, TrapModelFactory.TYPE_OGRE);        
+        ed.setComponent(player, TrapModelFactory.TYPE_MONKEY);        
  
         gameStates.add(new PlayerState(new SinglePlayerClient(ed, player, maze)));
  
@@ -104,7 +104,7 @@ public class SinglePlayerState extends BaseAppState
 
         // Use the maze seed as starting position
         ed.setComponent(test, new Position(location));        
-        ed.setComponent(test, TrapModelFactory.TYPE_MONKEY);        
+        ed.setComponent(test, TrapModelFactory.TYPE_OGRE);        
         
         // Attach them all
         AppStateManager stateMgr = app.getStateManager();

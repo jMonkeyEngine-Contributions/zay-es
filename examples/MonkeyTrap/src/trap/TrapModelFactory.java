@@ -37,6 +37,8 @@ package trap;
 import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.bounding.BoundingBox;
+import com.jme3.collision.Collidable;
+import com.jme3.collision.CollisionResults;
 import com.jme3.material.Material;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
@@ -61,21 +63,47 @@ public class TrapModelFactory implements ModelFactory
         this.state = state;
     }
 
+    protected Geometry createShadowBox( float xExtent, float yExtent, float zExtent ) {
+        Box box = new Box(xExtent, yExtent, zExtent);
+        Geometry shadowBox = new Geometry("shadowBounds", box) {
+                    @Override
+                    public int collideWith( Collidable other, CollisionResults results ) {
+                        return 0;
+                    }
+                };
+        shadowBox.move(0,yExtent,0);
+            
+        Material m = new Material(state.getApplication().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
+        m.setFloat("AlphaDiscardThreshold", 1.1f);  // Don't render it at all
+        shadowBox.setMaterial(m);        
+        shadowBox.setShadowMode( ShadowMode.Cast );
+        return shadowBox;
+    }
+
     public Spatial createModel(Entity e) {
 
         ModelType type = e.get(ModelType.class);
         
         if( TYPE_MONKEY.equals(type) ) {
-            Spatial monkey = state.getApplication().getAssetManager().loadModel( "Models/Jaime/Jaime.j3o" );
-            
+            Node monkey = (Node)state.getApplication().getAssetManager().loadModel( "Models/Jaime/Jaime.j3o" );
             AnimControl anim = monkey.getControl(AnimControl.class);
             AnimChannel channel = anim.createChannel();
             channel.setAnim("Idle");
  
             // The monkey's shadow box is strangley off center so we
-            // probably need to do something similar as what was done for Sinbad
-            monkey.setShadowMode( ShadowMode.Cast );
+            // adjust it... it's also wide because of the splayed arms
+            // and we can fix that too
+            BoundingBox bounds = (BoundingBox)monkey.getWorldBound();
+            monkey.attachChild(createShadowBox(bounds.getXExtent() * 0.7f, 
+                                                bounds.getYExtent(), 
+                                                bounds.getZExtent()));
+                                                                                                
             monkey.addControl(new InterpolationControl(MonkeyTrapConstants.MONKEY_SPEED));
+            
+            CharacterAnimControl cac = new CharacterAnimControl(anim);
+            cac.addMapping("Idle", "Idle", 1);
+            cac.addMapping("Walk", "Walk", 1.55f * (float)MonkeyTrapConstants.MONKEY_SPEED); 
+            monkey.addControl(cac);
             return monkey;
         } else if( TYPE_OGRE.equals(type) ) {
             Spatial ogre = state.getApplication().getAssetManager().loadModel( "Models/Sinbad/Sinbad.mesh.j3o" );
@@ -99,18 +127,32 @@ public class TrapModelFactory implements ModelFactory
             // Because Sinbad is made up of lots of objects and the 
             // zExtent is fairly thin, his shadow looks strange so we
             // will tweak it.
-            Box box = new Box(bounds.getXExtent(), bounds.getYExtent(), bounds.getZExtent() * 1.5f);
-            Geometry shadowBox = new Geometry("shadowBounds", box);
+            /*Box box = new Box(bounds.getXExtent(), bounds.getYExtent(), bounds.getZExtent() * 1.5f);
+            Geometry shadowBox = new Geometry("shadowBounds", box) {
+                        @Override
+                        public int collideWith( Collidable other, CollisionResults results ) {
+                            return 0;
+                        }
+                    };
             shadowBox.move(0,bounds.getYExtent(),0);
             
             Material m = new Material(state.getApplication().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
             m.setFloat("AlphaDiscardThreshold", 1.1f);
             shadowBox.setMaterial(m);
-            shadowBox.setShadowMode( ShadowMode.Cast );
-            wrapper.attachChild(shadowBox);
+            shadowBox.setShadowMode( ShadowMode.Cast );*/
+            wrapper.attachChild(createShadowBox(bounds.getXExtent(), 
+                                                bounds.getYExtent(), 
+                                                bounds.getZExtent() * 1.5f));
             
             //wrapper.setShadowMode( ShadowMode.Cast );
-            wrapper.addControl(new InterpolationControl(MonkeyTrapConstants.OGRE_SPEED));            
+            wrapper.addControl(new InterpolationControl(MonkeyTrapConstants.OGRE_SPEED));
+                        
+            CharacterAnimControl cac = new CharacterAnimControl(anim);
+            cac.addMapping("Idle", "IdleTop", 1);
+            cac.addMapping("Idle", "IdleBase", 1);
+            cac.addMapping("Walk", "RunTop", 0.2f * (float)MonkeyTrapConstants.OGRE_SPEED);
+            cac.addMapping("Walk", "RunBase", 0.2f * (float)MonkeyTrapConstants.OGRE_SPEED);
+            wrapper.addControl(cac);
             return wrapper;         
         } 
         

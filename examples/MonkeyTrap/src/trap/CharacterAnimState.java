@@ -93,63 +93,15 @@ public class CharacterAnimState extends BaseAppState {
     protected void updateModelSpatial( Entity e, Spatial s ) {
         // Cheat for a second
         InterpolationControl ic = s.getControl(InterpolationControl.class);
-        if( ic == null )
+        CharacterAnimControl cac = s.getControl(CharacterAnimControl.class); 
+        if( ic == null || cac == null )
             return;
- 
-        ModelType type = e.get(ModelType.class);
-        if( TrapModelFactory.TYPE_MONKEY.equals(type) ) {       
-            AnimControl anim = s.getControl(AnimControl.class);
-            AnimChannel channel = anim.getChannel(0);
-            if( ic.getStep() < 1.0 ) {
-                // Walk
-                if( !"Walk".equals(channel.getAnimationName()) ) {
-                    channel.setAnim("Walk");
-                    channel.setSpeed(1.55f * (float)MonkeyTrapConstants.MONKEY_SPEED);
-                    //channel.setSpeed(1.25f * (float)MonkeyTrapConstants.MONKEY_SPEED);
-                    walking.put(s, e);
-                }                
-                /*if( !"Run".equals(channel.getAnimationName()) ) {
-                    channel.setAnim("Run");
-                    channel.setSpeed(0.75f * (float)MonkeyTrapConstants.MONKEY_SPEED);
-                    walking.add(s);
-                }*/                
-            } else {
-                // Stand
-                if( !"Idle".equals(channel.getAnimationName()) ) {
-                    channel.setAnim("Idle");
-                    channel.setSpeed(1);
-                    walking.remove(s);
-                }                
-            }
-        } else if( TrapModelFactory.TYPE_OGRE.equals(type) ) {
-            AnimControl anim = ((Node)s).getChild(0).getControl(AnimControl.class);
-            AnimChannel channel1 = anim.getChannel(0);
-            AnimChannel channel2 = anim.getChannel(1);
-            if( ic.getStep() < 1.0 ) {
-                // Walk
-                if( !"RunBase".equals(channel1.getAnimationName()) ) {
-                    channel1.setAnim("RunBase");
-                    channel1.setSpeed(0.2f * (float)MonkeyTrapConstants.OGRE_SPEED);
-                    channel2.setAnim("RunTop");
-                    channel2.setSpeed(0.2f * (float)MonkeyTrapConstants.OGRE_SPEED);
-                    walking.put(s, e);
-                }                
-                /*if( !"Run".equals(channel.getAnimationName()) ) {
-                    channel.setAnim("Run");
-                    channel.setSpeed(0.75f * (float)MonkeyTrapConstants.MONKEY_SPEED);
-                    walking.add(s);
-                }*/                
-            } else {
-                // Stand
-                if( !"IdleBase".equals(channel1.getAnimationName()) ) {
-                    channel1.setAnim("IdleBase");
-                    channel1.setSpeed(1);
-                    channel2.setAnim("IdleTop");
-                    channel2.setSpeed(1);
-                    walking.remove(s);
-                }                
-            }
-        }             
+            
+        // Until we have different actions to watch for, this is
+        // all we'll do.
+        if( ic.getStep() < 1.0 ) {
+            cac.setAnimation( "Walk", ic.getTimeRemaining() );
+        }            
     }
 
     protected void updateModels( Set<Entity> set ) {

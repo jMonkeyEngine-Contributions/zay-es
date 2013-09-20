@@ -88,6 +88,10 @@ public class InterpolationControl extends AbstractControl {
         return step;
     }
 
+    public double getTimeRemaining() {
+        return (1.0 - step) / tpfScale;
+    }
+
     @Override
     protected void controlUpdate( float tpf ) {
         if( step < 1.0 ) {
