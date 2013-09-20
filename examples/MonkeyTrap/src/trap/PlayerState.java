@@ -111,6 +111,13 @@ public class PlayerState extends BaseAppState
             //loc.addLocal(0, 7, 7);
             loc.addLocal(cameraDelta);
             cam.setLocation(loc);
+        }
+        
+        Position pos = ed.getComponent(player, Position.class);
+        if( pos != null ) {
+            Vector3f loc = pos.getLocation();
+//System.out.println( "Player locatio            
+            getState(MazeState.class).setVisited( (int)loc.x / 2, (int)loc.z / 2 );
         }       
     }
 

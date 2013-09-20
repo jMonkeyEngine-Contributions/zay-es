@@ -44,9 +44,15 @@ import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
+import com.jme3.texture.Image;
+import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture;
+import com.jme3.texture.Texture2D;
+import com.jme3.texture.image.ImageRaster;
+import com.jme3.util.BufferUtils;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.event.BaseAppState;
+import java.nio.ByteBuffer;
 
 
 /**
@@ -59,12 +65,20 @@ public class MazeState extends BaseAppState {
     private Node mazeRoot;
     private Maze maze;
 
+    private ImageRaster fogOfWar;
+    
+    private ColorRGBA visited = new ColorRGBA(0,0,0,0);
+
     public MazeState( Maze maze ) {
         this.maze = maze;
     }
     
     public Maze getMaze() {
         return maze;
+    }
+
+    public void setVisited( int x, int y ) {
+        fogOfWar.setPixel(x,y,visited);
     }
 
     protected void generateMazeGeometry() {
@@ -78,7 +92,7 @@ public class MazeState extends BaseAppState {
         Texture tex = globals.loadTexture("Textures/trap-atlas.png", true, true );
         Material mat = globals.createMaterial(tex, true).getMaterial();
         mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
-        mat.setFloat("AlphaDiscardThreshold", 0.1f);
+        mat.setFloat("AlphaDiscardThreshold", 0.9f);
         geom.setMaterial(mat);
         geom.move(-mazeScale * 0.5f, 0, -mazeScale * 0.5f);
 
@@ -97,7 +111,29 @@ public class MazeState extends BaseAppState {
         geom.setQueueBucket(Bucket.Transparent);
 
         mazeRoot.attachChild(geom);
-         
+ 
+        // Create the overlay texture we will use for "fog of war"
+        int dataSize = maze.getWidth() * maze.getHeight() * 4; 
+        ByteBuffer data = BufferUtils.createByteBuffer(dataSize);
+        Image img = new Image(Format.ABGR8, maze.getWidth(), maze.getHeight(), data);
+        fogOfWar = ImageRaster.create(img);
+        tex = new Texture2D(img);
+        for( int i = 0; i < maze.getWidth(); i++ ) {
+            for( int j = 0; j < maze.getHeight(); j++ ) {
+                fogOfWar.setPixel(i, j, ColorRGBA.Black);
+            }
+        }
+ 
+        Mesh overlayMesh = MeshGenerator.generateOverlay( maze, mazeScale, mazeScale );
+        geom = new Geometry("overlay", overlayMesh);
+        mat = globals.createMaterial(tex, false).getMaterial();
+        mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+        mat.getAdditionalRenderState().setDepthFunc(TestFunction.Equal);
+        geom.setMaterial(mat);
+        geom.move(-mazeScale * 0.5f, 0, -mazeScale * 0.5f);
+        geom.setQueueBucket(Bucket.Transparent);
+        mazeRoot.attachChild(geom);
+                
     }
 
     @Override
