@@ -84,6 +84,10 @@ public class InterpolationControl extends AbstractControl {
         end.set(target);         
     }
 
+    public double getStep() {
+        return step;
+    }
+
     @Override
     protected void controlUpdate( float tpf ) {
         if( step < 1.0 ) {

@@ -41,6 +41,7 @@ import com.jme3.renderer.RenderManager;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.input.InputMapper;
 import com.simsilica.lemur.style.Styles;
+import trap.filter.PostProcessingState;
 
 /**
  *  Application entry point.  Sets up the game app states and
@@ -60,6 +61,7 @@ public class Main extends SimpleApplication {
         super( new MusicState(),
                new StatsAppState(),
                new ScreenshotAppState("", System.currentTimeMillis()),
+               new PostProcessingState(),
                new MainMenuState() );
     }
 

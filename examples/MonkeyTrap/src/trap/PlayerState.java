@@ -63,6 +63,7 @@ public class PlayerState extends BaseAppState
     private Spatial monkey;
     private Quaternion cameraAngle;
     private Vector3f cameraDelta;
+    private float cameraDistance = 12;
  
     public PlayerState( GameClient client ) {
         this.client = client;
@@ -83,7 +84,7 @@ public class PlayerState extends BaseAppState
  
         cameraAngle = new Quaternion().fromAngles(FastMath.QUARTER_PI * 1.3f, FastMath.PI, 0);
         cameraDelta = cameraAngle.mult(Vector3f.UNIT_Z);
-        cameraDelta.multLocal(-12);
+        cameraDelta.multLocal(-cameraDistance);
         
         // Back it up a little so the framing is more even
         cameraDelta.addLocal(0, -1, 0);                

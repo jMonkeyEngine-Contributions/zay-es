@@ -34,6 +34,7 @@
 
 package trap;
 
+import com.jme3.math.Vector3f;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
 
@@ -49,11 +50,14 @@ public class SinglePlayerClient implements GameClient
     private long frameDelay = 100 * 1000000L; // 100 ms 
 
     private Direction currentDir = Direction.South;
-    private long nextMove = 0;    
+    private long nextMove = 0;
+    
+    private Maze maze;    
 
-    public SinglePlayerClient( EntityData ed, EntityId player ) {
+    public SinglePlayerClient( EntityData ed, EntityId player, Maze maze ) {
         this.ed = ed;
         this.player = player;
+        this.maze = maze;
     }
    
     public long getGameTime() {
@@ -80,11 +84,20 @@ public class SinglePlayerClient implements GameClient
  
         if( dir == currentDir ) {       
             Position current = ed.getComponent(player, Position.class);
-            Position next = new Position(dir.forward(current.getLocation(), 2),
-                                        dir.getFacing());
+            Vector3f loc = current.getLocation();
+            int x = (int)(loc.x / 2);
+            int y = (int)(loc.z / 2);
+            int value = maze.get(dir, x, y);
+            if( maze.isSolid(value) )
+                return;
+            
+            Position next = new Position(dir.forward(loc, 2),
+                                         dir.getFacing());
             ed.setComponent(player, next);
-        
-            nextMove = time + 500 * 1000000L;
+ 
+            double distance = 2.0;       
+            long actionTimeMs = (long)(distance/MonkeyTrapConstants.MONKEY_SPEED * 1000.0);
+            nextMove = time + actionTimeMs * 1000000L;
         } else {
             // Change the dir first... but that's quicker
             currentDir = dir;

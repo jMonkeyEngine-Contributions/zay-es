@@ -98,6 +98,10 @@ public class Maze
         return cells[x][y];
     }
 
+    public final int get( Direction dir, int x, int y ) {
+        return get(dir.ordinal(), x, y);
+    }
+
     public final int get( int dir, int x, int y ) {
         x += dirs[dir][0];
         y += dirs[dir][1];

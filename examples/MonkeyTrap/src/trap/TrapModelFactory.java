@@ -37,8 +37,12 @@ package trap;
 import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.bounding.BoundingBox;
+import com.jme3.material.Material;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Box;
 import com.simsilica.es.Entity;
 
 
@@ -64,29 +68,49 @@ public class TrapModelFactory implements ModelFactory
         if( TYPE_MONKEY.equals(type) ) {
             Spatial monkey = state.getApplication().getAssetManager().loadModel( "Models/Jaime/Jaime.j3o" );
             
-            monkey.addControl(new InterpolationControl(MonkeyTrapConstants.MONKEY_SPEED));
             AnimControl anim = monkey.getControl(AnimControl.class);
             AnimChannel channel = anim.createChannel();
             channel.setAnim("Idle");
+ 
+            // The monkey's shadow box is strangley off center so we
+            // probably need to do something similar as what was done for Sinbad
+            monkey.setShadowMode( ShadowMode.Cast );
+            monkey.addControl(new InterpolationControl(MonkeyTrapConstants.MONKEY_SPEED));
             return monkey;
         } else if( TYPE_OGRE.equals(type) ) {
             Spatial ogre = state.getApplication().getAssetManager().loadModel( "Models/Sinbad/Sinbad.mesh.j3o" );
-            
-            ogre.addControl(new InterpolationControl(MonkeyTrapConstants.OGRE_SPEED));
             
             // Normalize the ogre to be 1.8 meters tall
             BoundingBox bounds = (BoundingBox)ogre.getWorldBound();                 
             ogre.setLocalScale( 1.8f / (bounds.getYExtent() * 2) );
             bounds = (BoundingBox)ogre.getWorldBound();
             ogre.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
-            
+ 
             AnimControl anim = ogre.getControl(AnimControl.class);
             AnimChannel channel = anim.createChannel();
             channel.setAnim("IdleTop");
+            channel = anim.createChannel();
+            channel.setAnim("IdleBase");
             
             // Wrap it in a node to keep its local translation adjustment
             Node wrapper = new Node("Ogre");
             wrapper.attachChild(ogre);
+ 
+            // Because Sinbad is made up of lots of objects and the 
+            // zExtent is fairly thin, his shadow looks strange so we
+            // will tweak it.
+            Box box = new Box(bounds.getXExtent(), bounds.getYExtent(), bounds.getZExtent() * 1.5f);
+            Geometry shadowBox = new Geometry("shadowBounds", box);
+            shadowBox.move(0,bounds.getYExtent(),0);
+            
+            Material m = new Material(state.getApplication().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
+            m.setFloat("AlphaDiscardThreshold", 1.1f);
+            shadowBox.setMaterial(m);
+            shadowBox.setShadowMode( ShadowMode.Cast );
+            wrapper.attachChild(shadowBox);
+            
+            //wrapper.setShadowMode( ShadowMode.Cast );
+            wrapper.addControl(new InterpolationControl(MonkeyTrapConstants.OGRE_SPEED));            
             return wrapper;         
         } 
         
