@@ -63,7 +63,12 @@ public class PlayerState extends BaseAppState
     private Spatial monkey;
     private Quaternion cameraAngle;
     private Vector3f cameraDelta;
-    private float cameraDistance = 12;
+    private float cameraDistance = 20; //12;
+ 
+    // Here for the moment
+    private SensorArea sensor;
+    private int xLast = -1;
+    private int yLast = -1;
  
     public PlayerState( GameClient client ) {
         this.client = client;
@@ -87,7 +92,9 @@ public class PlayerState extends BaseAppState
         cameraDelta.multLocal(-cameraDistance);
         
         // Back it up a little so the framing is more even
-        cameraDelta.addLocal(0, -1, 0);                
+        cameraDelta.addLocal(0, -1, 0);
+        
+        sensor = new SensorArea(getState(MazeState.class).getMaze(), 4);                
     }
 
     @Override
@@ -117,7 +124,25 @@ public class PlayerState extends BaseAppState
         if( pos != null ) {
             Vector3f loc = pos.getLocation();
 //System.out.println( "Player locatio            
-            getState(MazeState.class).setVisited( (int)loc.x / 2, (int)loc.z / 2 );
+            int x = (int)loc.x / 2; 
+            int y = (int)loc.z / 2;
+            
+            if( x != xLast || y != yLast ) {
+                xLast = x;
+                yLast = y;
+                sensor.setCenter(x, y);
+ 
+                getState(MazeState.class).clearVisibility(MazeState.PLAYER_VISIBLE);
+                getState(MazeState.class).setVisibility(sensor, MazeState.PLAYER_VISIBLE | MazeState.PLAYER_VISITED); 
+                /*for( int i = x - 4; i <= x + 4; i++ ) {
+                    for( int j = y - 4; j <= y + 4; j++ ) {
+                        if( sensor.isVisible(i,j) ) {
+                            getState(MazeState.class).setVisited(i,j);
+                        }
+                    }
+                }*/
+            }            
+            //getState(MazeState.class).setVisited( x, y );
         }       
     }
 

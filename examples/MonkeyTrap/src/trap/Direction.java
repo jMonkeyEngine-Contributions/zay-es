@@ -60,6 +60,14 @@ public enum Direction
         this.facing = facing;
     }
  
+    public int getXDelta() {
+        return xDelta;
+    }
+    
+    public int getYDelta() {
+        return yDelta;
+    }
+ 
     public Quaternion getFacing() {
         return facing;  
     }

@@ -62,15 +62,40 @@ import java.nio.ByteBuffer;
  */
 public class MazeState extends BaseAppState {
 
+    public static final int PLAYER_VISITED = 0x1;
+    public static final int PLAYER_VISIBLE = 0x2;
+
     private Node mazeRoot;
     private Maze maze;
 
-    private ImageRaster fogOfWar;
+    private int xSize;
+    private int ySize;
+    private int[][] fogState;
     
-    private ColorRGBA visited = new ColorRGBA(0,0,0,0);
+    private ColorRGBA[][] fogColors;
+    private ColorRGBA[][] lastFogColors;
+    private ImageRaster fogOfWar;    
+    private float fogMixLevel = 1f;
+    
+    private ColorRGBA visited = new ColorRGBA(0,0,0,0.75f);
+    private ColorRGBA playerVisible = new ColorRGBA(0,0,0,0);
+
+    private ColorRGBA[] stateColors = {
+                ColorRGBA.Black,  // no bits
+                visited,          // just visited
+                playerVisible,    // just visible
+                playerVisible     // visible and visited
+            };
+
+    private boolean dirty = true;
 
     public MazeState( Maze maze ) {
         this.maze = maze;
+        this.xSize = maze.getWidth();
+        this.ySize = maze.getHeight();
+        this.fogState = new int[xSize][ySize];
+        this.fogColors = new ColorRGBA[xSize][ySize]; 
+        this.lastFogColors = new ColorRGBA[xSize][ySize]; 
     }
     
     public Maze getMaze() {
@@ -78,7 +103,63 @@ public class MazeState extends BaseAppState {
     }
 
     public void setVisited( int x, int y ) {
-        fogOfWar.setPixel(x,y,visited);
+        fogState[x][y] |= PLAYER_VISITED;
+    }
+
+    public void clearVisibility( int bits ) {
+        int inverted = ~bits;
+        for( int i = 0; i < xSize; i++ ) {
+            for( int j = 0; j < ySize; j++ ) {
+                fogState[i][j] = fogState[i][j] & inverted;               
+            } 
+        }
+        dirty = true; 
+    }
+
+    public void setVisibility( SensorArea area, int bits ) {
+        for( int i = 0; i < xSize; i++ ) {
+            for( int j = 0; j < ySize; j++ ) {
+                if( area.isVisible(i, j) ) {
+                    fogState[i][j] = fogState[i][j] | bits;
+                }               
+            } 
+        }
+        dirty = true;         
+    } 
+
+    private void remix() {
+        ColorRGBA mix = new ColorRGBA();
+        
+        for( int i = 0; i < xSize; i++ ) {
+            for( int j = 0; j < ySize; j++ ) {
+                ColorRGBA color = fogColors[i][j];
+                if( fogMixLevel < 1 ) {
+                    ColorRGBA last = lastFogColors[i][j];
+                    if( last != null ) {
+                        mix.interpolate(last, color, fogMixLevel);
+                        color = mix;
+                    }
+                }
+                fogOfWar.setPixel(i, j, color);  
+            }
+        }
+    }
+
+    protected void refresh() {
+        dirty = false;
+
+        ColorRGBA[][] temp = lastFogColors;
+        lastFogColors = fogColors;
+        fogColors = temp;
+        
+        for( int i = 0; i < xSize; i++ ) {
+            for( int j = 0; j < ySize; j++ ) {
+                int value = fogState[i][j];
+                fogColors[i][j] = stateColors[value];  
+            }
+        }
+        
+        fogMixLevel = 0;        
     }
 
     protected void generateMazeGeometry() {
@@ -118,11 +199,6 @@ public class MazeState extends BaseAppState {
         Image img = new Image(Format.ABGR8, maze.getWidth(), maze.getHeight(), data);
         fogOfWar = ImageRaster.create(img);
         tex = new Texture2D(img);
-        for( int i = 0; i < maze.getWidth(); i++ ) {
-            for( int j = 0; j < maze.getHeight(); j++ ) {
-                fogOfWar.setPixel(i, j, ColorRGBA.Black);
-            }
-        }
  
         Mesh overlayMesh = MeshGenerator.generateOverlay( maze, mazeScale, mazeScale );
         geom = new Geometry("overlay", overlayMesh);
@@ -133,7 +209,6 @@ public class MazeState extends BaseAppState {
         geom.move(-mazeScale * 0.5f, 0, -mazeScale * 0.5f);
         geom.setQueueBucket(Bucket.Transparent);
         mazeRoot.attachChild(geom);
-                
     }
 
     @Override
@@ -144,6 +219,22 @@ public class MazeState extends BaseAppState {
 
     @Override
     protected void cleanup( Application app ) {
+    }
+
+    @Override
+    public void update( float tpf ) {
+        if( dirty ) {
+            refresh();
+        }
+       
+        if( fogMixLevel < 1 ) {
+            // Mix at the rate we travel... so that it looks
+            // the coolest while we are walking.
+            float rate = (float)(MonkeyTrapConstants.MONKEY_SPEED / 2f);
+            fogMixLevel += tpf * rate; //4; //0.1f;
+            fogMixLevel = Math.min(fogMixLevel, 1);
+            remix();
+        }
     }
 
     @Override

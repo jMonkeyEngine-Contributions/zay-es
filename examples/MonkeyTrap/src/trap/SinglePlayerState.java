@@ -78,7 +78,10 @@ public class SinglePlayerState extends BaseAppState
     protected void initialize(Application app) {
         EntityData ed = new DefaultEntityData();
         Maze maze = new Maze(48, 48);
-        maze.setSeed(System.currentTimeMillis());
+        //long seed = 1379736430682L; 
+        long seed = System.currentTimeMillis();
+System.out.println( "Using seed:" + seed );         
+        maze.setSeed(seed);
         maze.generate();
 
         gameStates.add(new EntityDataState(ed));
