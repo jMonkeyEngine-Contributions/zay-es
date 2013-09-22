@@ -92,7 +92,6 @@ public class MazeService implements Service {
             for( int xTest = x - radius; xTest <= x + radius; xTest++ ) {
                 for( int yTest = y - radius; yTest <= y + radius; yTest++ ) {
                     t = maze.get(xTest, yTest);
-                    checks++;
                     if( !maze.isSolid(t) && !isOccupied(xTest, yTest) ) {
                         return new Vector3f(xTest, 0, yTest);
                     }
