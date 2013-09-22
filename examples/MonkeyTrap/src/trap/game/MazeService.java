@@ -86,8 +86,6 @@ public class MazeService implements Service {
         if( !maze.isSolid(t) && !isOccupied(x,y) )
             return new Vector3f(x, 0, y);
  
-System.out.println( "Hit wall... trying an expanding search..." );
-int checks = 0;        
         // Else we need to find one... basically, we will
         // walk out in all directions until we find one.
         for( int radius = 1; radius < xSize; radius++ ) {
@@ -96,13 +94,12 @@ int checks = 0;
                     t = maze.get(xTest, yTest);
                     checks++;
                     if( !maze.isSolid(t) && !isOccupied(xTest, yTest) ) {
-System.out.println( "Found in " + checks + " checks." );
                         return new Vector3f(xTest, 0, yTest);
                     }
                 } 
             } 
         }
-System.out.println( "Error... did not find valid spawn location." );        
+        
         // And still we fail somehow return the seed
         return new Vector3f(maze.getXSeed(), 0, maze.getYSeed());                    
     }
