@@ -34,64 +34,45 @@
 
 package trap;
 
-import com.jme3.math.Quaternion;
-import com.jme3.math.Vector3f;
 import com.simsilica.es.EntityComponent;
 
 
 /**
- *  Represents a position and orientation of an entity
- *  starting at a specific point in time.  
+ *  Represents an activity that a MOB or player is actively
+ *  engaged in over a period of time.  During this time, no
+ *  other activities can be performed.
  *
  *  @author    Paul Speed
  */
-public class Position implements EntityComponent {
-    private Vector3f location;
-    private Quaternion facing;
+public class Activity implements EntityComponent {
+
+    public static final byte WALKING = 1;
+    public static final byte TURNING = 2;
+
+    private byte type;  
     private long startTime;
     private long endTime;
-
-    public Position( Vector3f location, long startTime, long endTime ) {
-        this(location, new Quaternion(), startTime, endTime);
-    }
-
-    public Position( Vector3f location, Direction facing, long startTime, long endTime ) {
-        this(location, facing.getFacing(), startTime, endTime);
-    }
     
-    public Position( Vector3f location, Quaternion facing, long startTime, long endTime ) {
-        this.location = location;
-        this.facing = facing;
+    public Activity( byte type, long startTime, long endTime ) {
+        this.type = type;
         this.startTime = startTime;
         this.endTime = endTime;
     }
-
-    public Position newDirection( Direction dir, long startTime, long endTime ) {
-        return new Position(location, dir, startTime, endTime);
+    
+    public byte getType() {
+        return type;
     }
-
-    public Position newLocation( Vector3f location, long startTime, long endTime ) {
-        return new Position(location, facing, startTime, endTime);
-    }
-
-    public long getTime() {
-        return endTime;
-    }
-
-    public long getChangeTime() {
+    
+    public long getStartTime() {
         return startTime;
     }
-
-    public Vector3f getLocation() {
-        return location;
+    
+    public long getEndTime() {
+        return endTime;
     }
-
-    public Quaternion getFacing() {
-        return facing;
-    }
-
+    
     @Override
     public String toString() {
-        return "Position[" + location + ", " + facing + ", at:" + endTime + "]";
+        return "Activity[" + type + ", from:" + startTime + ", to:" + endTime + "]";
     }
 }

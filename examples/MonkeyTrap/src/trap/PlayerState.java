@@ -39,7 +39,7 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
-import com.jme3.scene.Spatial;
+import com.jme3.scene.Node;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
 import com.simsilica.lemur.GuiGlobals;
@@ -60,7 +60,8 @@ public class PlayerState extends BaseAppState
     private EntityData ed;
     private EntityId player;
     
-    private Spatial monkey;
+    private Node interpNode;
+    private Position lastPos;
     private Quaternion cameraAngle;
     private Vector3f cameraDelta;
     private float cameraDistance = 20; //12;
@@ -72,6 +73,10 @@ public class PlayerState extends BaseAppState
  
     public PlayerState( GameClient client ) {
         this.client = client;
+    }
+
+    public GameClient getClient() {
+        return client;
     }
 
     @Override
@@ -107,23 +112,34 @@ public class PlayerState extends BaseAppState
                                          PlayerFunctions.F_WEST);
     }
 
+
     @Override
     public void update( float tpf ) {
         Camera cam = getApplication().getCamera();
+     
+        Position pos = ed.getComponent(player, Position.class);
+
+        if( interpNode != null ) {
  
-        // Set the camera relative to the monkey
-        if( monkey != null ) {
+            if( pos != lastPos ) {
+                lastPos = pos;
+                if( pos != null ) {
+                    interpNode.getControl(InterpolationControl.class).setTarget(pos.getLocation(), pos.getChangeTime(), pos.getTime());
+                }
+            }
+            
+            // Make sure it is up to date
+            interpNode.updateLogicalState(tpf);
+        
             Vector3f loc = cam.getLocation();
-            loc.set(monkey.getLocalTranslation());
-            //loc.addLocal(0, 7, 7);
+            loc.set(interpNode.getLocalTranslation());
             loc.addLocal(cameraDelta);
             cam.setLocation(loc);
-        }
+        }                
         
-        Position pos = ed.getComponent(player, Position.class);
-        if( pos != null ) {
+        if( pos != null ) {        
             Vector3f loc = pos.getLocation();
-//System.out.println( "Player locatio            
+            
             int x = (int)loc.x / 2; 
             int y = (int)loc.z / 2;
             
@@ -134,15 +150,7 @@ public class PlayerState extends BaseAppState
  
                 getState(MazeState.class).clearVisibility(MazeState.PLAYER_VISIBLE);
                 getState(MazeState.class).setVisibility(sensor, MazeState.PLAYER_VISIBLE | MazeState.PLAYER_VISITED); 
-                /*for( int i = x - 4; i <= x + 4; i++ ) {
-                    for( int j = y - 4; j <= y + 4; j++ ) {
-                        if( sensor.isVisible(i,j) ) {
-                            getState(MazeState.class).setVisited(i,j);
-                        }
-                    }
-                }*/
             }            
-            //getState(MazeState.class).setVisited( x, y );
         }       
     }
 
@@ -151,8 +159,14 @@ public class PlayerState extends BaseAppState
         InputMapper inputMapper = GuiGlobals.getInstance().getInputMapper();    
         inputMapper.activateGroup(PlayerFunctions.GROUP);
         
-        // Grab our monkey
-        monkey = getState(ModelState.class).getSpatial(player);
+        // Create a node that we will use for interpolation... this
+        // way we get to reuse the interpolation control.
+        interpNode = new Node("interp");
+        Position pos = ed.getComponent(player, Position.class);
+        if( pos != null ) {
+            interpNode.setLocalTranslation(pos.getLocation().mult(2));
+        }
+        interpNode.addControl(new InterpolationControl(client.getRenderTimeProvider()));
  
         Camera cam = getApplication().getCamera();       
         cam.setRotation(cameraAngle);

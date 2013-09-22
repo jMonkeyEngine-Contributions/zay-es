@@ -48,6 +48,7 @@ public class SinglePlayerClient implements GameClient
     private EntityData ed;
     private EntityId player;
     private long frameDelay = 100 * 1000000L; // 100 ms 
+    private long renderTime;
 
     private Direction currentDir = Direction.South;
     private long nextMove = 0;
@@ -59,13 +60,25 @@ public class SinglePlayerClient implements GameClient
         this.player = player;
         this.maze = maze;
     }
-   
-    public long getGameTime() {
+    
+    public final long getGameTime() {
         return System.nanoTime();
     }
    
-    public long getRenderTime() {
-        return System.nanoTime() - frameDelay;
+    public final long getRenderTime() {
+        return renderTime; //System.nanoTime() - frameDelay;
+    }
+ 
+    public void updateFrameTime() {
+        renderTime = System.nanoTime() - frameDelay;
+    }
+    
+    public TimeProvider getRenderTimeProvider() {
+        return new TimeProvider() {
+                public final long getTime() {
+                    return getRenderTime();
+                }
+            };
     }
     
     public EntityData getEntityData() {
@@ -90,21 +103,30 @@ public class SinglePlayerClient implements GameClient
             int value = maze.get(dir, x, y);
             if( maze.isSolid(value) )
                 return;
-            
-            Position next = new Position(dir.forward(loc, 2),
-                                         dir.getFacing());
-            ed.setComponent(player, next);
- 
+                
             double distance = 2.0;       
             long actionTimeMs = (long)(distance/MonkeyTrapConstants.MONKEY_SPEED * 1000.0);
-            nextMove = time + actionTimeMs * 1000000L;
+            long actionTimeNanos = actionTimeMs * 1000000;
+            
+            Position next = new Position(dir.forward(loc, 2),
+                                         dir.getFacing(),
+                                         time,
+                                         time + actionTimeNanos);
+            Activity act = new Activity(Activity.WALKING, time, time + actionTimeNanos);                                           
+            ed.setComponents(player, next, act);
+            nextMove = time + actionTimeNanos;// * 1000000L;
         } else {
             // Change the dir first... but that's quicker
             currentDir = dir;
             Position current = ed.getComponent(player, Position.class);
-            Position next = new Position(current.getLocation(), dir.getFacing());
-            ed.setComponent(player, next);
-            nextMove = time + 100 * 1000000L;             
+            
+            long actionTimeMs = 100;  // 100 ms 
+            long actionTimeNanos = actionTimeMs * 1000000;
+            
+            Position next = new Position(current.getLocation(), dir.getFacing(), time, time + actionTimeNanos);
+            Activity act = new Activity(Activity.TURNING, time, time + actionTimeNanos);                                           
+            ed.setComponents(player, next, act);
+            nextMove = time + actionTimeNanos;// * 1000000L;             
         }       
     }
 }

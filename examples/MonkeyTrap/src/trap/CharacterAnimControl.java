@@ -53,13 +53,15 @@ import com.jme3.scene.control.AbstractControl;
  */
 public class CharacterAnimControl extends AbstractControl {
 
+    private TimeProvider time;
     private AnimControl anim;
     private Map<String, List<Mapping>> mappings = new HashMap<String, List<Mapping>>();
     private String defaultAnimation = "Idle";
     private String animation;
-    private double timeLeft;
+    private AnimationTime current;
     
-    public CharacterAnimControl( AnimControl anim ) {
+    public CharacterAnimControl( TimeProvider time, AnimControl anim ) {
+        this.time = time;
         this.anim = anim;
     }
 
@@ -76,14 +78,9 @@ public class CharacterAnimControl extends AbstractControl {
         return result;
     }
 
-    public void setAnimation( String name, double duration ) {
-        timeLeft = duration;
-        if( Objects.equals(animation, name) ) {
-            return;
-        }
-        
-        // Else it's a new animation
-        play(name);
+    //public void setAnimation( String name, double duration ) {
+    public void setAnimation( String name, long startTime, long endTime ) {
+        this.current = new AnimationTime(name, startTime, endTime);
     }
     
     protected void play( String name ) {
@@ -106,10 +103,13 @@ public class CharacterAnimControl extends AbstractControl {
 
     @Override
     protected void controlUpdate( float tpf ) {
-        if( timeLeft > 0 ) {
-            timeLeft -= tpf;
-            if( timeLeft <= 0 ) {
-                play(defaultAnimation);
+        if( current != null ) {
+            long now = time.getTime();
+            if( now > current.endTime ) {
+                current = null;
+                play(defaultAnimation);    
+            } else if( now >= current.startTime && !Objects.equals(animation, current.animation) ) {
+                play(current.animation);
             }
         }
     }
@@ -126,6 +126,23 @@ public class CharacterAnimControl extends AbstractControl {
             this.animation = animation;
             this.speed = speed;
         }   
+    }
+    
+    private class AnimationTime {
+        String animation;
+        long startTime;
+        long endTime;
+        
+        public AnimationTime( String animation, long startTime, long endTime ) {
+            this.animation = animation;
+            this.startTime = startTime;
+            this.endTime = endTime;
+        }
+        
+        @Override
+        public String toString() {
+            return "AnimationTime[" + animation + ", " + startTime + ", " + endTime + "]";
+        }
     }
 }
 

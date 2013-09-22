@@ -47,6 +47,8 @@ public interface GameClient
     public long getGameTime();
     public long getRenderTime();
     
+    public TimeProvider getRenderTimeProvider();
+    
     public EntityId getPlayer();
     public EntityData getEntityData();
     

@@ -117,7 +117,7 @@ public class ModelState extends BaseAppState {
         Position p = e.get(Position.class);
         InterpolationControl ic = s.getControl(InterpolationControl.class);
         if( ic != null ) {
-            ic.setTarget(p.getLocation());
+            ic.setTarget(p.getLocation(), p.getChangeTime(), p.getTime());
         } else {        
             s.setLocalTranslation(p.getLocation());
         }

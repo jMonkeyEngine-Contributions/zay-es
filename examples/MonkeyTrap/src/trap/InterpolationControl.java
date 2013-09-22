@@ -36,6 +36,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.control.AbstractControl;
+import java.util.LinkedList;
 
 
 /**
@@ -45,68 +46,107 @@ import com.jme3.scene.control.AbstractControl;
  */
 public class InterpolationControl extends AbstractControl {
 
-    private Vector3f start = new Vector3f();
+    private TimeProvider time;
     private Vector3f end = new Vector3f();
-    private double speed;
-    private double tpfScale;
-    private double step = 1.0;
+    private long startTime;
+    private long endTime;
 
-    public InterpolationControl( double speed ) {
-        this.speed = speed;
+    private TimeSpan current;
+    private LinkedList<TimeSpan> pending = new LinkedList<TimeSpan>();
+
+    public InterpolationControl( TimeProvider time ) {
+        this.time = time;
     } 
 
-    public void setTarget( Vector3f target ) {
-        if( end.equals(target) ) {
-            return;
-        }
-        // Calculate how fast we should move to acheive the
-        // desired speed.
-        Vector3f current = spatial.getLocalTranslation();
-        if( current.equals(Vector3f.ZERO) ) {
-            // Just set the value and move on
-            spatial.setLocalTranslation(target);
-            return;
-        }
+    public void setTarget( Vector3f target, long startTime, long endTime ) {
+        // We support a one-deep stack because we likely get game
+        // events slightly ahead of when we render them.  We need
+        // to let the last "tween" finish.
+        if( current != null ) {
+            if( endTime < current.endTime ) {
+                throw new RuntimeException( "Interpolation step goes back in time:" 
+                                            + target + ", " + startTime + ", " + endTime );
+            }
         
-        // Otherwise, figure out how long it will take to
-        // get there.
-        float distance = target.distance(current);
- 
-        // Speed is meters / second
-        // Speed is also distance / travel time
-        // ...travel time = distance / speed
-        // To make step's 0 - 1.0 match travel time we
-        // multiply total time by 1 / travel time...
-        // ie: speed / distance
-        tpfScale = speed / distance;
-        step = 0;
-        start.set(current);
-        end.set(target);         
-    }
-
-    public double getStep() {
-        return step;
-    }
-
-    public double getTimeRemaining() {
-        return (1.0 - step) / tpfScale;
+            pending.add(new TimeSpan(target, startTime, endTime));
+        } else {
+            current = new TimeSpan(target, startTime, endTime);
+        }
     }
 
     @Override
     protected void controlUpdate( float tpf ) {
-        if( step < 1.0 ) {
-            step += tpf * tpfScale;
-            step = Math.min(step, 1.0);
+        
+        while( current != null ) {
+            long now = time.getTime();
             
-            // Reuse the spatial's vector but set it back to 
-            // make sure it updates
-            Vector3f v = spatial.getLocalTranslation(); 
-            v.interpolateLocal(start, end, (float)step);
-            spatial.setLocalTranslation(v);            
-        }
+            // Cycle through current and all pending events
+            // until we get one with more to go.
+            if( current.apply(now) ) {
+                break;
+            }
+ 
+            if( pending.isEmpty() ) {
+                current = null;
+            } else {           
+                // Else grab the next one
+                TimeSpan next = pending.removeFirst();
+                current = next;
+            }
+        }        
     }
 
     @Override
     protected void controlRender( RenderManager rm, ViewPort vp ) {
+    }
+    
+    private class TimeSpan {
+        long startTime;
+        long endTime;
+        Vector3f startPos;
+        Vector3f endPos;
+        
+        public TimeSpan( Vector3f endPos, long startTime, long endTime ) {
+            this.endPos = endPos;
+            this.startTime = startTime;
+            this.endTime = endTime;
+            if( startTime == endTime ) {
+                startPos = endPos;
+            }
+        }
+        
+        public boolean apply( long now ) {
+            if( now < startTime ) {
+                return true;
+            }                
+ 
+            if( startPos == null ) {
+                startPos = spatial.getLocalTranslation().clone();
+            }
+ 
+            if( now >= endTime ) {
+                // Force the spatial to the last position
+                spatial.setLocalTranslation(endPos);
+                
+                return false; // no more to go               
+            } else {
+                // Interpolate... guaranteed to have a non-zero time delta here
+                double part = (now - startTime) / (double)(endTime - startTime);                
+                
+                // Do our own interp calculation because Vector3f's is inaccurate and
+                // can return values out of range... especially in cases where part is
+                // small and delta between coordinates is 0.                
+                Vector3f v = spatial.getLocalTranslation();
+                double x = v.x;
+                double y = v.y;
+                double z = v.z;
+                x = startPos.x + (endPos.x - startPos.x) * part;
+                y = startPos.y + (endPos.y - startPos.y) * part;
+                z = startPos.z + (endPos.z - startPos.z) * part;
+                spatial.setLocalTranslation((float)x, (float)y, (float)z);
+                
+                return true; // still have more to go
+            }
+        }
     }
 }

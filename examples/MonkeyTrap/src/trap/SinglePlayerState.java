@@ -71,6 +71,10 @@ public class SinglePlayerState extends BaseAppState
 {
     private List<AppState> gameStates = new ArrayList<AppState>();
 
+    // Kept so we can keep its time up to date... actually
+    // we will need to do this for multiplayer, too.
+    private SinglePlayerClient client;
+
     public SinglePlayerState() {
     }
 
@@ -97,17 +101,18 @@ System.out.println( "Using seed:" + seed );
         // Use the maze seed as starting position
         Vector3f location = new Vector3f(maze.getXSeed() * 2, 0, maze.getYSeed() * 2);
         System.out.println( "Setting player to location:" + location );
-        ed.setComponent(player, new Position(location));        
+        ed.setComponent(player, new Position(location, -1, -1));        
         ed.setComponent(player, TrapModelFactory.TYPE_MONKEY);        
  
-        gameStates.add(new PlayerState(new SinglePlayerClient(ed, player, maze)));
+        client = new SinglePlayerClient(ed, player, maze);
+        gameStates.add(new PlayerState(client));
  
         // Create a second entity just for testing stuff
-        EntityId test = ed.createEntity();
+        //EntityId test = ed.createEntity();
 
         // Use the maze seed as starting position
-        ed.setComponent(test, new Position(location));        
-        ed.setComponent(test, TrapModelFactory.TYPE_OGRE);        
+        //ed.setComponent(test, new Position(location, -1, -1));        
+        //ed.setComponent(test, TrapModelFactory.TYPE_OGRE);        
         
         // Attach them all
         AppStateManager stateMgr = app.getStateManager();
@@ -209,6 +214,7 @@ System.out.println( "Using seed:" + seed );
     @Override
     public void update( float tpf ) {
  
+        client.updateFrameTime();
         //updateMaze(tpf);
     }
 

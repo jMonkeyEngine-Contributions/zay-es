@@ -34,17 +34,13 @@
 
 package trap;
 
-import com.jme3.animation.AnimChannel;
-import com.jme3.animation.AnimControl;
 import com.jme3.app.Application;
-import com.jme3.scene.Node;
+import com.jme3.audio.AudioNode;
 import com.jme3.scene.Spatial;
 import com.simsilica.es.Entity;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntitySet;
 import com.simsilica.lemur.event.BaseAppState;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,8 +64,7 @@ public class CharacterAnimState extends BaseAppState {
     private EntitySet entities;
     private ModelState modelState;
 
-    //private Set<Spatial> walking = new HashSet<Spatial>();
-    private Map<Spatial, Entity> walking = new HashMap<Spatial, Entity>();
+    private AudioNode temp;
 
     public CharacterAnimState() {
     }
@@ -96,12 +91,11 @@ public class CharacterAnimState extends BaseAppState {
         CharacterAnimControl cac = s.getControl(CharacterAnimControl.class); 
         if( ic == null || cac == null )
             return;
-            
-        // Until we have different actions to watch for, this is
-        // all we'll do.
-        if( ic.getStep() < 1.0 ) {
-            cac.setAnimation( "Walk", ic.getTimeRemaining() );
-        }            
+ 
+        Activity act = e.get(Activity.class);
+        if( act == null || act.getType() != Activity.WALKING )
+            return;
+        cac.setAnimation( "Walk", act.getStartTime(), act.getEndTime() );           
     }
 
     protected void updateModels( Set<Entity> set ) {
@@ -124,7 +118,12 @@ public class CharacterAnimState extends BaseAppState {
 
         // Grab the set of entities we are interested in
         ed = getState(EntityDataState.class).getEntityData();
-        entities = ed.getEntities(Position.class, ModelType.class);
+        entities = ed.getEntities(Position.class, ModelType.class, Activity.class);
+        
+        /*temp = new AudioNode( app.getAssetManager(), "Sounds/Foot steps-fast.ogg", false );
+        temp.setPositional(false);
+        temp.setVolume(0.75f);
+        temp.setLooping(true);*/
     }
 
     @Override
@@ -147,13 +146,6 @@ public class CharacterAnimState extends BaseAppState {
             removeModels(entities.getRemovedEntities());
             addModels(entities.getAddedEntities());
             updateModels(entities.getChangedEntities());
-        }
-        
-        // Temporary
-        if( !walking.isEmpty() ) {
-            for( Map.Entry<Spatial,Entity> e : new HashMap<Spatial,Entity>(walking).entrySet() ) { 
-                updateModelSpatial(e.getValue(), e.getKey());
-            }
         }
     }
 
