@@ -34,6 +34,17 @@
 
 package trap.game;
 
+import com.jme3.math.Vector3f;
+import com.simsilica.es.Entity;
+import com.simsilica.es.EntityData;
+import com.simsilica.es.EntityId;
+import com.simsilica.es.EntitySet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +61,11 @@ public class MazeService implements Service {
     private int ySize;
     private Maze maze;
     private Long seed;
+ 
+    private EntityData ed;
+    private EntitySet objects;
+    private Map<Vector3f, List<EntityId>> index = new HashMap<Vector3f, List<EntityId>>();
+    private Map<EntityId, Vector3f> lastPositions = new HashMap<EntityId, Vector3f>(); 
     
     public MazeService( int xSize, int ySize ) {
         this.xSize = xSize;
@@ -61,6 +77,40 @@ public class MazeService implements Service {
         return maze;
     }
 
+    public Vector3f findRandomLocation() {
+        int x = (int)(Math.random() * (xSize-1)) + 1;
+        int y = (int)(Math.random() * (xSize-1)) + 1;
+        
+        // Is it occupied?
+        int t = maze.get(x,y);
+        if( !maze.isSolid(t) && !isOccupied(x,y) )
+            return new Vector3f(x, 0, y);
+ 
+System.out.println( "Hit wall... trying an expanding search..." );
+int checks = 0;        
+        // Else we need to find one... basically, we will
+        // walk out in all directions until we find one.
+        for( int radius = 1; radius < xSize; radius++ ) {
+            for( int xTest = x - radius; xTest <= x + radius; xTest++ ) {
+                for( int yTest = y - radius; yTest <= y + radius; yTest++ ) {
+                    t = maze.get(xTest, yTest);
+                    checks++;
+                    if( !maze.isSolid(t) && !isOccupied(xTest, yTest) ) {
+System.out.println( "Found in " + checks + " checks." );
+                        return new Vector3f(xTest, 0, yTest);
+                    }
+                } 
+            } 
+        }
+System.out.println( "Error... did not find valid spawn location." );        
+        // And still we fail somehow return the seed
+        return new Vector3f(maze.getXSeed(), 0, maze.getYSeed());                    
+    }
+
+    public boolean isOccupied( int x, int y ) {
+        return !getEntities(x, y).isEmpty();
+    } 
+
     public void initialize( GameSystems systems ) {
         long s;
         if( seed != null ) {
@@ -71,9 +121,80 @@ public class MazeService implements Service {
         log.info("Using maze seed:" + s);
         maze.setSeed(s);
         maze.generate();
+        
+        // We'll keep track of the positioned entities in the maze
+        // so that we can answer intersection queries and so on
+        ed = systems.getEntityData();
+        objects = ed.getEntities(Position.class, ModelType.class);
+        addObjects(objects);        
+    }
+ 
+    public List<EntityId> getEntities( int x, int y ) {
+        List<EntityId> list = getEntities(new Vector3f(x*2, 0, y*2), false);
+        if( list == null ) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(list);
+    }
+ 
+    protected List<EntityId> getEntities( Vector3f pos, boolean create ) {
+        List<EntityId> result = index.get(pos);
+        if( result == null && create ) {
+            result = new ArrayList<EntityId>();
+            index.put(pos, result);
+        }
+        return result;
+    }
+    
+    protected void add( EntityId id, Vector3f pos ) {
+        getEntities(pos, true).add(id);
+    }
+    
+    protected void remove( EntityId id, Vector3f pos ) {
+        List<EntityId> list = getEntities(pos, false);
+        if( list == null ) {
+            return;
+        }
+        list.remove(id);
+        if( list.isEmpty() ) {
+            index.remove(pos);
+        }
+    }
+    
+    protected void setPosition( EntityId id, Vector3f pos ) {
+        Vector3f old = lastPositions.get(id);
+        if( old != null ) {
+            remove(id, old);
+        }
+        if( pos != null ) {
+            add(id, pos);           
+        }
     }
 
+    protected void addObjects( Set<Entity> set ) {
+        for( Entity e : set ) {
+            setPosition(e.getId(), e.get(Position.class).getLocation());
+        }
+    }
+    
+    protected void updateObjects( Set<Entity> set ) {
+        for( Entity e : set ) {
+            setPosition(e.getId(), e.get(Position.class).getLocation());
+        }
+    }
+    
+    protected void removeObjects( Set<Entity> set ) {
+        for( Entity e : set ) {
+            setPosition(e.getId(), null);
+        }
+    }  
+
     public void update( long gameTime ) {
+        if( objects.applyChanges() ) {
+            removeObjects(objects.getRemovedEntities());
+            addObjects(objects.getAddedEntities());
+            updateObjects(objects.getChangedEntities());           
+        }
     }
 
     public void terminate( GameSystems systems ) {

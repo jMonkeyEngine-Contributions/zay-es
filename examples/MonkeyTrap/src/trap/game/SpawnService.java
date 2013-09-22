@@ -51,6 +51,7 @@ public class SpawnService implements Service {
  
     private GameSystems systems;
     private EntityData ed;
+    private MazeService mazeService;
     private Maze maze;
     private int mobCount;
     
@@ -63,7 +64,8 @@ public class SpawnService implements Service {
     public void initialize( GameSystems systems ) {
         this.systems = systems;
         this.ed = systems.getService(EntityDataService.class).getEntityData();
-        this.maze = systems.getService(MazeService.class).getMaze();
+        this.mazeService = systems.getService(MazeService.class); 
+        this.maze = mazeService.getMaze();
  
         ComponentFilter filter = Filters.fieldEquals(ModelType.class, "type", 
                                                      MonkeyTrapConstants.TYPE_OGRE.getType());        
@@ -74,7 +76,7 @@ public class SpawnService implements Service {
         EntityId mob = ed.createEntity();
 
         // Find a random spot in the maze
-        Vector3f loc = maze.findRandomLocation();
+        Vector3f loc = mazeService.findRandomLocation();
         loc.multLocal(2);
         ed.setComponent(mob, new Position(loc, systems.getGameTime(), systems.getGameTime())); 
         ed.setComponent(mob, MonkeyTrapConstants.TYPE_OGRE);   

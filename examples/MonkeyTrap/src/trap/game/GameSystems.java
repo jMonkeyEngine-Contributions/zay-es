@@ -34,6 +34,7 @@
 
 package trap.game;
 
+import com.simsilica.es.EntityData;
 import java.util.*;
 import java.util.concurrent.*;
 import org.slf4j.Logger;
@@ -64,12 +65,17 @@ public class GameSystems {
         gameTime = new GameTimeProvider();     
         serviceRunner = new ServiceRunnable();
     }
+ 
+    public EntityData getEntityData() {
+        return getService(EntityDataService.class).getEntityData(); 
+    }
     
-    public void addService( Service s ) {
+    public <T extends Service> T addService( T s ) {
         if( started ) {
             throw new IllegalStateException( "Game systesm are already started." );
         }
         services.add(s);
+        return s;
     }
  
     public <T extends Service> T getService( Class<T> type ) {

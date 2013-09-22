@@ -73,36 +73,6 @@ public class Maze
         this.cells = new int[xSize][ySize];
     }
  
-    public Vector3f findRandomLocation() {
-        int x = (int)(Math.random() * (xSize-1)) + 1;
-        int y = (int)(Math.random() * (xSize-1)) + 1;
-        
-        // Is it occupied?
-        int t = get(x,y);
-        if( !isSolid(t) )
-            return new Vector3f(x, 0, y);
- 
-System.out.println( "Hit wall... trying an expanding search..." );
-int checks = 0;        
-        // Else we need to find one... basically, we will
-        // walk out in all directions until we find one.
-        for( int radius = 1; radius < xSize; radius++ ) {
-            for( int xTest = x - radius; xTest <= x + radius; xTest++ ) {
-                for( int yTest = y - radius; yTest <= y + radius; yTest++ ) {
-                    t = get(xTest, yTest);
-                    checks++;
-                    if( !isSolid(t) ) {
-System.out.println( "Found in " + checks + " checks." );
-                        return new Vector3f(xTest, 0, yTest);
-                    }
-                } 
-            } 
-        }
-System.out.println( "Error... did not find valid spawn location." );        
-        // And still we fail somehow return the seed
-        return new Vector3f(xSeed, 0, ySeed);                    
-    }
- 
     public int getXSeed() {
         return xSeed;
     }

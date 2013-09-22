@@ -73,7 +73,7 @@ public class SinglePlayerClient implements GameClient
     public void start() {
         systems.start();
  
-        this.ed = systems.getService(EntityDataService.class).getEntityData();
+        this.ed = systems.getEntityData();
         this.maze = systems.getService(MazeService.class).getMaze();
         
         // Create a single player entity (maybe here only temporarily)
