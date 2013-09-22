@@ -95,3 +95,5 @@ public class Position implements EntityComponent {
         return "Position[" + location + ", " + facing + ", at:" + endTime + "]";
     }
 }
+
+

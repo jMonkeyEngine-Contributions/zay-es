@@ -32,6 +32,7 @@
 
 package trap;
 
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
@@ -58,7 +59,7 @@ public class InterpolationControl extends AbstractControl {
         this.time = time;
     } 
 
-    public void setTarget( Vector3f target, long startTime, long endTime ) {
+    public void setTarget( Vector3f target, Quaternion rotation, long startTime, long endTime ) {
         // We support a one-deep stack because we likely get game
         // events slightly ahead of when we render them.  We need
         // to let the last "tween" finish.
@@ -68,9 +69,9 @@ public class InterpolationControl extends AbstractControl {
                                             + target + ", " + startTime + ", " + endTime );
             }
         
-            pending.add(new TimeSpan(target, startTime, endTime));
+            pending.add(new TimeSpan(target, rotation, startTime, endTime));
         } else {
-            current = new TimeSpan(target, startTime, endTime);
+            current = new TimeSpan(target, rotation, startTime, endTime);
         }
     }
 
@@ -105,9 +106,12 @@ public class InterpolationControl extends AbstractControl {
         long endTime;
         Vector3f startPos;
         Vector3f endPos;
+        Quaternion startRot;
+        Quaternion endRot;
         
-        public TimeSpan( Vector3f endPos, long startTime, long endTime ) {
+        public TimeSpan( Vector3f endPos, Quaternion endRot, long startTime, long endTime ) {
             this.endPos = endPos;
+            this.endRot = endRot;
             this.startTime = startTime;
             this.endTime = endTime;
             if( startTime == endTime ) {
@@ -122,11 +126,13 @@ public class InterpolationControl extends AbstractControl {
  
             if( startPos == null ) {
                 startPos = spatial.getLocalTranslation().clone();
+                startRot = spatial.getLocalRotation().clone();
             }
  
             if( now >= endTime ) {
                 // Force the spatial to the last position
                 spatial.setLocalTranslation(endPos);
+                spatial.setLocalRotation(endRot);
                 
                 return false; // no more to go               
             } else {
@@ -135,7 +141,8 @@ public class InterpolationControl extends AbstractControl {
                 
                 // Do our own interp calculation because Vector3f's is inaccurate and
                 // can return values out of range... especially in cases where part is
-                // small and delta between coordinates is 0.                
+                // small and delta between coordinates is 0.  (Though this probably
+                // wasn't the issue I was trying to fix, it is worrying in general.)                
                 Vector3f v = spatial.getLocalTranslation();
                 double x = v.x;
                 double y = v.y;
@@ -144,6 +151,10 @@ public class InterpolationControl extends AbstractControl {
                 y = startPos.y + (endPos.y - startPos.y) * part;
                 z = startPos.z + (endPos.z - startPos.z) * part;
                 spatial.setLocalTranslation((float)x, (float)y, (float)z);
+ 
+                Quaternion rot = startRot.clone();
+                rot.nlerp(endRot, (float)part);
+                spatial.setLocalRotation(rot);
                 
                 return true; // still have more to go
             }

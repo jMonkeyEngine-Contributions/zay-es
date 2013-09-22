@@ -117,11 +117,11 @@ public class ModelState extends BaseAppState {
         Position p = e.get(Position.class);
         InterpolationControl ic = s.getControl(InterpolationControl.class);
         if( ic != null ) {
-            ic.setTarget(p.getLocation(), p.getChangeTime(), p.getTime());
+            ic.setTarget(p.getLocation(), p.getFacing(), p.getChangeTime(), p.getTime());
         } else {        
             s.setLocalTranslation(p.getLocation());
+            s.setLocalRotation(p.getFacing());
         }
-        s.setLocalRotation(p.getFacing());
     }
 
     protected void updateModels( Set<Entity> set ) {

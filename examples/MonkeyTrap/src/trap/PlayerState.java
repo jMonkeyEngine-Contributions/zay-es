@@ -124,7 +124,7 @@ public class PlayerState extends BaseAppState
             if( pos != lastPos ) {
                 lastPos = pos;
                 if( pos != null ) {
-                    interpNode.getControl(InterpolationControl.class).setTarget(pos.getLocation(), pos.getChangeTime(), pos.getTime());
+                    interpNode.getControl(InterpolationControl.class).setTarget(pos.getLocation(), pos.getFacing(), pos.getChangeTime(), pos.getTime());
                 }
             }
             
