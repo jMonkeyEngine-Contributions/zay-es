@@ -32,47 +32,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package trap;
-
-import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
-import com.jme3.math.Vector3f;
+package trap.game;
 
 
 /**
  *
  *  @author    Paul Speed
  */
-public enum Direction
-{
-    North(0,-1, new Quaternion().fromAngles(0,FastMath.PI,0)),
-    South(0,1, new Quaternion()), 
-    East(1,0, new Quaternion().fromAngles(0,FastMath.HALF_PI,0)), 
-    West(-1,0, new Quaternion().fromAngles(0,-FastMath.HALF_PI,0));
+public class MonkeyTrapConstants {
     
-    private int xDelta;
-    private int yDelta;
-    private Quaternion facing;
-    
-    private Direction( int x, int y, Quaternion facing ) {
-        this.xDelta = x;
-        this.yDelta = y;
-        this.facing = facing;
-    }
- 
-    public int getXDelta() {
-        return xDelta;
-    }
-    
-    public int getYDelta() {
-        return yDelta;
-    }
- 
-    public Quaternion getFacing() {
-        return facing;  
-    }
-    
-    public Vector3f forward(Vector3f from, float scale) {
-        return from.add(xDelta*scale, 0, yDelta*scale); 
-    }
+    public static final double MONKEY_SPEED = 4.0; // m/sec
+    public static final double OGRE_SPEED = 3.0; // m/sec
 }

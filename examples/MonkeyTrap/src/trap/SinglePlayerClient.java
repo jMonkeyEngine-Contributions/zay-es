@@ -34,9 +34,18 @@
 
 package trap;
 
+import trap.game.Direction;
+import trap.game.Position;
+import trap.game.Activity;
+import trap.game.Maze;
+import trap.game.MonkeyTrapConstants;
+import trap.game.TimeProvider;
 import com.jme3.math.Vector3f;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
+import trap.game.EntityDataService;
+import trap.game.GameSystems;
+import trap.game.MazeService;
 
 
 /**
@@ -45,6 +54,7 @@ import com.simsilica.es.EntityId;
  */
 public class SinglePlayerClient implements GameClient
 {
+    private GameSystems systems;
     private EntityData ed;
     private EntityId player;
     private long frameDelay = 100 * 1000000L; // 100 ms 
@@ -55,10 +65,29 @@ public class SinglePlayerClient implements GameClient
     
     private Maze maze;    
 
-    public SinglePlayerClient( EntityData ed, EntityId player, Maze maze ) {
-        this.ed = ed;
-        this.player = player;
-        this.maze = maze;
+    public SinglePlayerClient( GameSystems systems ) {
+        this.systems = systems;        
+    }
+ 
+    // Single player specific
+    public void start() {
+        systems.start();
+ 
+        this.ed = systems.getService(EntityDataService.class).getEntityData();
+        this.maze = systems.getService(MazeService.class).getMaze();
+        
+        // Create a single player entity (maybe here only temporarily)
+        player = ed.createEntity();
+
+        // Use the maze seed as starting position
+        Vector3f location = new Vector3f(maze.getXSeed() * 2, 0, maze.getYSeed() * 2);
+        System.out.println( "Setting player to location:" + location );
+        ed.setComponent(player, new Position(location, -1, -1));        
+        ed.setComponent(player, TrapModelFactory.TYPE_MONKEY);                
+    }
+    
+    public void close() {
+        systems.stop();
     }
     
     public final long getGameTime() {
@@ -69,7 +98,7 @@ public class SinglePlayerClient implements GameClient
         return renderTime; //System.nanoTime() - frameDelay;
     }
  
-    public void updateFrameTime() {
+    public void updateRenderTime() {
         renderTime = System.nanoTime() - frameDelay;
     }
     

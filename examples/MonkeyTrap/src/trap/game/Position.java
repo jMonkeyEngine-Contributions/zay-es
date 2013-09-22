@@ -32,30 +32,68 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package trap;
+package trap.game;
 
-import trap.game.Direction;
-import trap.game.TimeProvider;
-import com.simsilica.es.EntityData;
-import com.simsilica.es.EntityId;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Vector3f;
+import com.simsilica.es.EntityComponent;
 
 
 /**
+ *  Represents a position and orientation of an entity
+ *  starting at a specific point in time.  
  *
  *  @author    Paul Speed
  */
-public interface GameClient
-{
-    public long getGameTime();
-    public long getRenderTime();
+public class Position implements EntityComponent {
+    private Vector3f location;
+    private Quaternion facing;
+    private long startTime;
+    private long endTime;
+
+    public Position( Vector3f location, long startTime, long endTime ) {
+        this(location, new Quaternion(), startTime, endTime);
+    }
+
+    public Position( Vector3f location, Direction facing, long startTime, long endTime ) {
+        this(location, facing.getFacing(), startTime, endTime);
+    }
     
-    public TimeProvider getRenderTimeProvider();
-    public void updateRenderTime();
-        
-    public EntityId getPlayer();
-    public EntityData getEntityData();
-    
-    public void move( Direction dir );
-    
-    public void close();
+    public Position( Vector3f location, Quaternion facing, long startTime, long endTime ) {
+        this.location = location;
+        this.facing = facing;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
+
+    public Position newDirection( Direction dir, long startTime, long endTime ) {
+        return new Position(location, dir, startTime, endTime);
+    }
+
+    public Position newLocation( Vector3f location, long startTime, long endTime ) {
+        return new Position(location, facing, startTime, endTime);
+    }
+
+    public long getTime() {
+        return endTime;
+    }
+
+    public long getChangeTime() {
+        return startTime;
+    }
+
+    public Vector3f getLocation() {
+        return location;
+    }
+
+    public Quaternion getFacing() {
+        return facing;
+    }
+
+    @Override
+    public String toString() {
+        return "Position[" + location + ", " + facing + ", at:" + endTime + "]";
+    }
 }
+
+

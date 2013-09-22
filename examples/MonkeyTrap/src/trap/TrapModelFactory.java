@@ -34,6 +34,9 @@
 
 package trap;
 
+import trap.game.MonkeyTrapConstants;
+import trap.game.ModelType;
+import trap.game.TimeProvider;
 import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.bounding.BoundingBox;

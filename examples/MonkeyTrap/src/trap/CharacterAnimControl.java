@@ -34,6 +34,7 @@
 
 package trap;
 
+import trap.game.TimeProvider;
 import com.jme3.animation.AnimChannel;
 import java.util.*;
 

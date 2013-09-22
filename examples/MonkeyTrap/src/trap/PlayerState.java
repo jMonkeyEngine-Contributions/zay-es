@@ -34,6 +34,9 @@
 
 package trap;
 
+import trap.game.Direction;
+import trap.game.Position;
+import trap.game.SensorArea;
 import com.jme3.app.Application;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;

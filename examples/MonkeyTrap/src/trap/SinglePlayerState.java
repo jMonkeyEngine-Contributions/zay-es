@@ -34,33 +34,25 @@
 
 package trap;
 
+import trap.game.Position;
+import trap.game.Maze;
 import com.jme3.app.Application;
-import com.jme3.app.FlyCamAppState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
-import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.shape.Quad;
-import com.jme3.texture.Image;
-import com.jme3.texture.Image.Format;
-import com.jme3.texture.Texture.MagFilter;
-import com.jme3.texture.Texture2D;
-import com.jme3.texture.image.ImageRaster;
-import com.jme3.util.BufferUtils;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
-import com.simsilica.es.base.DefaultEntityData;
-import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.event.BaseAppState;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import trap.game.EntityDataService;
+import trap.game.GameSystems;
+import trap.game.MazeService;
 
 
 /**
@@ -68,7 +60,7 @@ import java.util.List;
  *  @author    Paul Speed
  */
 public class SinglePlayerState extends BaseAppState
-{
+{    
     private List<AppState> gameStates = new ArrayList<AppState>();
 
     // Kept so we can keep its time up to date... actually
@@ -80,33 +72,27 @@ public class SinglePlayerState extends BaseAppState
 
     @Override
     protected void initialize(Application app) {
-        EntityData ed = new DefaultEntityData();
-        Maze maze = new Maze(48, 48);
-        //long seed = 1379736430682L; 
-        long seed = System.currentTimeMillis();
-System.out.println( "Using seed:" + seed );         
-        maze.setSeed(seed);
-        maze.generate();
+        GameSystems systems = new GameSystems();
+        systems.addService(new MazeService(48, 48));
+ 
+        // Create the single player client and start it up               
+        client = new SinglePlayerClient(systems);
+        client.start();
+ 
+        // Grab some service and client properties that we will need for
+        // our client-side states.       
+        Maze maze = systems.getService(MazeService.class).getMaze();        
+        EntityData ed = client.getEntityData(); 
 
         gameStates.add(new EntityDataState(ed));
         gameStates.add(new ModelState(new TrapModelFactory()));
         gameStates.add(new CharacterAnimState());
         gameStates.add(new MazeState(maze));
+        gameStates.add(new PlayerState(client));
  
         //gameStates.add(new FlyCamAppState());
  
-        // Create a player entity here for now
-        EntityId player = ed.createEntity();
-
-        // Use the maze seed as starting position
-        Vector3f location = new Vector3f(maze.getXSeed() * 2, 0, maze.getYSeed() * 2);
-        System.out.println( "Setting player to location:" + location );
-        ed.setComponent(player, new Position(location, -1, -1));        
-        ed.setComponent(player, TrapModelFactory.TYPE_MONKEY);        
- 
-        client = new SinglePlayerClient(ed, player, maze);
-        gameStates.add(new PlayerState(client));
- 
+  
         // Create a second entity just for testing stuff
         //EntityId test = ed.createEntity();
 
@@ -130,6 +116,7 @@ System.out.println( "Using seed:" + seed );
             stateMgr.attach(state);   
         }
         gameStates.clear();
+        client.close();
     }
 
     @Override
@@ -214,7 +201,7 @@ System.out.println( "Using seed:" + seed );
     @Override
     public void update( float tpf ) {
  
-        client.updateFrameTime();
+        client.updateRenderTime();
         //updateMaze(tpf);
     }
 

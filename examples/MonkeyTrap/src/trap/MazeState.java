@@ -34,6 +34,9 @@
 
 package trap;
 
+import trap.game.SensorArea;
+import trap.game.Maze;
+import trap.game.MonkeyTrapConstants;
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;

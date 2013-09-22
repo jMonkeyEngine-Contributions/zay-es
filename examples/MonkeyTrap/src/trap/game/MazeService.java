@@ -32,45 +32,50 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package trap;
+package trap.game;
 
-import com.google.common.base.Objects;
-import com.simsilica.es.EntityComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
- *  A general "model type" used for entities with a visual
- *  display.  
  *
  *  @author    Paul Speed
- */
-public class ModelType implements EntityComponent {
-    private String type;
+ */ 
+public class MazeService implements Service {
 
-    public ModelType( String type ) {
-        this.type = type;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if( o == this )
-            return true;
-        if( o == null || o.getClass() != getClass() )
-            return false;
-        return Objects.equal(type, ((ModelType)o).type);
+    private Logger log = LoggerFactory.getLogger(GameSystems.class);
+    
+    private int xSize;
+    private int ySize;
+    private Maze maze;
+    private Long seed;
+    
+    public MazeService( int xSize, int ySize ) {
+        this.xSize = xSize;
+        this.ySize = ySize;
+        this.maze = new Maze(xSize, ySize);
     }
     
-    @Override
-    public int hashCode() {
-        return type.hashCode();
+    public Maze getMaze() {
+        return maze;
     }
 
-    @Override
-    public String toString() {
-        return "ModelType[" + type + "]";
-    }    
+    public void initialize( GameSystems systems ) {
+        long s;
+        if( seed != null ) {
+            s = seed;
+        } else {
+            s = System.currentTimeMillis();
+        }
+        log.info("Using maze seed:" + s);
+        maze.setSeed(s);
+        maze.generate();
+    }
+
+    public void update( long gameTime ) {
+    }
+
+    public void terminate( GameSystems systems ) {
+    }
 }

@@ -32,13 +32,47 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package trap;
+package trap.game;
+
+import com.simsilica.es.EntityComponent;
 
 
 /**
+ *  Represents an activity that a MOB or player is actively
+ *  engaged in over a period of time.  During this time, no
+ *  other activities can be performed.
  *
  *  @author    Paul Speed
  */
-public interface TimeProvider {
-    public long getTime();
+public class Activity implements EntityComponent {
+
+    public static final byte WALKING = 1;
+    public static final byte TURNING = 2;
+
+    private byte type;  
+    private long startTime;
+    private long endTime;
+    
+    public Activity( byte type, long startTime, long endTime ) {
+        this.type = type;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
+    
+    public byte getType() {
+        return type;
+    }
+    
+    public long getStartTime() {
+        return startTime;
+    }
+    
+    public long getEndTime() {
+        return endTime;
+    }
+    
+    @Override
+    public String toString() {
+        return "Activity[" + type + ", from:" + startTime + ", to:" + endTime + "]";
+    }
 }

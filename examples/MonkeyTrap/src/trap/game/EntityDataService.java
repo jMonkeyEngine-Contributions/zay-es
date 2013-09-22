@@ -32,30 +32,38 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package trap;
+package trap.game;
 
-import trap.game.Direction;
-import trap.game.TimeProvider;
 import com.simsilica.es.EntityData;
-import com.simsilica.es.EntityId;
+import com.simsilica.es.base.DefaultEntityData;
 
 
 /**
  *
  *  @author    Paul Speed
  */
-public interface GameClient
-{
-    public long getGameTime();
-    public long getRenderTime();
+public class EntityDataService implements Service {
+    private EntityData ed;
     
-    public TimeProvider getRenderTimeProvider();
-    public void updateRenderTime();
+    public EntityDataService() {
+    }
         
-    public EntityId getPlayer();
-    public EntityData getEntityData();
+    public EntityData getEntityData() {
+        return ed;
+    }
+ 
+    protected EntityData createEntityData() {
+        return new DefaultEntityData();
+    }
     
-    public void move( Direction dir );
+    public void initialize( GameSystems systems ) {
+        this.ed = createEntityData();
+    }
     
-    public void close();
+    public void update( long gameTime ) {
+    }
+    
+    public void terminate( GameSystems systems ) {
+        ed.close();
+    }
 }

@@ -32,15 +32,45 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package trap;
+package trap.game;
+
+import com.google.common.base.Objects;
+import com.simsilica.es.EntityComponent;
 
 
 /**
+ *  A general "model type" used for entities with a visual
+ *  display.  
  *
  *  @author    Paul Speed
  */
-public class MonkeyTrapConstants {
+public class ModelType implements EntityComponent {
+    private String type;
+
+    public ModelType( String type ) {
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if( o == this )
+            return true;
+        if( o == null || o.getClass() != getClass() )
+            return false;
+        return Objects.equal(type, ((ModelType)o).type);
+    }
     
-    public static final double MONKEY_SPEED = 4.0; // m/sec
-    public static final double OGRE_SPEED = 3.0; // m/sec
+    @Override
+    public int hashCode() {
+        return type.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "ModelType[" + type + "]";
+    }    
 }

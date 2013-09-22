@@ -32,6 +32,7 @@
 
 package trap;
 
+import trap.game.TimeProvider;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;

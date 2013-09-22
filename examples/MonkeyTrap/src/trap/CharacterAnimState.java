@@ -34,6 +34,9 @@
 
 package trap;
 
+import trap.game.Position;
+import trap.game.Activity;
+import trap.game.ModelType;
 import com.jme3.app.Application;
 import com.jme3.audio.AudioNode;
 import com.jme3.scene.Spatial;
