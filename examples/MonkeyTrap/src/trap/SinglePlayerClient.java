@@ -83,7 +83,7 @@ public class SinglePlayerClient implements GameClient
         Vector3f location = new Vector3f(maze.getXSeed() * 2, 0, maze.getYSeed() * 2);
         System.out.println( "Setting player to location:" + location );
         ed.setComponent(player, new Position(location, -1, -1));        
-        ed.setComponent(player, TrapModelFactory.TYPE_MONKEY);                
+        ed.setComponent(player, MonkeyTrapConstants.TYPE_MONKEY);                
     }
     
     public void close() {

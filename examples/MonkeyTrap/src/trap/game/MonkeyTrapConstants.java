@@ -43,4 +43,6 @@ public class MonkeyTrapConstants {
     
     public static final double MONKEY_SPEED = 4.0; // m/sec
     public static final double OGRE_SPEED = 3.0; // m/sec
+    public static final ModelType TYPE_MONKEY = new ModelType("Monkey");
+    public static final ModelType TYPE_OGRE = new ModelType("Ogre");
 }

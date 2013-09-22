@@ -59,6 +59,7 @@ public class GameSystems {
     public GameSystems() {        
         // Setup the Monkey Trap services
         services.add(new EntityDataService());
+        services.add(new SpawnService(10));
 
         gameTime = new GameTimeProvider();     
         serviceRunner = new ServiceRunnable();
@@ -97,7 +98,10 @@ public class GameSystems {
             return;
         }
         executor.shutdown();
-        for( Service s : services ) {
+        
+        // Terminate them backwards
+        for( int i = services.size() - 1; i >= 0; i-- ) {
+            Service s = services.get(i);
             s.terminate(this);
         }
         started = false;

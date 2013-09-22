@@ -55,10 +55,7 @@ import com.simsilica.es.Entity;
  *
  *  @author    Paul Speed
  */
-public class TrapModelFactory implements ModelFactory
-{
-    public static final ModelType TYPE_MONKEY = new ModelType("Monkey");
-    public static final ModelType TYPE_OGRE = new ModelType("Ogre");
+public class TrapModelFactory implements ModelFactory {
 
     private ModelState state;
 
@@ -89,7 +86,7 @@ public class TrapModelFactory implements ModelFactory
  
         TimeProvider time = state.getState(PlayerState.class).getClient().getRenderTimeProvider();
                
-        if( TYPE_MONKEY.equals(type) ) {
+        if( MonkeyTrapConstants.TYPE_MONKEY.equals(type) ) {
             Node monkey = (Node)state.getApplication().getAssetManager().loadModel( "Models/Jaime/Jaime.j3o" );
             AnimControl anim = monkey.getControl(AnimControl.class);
             AnimChannel channel = anim.createChannel();
@@ -110,7 +107,7 @@ public class TrapModelFactory implements ModelFactory
             cac.addMapping("Walk", "Walk", 1.55f * (float)MonkeyTrapConstants.MONKEY_SPEED); 
             monkey.addControl(cac);
             return monkey;
-        } else if( TYPE_OGRE.equals(type) ) {
+        } else if( MonkeyTrapConstants.TYPE_OGRE.equals(type) ) {
             Spatial ogre = state.getApplication().getAssetManager().loadModel( "Models/Sinbad/Sinbad.mesh.j3o" );
             
             // Normalize the ogre to be 1.8 meters tall
