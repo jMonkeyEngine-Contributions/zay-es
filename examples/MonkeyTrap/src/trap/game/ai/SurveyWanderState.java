@@ -90,7 +90,7 @@ public class SurveyWanderState implements State {
         // First we will always try to go left if we have gone even
         // one step in this direction
         MazeService mazeService = fsm.getSystems().getService(MazeService.class);
-        if( distance > 0 || mazeService.isBlocked(dir, x, y, mobsRedirect) )  
+        if( distance > 0 || mazeService.isBlocked(dir, x, y, mobsRedirect) ) {  
             dir = leftHand ? dir.left() : dir.right();
             // If that direction is blocked then we go right from it
             // until we find an unblocked direction.  We treat
