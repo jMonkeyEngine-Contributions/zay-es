@@ -32,21 +32,72 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package trap.game;
+package trap.game.ai;
 
-import trap.game.ai.AiType;
+import trap.game.GameSystems;
 
 
 /**
+ *  A collection of states.
  *
  *  @author    Paul Speed
  */
-public class MonkeyTrapConstants {
+public class StateMachine {
+    private GameSystems systems;
+    private Mob mob;
+    private StateMachineConfig config;    
+    private State current;
     
-    public static final double MONKEY_SPEED = 4.0; // m/sec
-    public static final double OGRE_SPEED = 3.0; // m/sec
-    public static final ModelType TYPE_MONKEY = new ModelType("Monkey");
-    public static final ModelType TYPE_OGRE = new ModelType("Ogre");
+    public StateMachine( GameSystems systems, Mob mob, StateMachineConfig config ) {
+        this.systems = systems;
+        this.mob = mob;
+        this.config = config;
+    } 
+ 
+    public Mob getMob() {
+        return mob;
+    }
+ 
+    public GameSystems getSystems() {
+        return systems;
+    }
+ 
+    public void start() {
+        if( current == null ) {
+            current = config.getDefaultState();
+        }
+        current.enter(this, mob);
+    }
     
-    public static final AiType AI_DRUNK = new AiType("Drunk");
+    public void stop() {
+        current.leave(this, mob);
+    }
+ 
+    public void setState( String id ) {
+        setState(config.getState(id));
+    }    
+    
+    protected void setState( State state ) {
+        if( state == null ) {
+            state = config.getDefaultState();
+        }
+        
+        if( current == state ) {
+            return;
+        }
+ 
+        if( current != null ) {       
+            current.leave(this, mob);
+        }
+        
+        this.current = state;
+        current.enter(this, mob);
+    }
+ 
+    public void update( long time ) {
+        if( current == null ) {
+            setState(config.getDefaultState());
+        }
+        current.execute(this, time, mob);
+    }  
 }

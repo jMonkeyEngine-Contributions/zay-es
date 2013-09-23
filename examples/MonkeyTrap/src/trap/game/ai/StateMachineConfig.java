@@ -32,21 +32,60 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package trap.game;
+package trap.game.ai;
 
-import trap.game.ai.AiType;
-
+import java.util.*;
+import trap.game.GameSystems;
 
 /**
+ *  A set of states and a default state, and so on, that can be used
+ *  to create a state machine of a particular setup. 
  *
  *  @author    Paul Speed
  */
-public class MonkeyTrapConstants {
+public class StateMachineConfig {
+    public static final State NULL_STATE = new NullState();
+
+    private State defaultState;
+    private Map<String, State> states = new HashMap<String, State>();
     
-    public static final double MONKEY_SPEED = 4.0; // m/sec
-    public static final double OGRE_SPEED = 3.0; // m/sec
-    public static final ModelType TYPE_MONKEY = new ModelType("Monkey");
-    public static final ModelType TYPE_OGRE = new ModelType("Ogre");
+    public StateMachineConfig() {
+        this(NULL_STATE);
+    }
     
-    public static final AiType AI_DRUNK = new AiType("Drunk");
+    public StateMachineConfig( State defaultState ) {
+        this.defaultState = defaultState;
+    }
+ 
+    public void addState( String id, State state ) {
+        states.put(id, state);
+    }
+    
+    public State getState( String id ) {
+        State s = states.get(id);
+        if( s == null ) {
+            throw new RuntimeException("State not found for:" + id); 
+        }
+        return s;        
+    }
+ 
+    public State getDefaultState() {
+        return defaultState;
+    }
+    
+    public StateMachine create( GameSystems systems, Mob mob ) {
+        return new StateMachine(systems, mob, this);
+    }
+    
+    protected static class NullState implements State {
+
+        public void enter( StateMachine fsm, Mob mob ) {
+        }
+
+        public void execute( StateMachine fsm, long time, Mob mob ) {
+        }
+
+        public void leave( StateMachine fsm, Mob mob ) {
+        }
+    }
 }

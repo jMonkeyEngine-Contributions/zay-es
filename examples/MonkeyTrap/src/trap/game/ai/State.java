@@ -32,21 +32,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package trap.game;
-
-import trap.game.ai.AiType;
+package trap.game.ai;
 
 
 /**
+ *  Represents a single state in an FSM.
  *
  *  @author    Paul Speed
  */
-public class MonkeyTrapConstants {
-    
-    public static final double MONKEY_SPEED = 4.0; // m/sec
-    public static final double OGRE_SPEED = 3.0; // m/sec
-    public static final ModelType TYPE_MONKEY = new ModelType("Monkey");
-    public static final ModelType TYPE_OGRE = new ModelType("Ogre");
-    
-    public static final AiType AI_DRUNK = new AiType("Drunk");
+public interface State {
+    public void enter( StateMachine fsm, Mob mob );
+    public void execute( StateMachine fsm, long time, Mob mob );
+    public void leave( StateMachine fsm, Mob mob );
 }

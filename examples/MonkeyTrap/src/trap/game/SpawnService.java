@@ -82,7 +82,7 @@ public class SpawnService implements Service {
         //loc.z = maze.getYSeed() * 2;
         ed.setComponent(mob, new Position(loc, systems.getGameTime(), systems.getGameTime())); 
         ed.setComponent(mob, MonkeyTrapConstants.TYPE_OGRE);   
-        ed.setComponent(mob, MonkeyTrapConstants.AI_OGRE);   
+        ed.setComponent(mob, MonkeyTrapConstants.AI_DRUNK);   
 
         // ...and whatever else
     }

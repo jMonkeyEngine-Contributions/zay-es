@@ -34,15 +34,13 @@
 
 package trap.game.ai;
 
-import com.jme3.math.Vector3f;
 import com.simsilica.es.Entity;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntitySet;
 import java.util.HashMap;
 import java.util.Map;
-import trap.game.Activity;
-import trap.game.Direction;
+import java.util.Set;
 import trap.game.GameSystems;
 import trap.game.MazeService;
 import trap.game.MonkeyTrapConstants;
@@ -60,11 +58,18 @@ public class AiService implements Service {
     private EntityData ed;
     private MazeService mazeService;
 
+    private Map<AiType, StateMachineConfig> configs = new HashMap<AiType, StateMachineConfig>();
+
     private EntitySet mobs;
+    private Map<EntityId, Mob> mobMap = new HashMap<EntityId, Mob>();
 
     private long lastTime; 
     
     public AiService() {
+    
+        // Some default configurations
+        StateMachineConfig cfg = new StateMachineConfig(new RandomWanderState());        
+        configs.put( MonkeyTrapConstants.AI_DRUNK, cfg ); 
     }
 
     public void initialize( GameSystems systems ) {
@@ -77,81 +82,54 @@ public class AiService implements Service {
         mobs = ed.getEntities(AiType.class, Position.class);        
     }
 
-    private Map<EntityId, Direction> temp = new HashMap<EntityId, Direction>();
+    protected void removeMobs( Set<Entity> set ) {
+        for( Entity e : set ) {
+            mobMap.remove(e.getId());
+        }
+    }
+
+    protected Mob getMob( Entity e, boolean create ) {
+        Mob result = mobMap.get(e.getId());
+        if( result == null && create ) {
+            result = new Mob(ed, e);
+            mobMap.put(e.getId(), result);
+        }
+        return result;
+    }
+    
+    protected void updateMobs( Set<Entity> set ) {
+        for( Entity e : set ) {
+            Mob m = getMob(e, true);
+            AiType type = e.get(AiType.class);
+ 
+            if( m.setAiType(type) ) {           
+                // Reset this Mob's FSM to the one for this AI type
+                StateMachineConfig config = configs.get(type);
+                StateMachine fsm = config.create(systems, m);
+                m.setStateMachine(fsm); 
+            }
+        }
+    }
+
+    protected void refreshMobs() {
+        if( mobs.applyChanges() ) {
+            removeMobs(mobs.getRemovedEntities());
+            updateMobs(mobs.getAddedEntities());
+            updateMobs(mobs.getChangedEntities());
+        }
+    }
 
     public void update( long gameTime ) {
-    
-        mobs.applyChanges();
-        for( Entity e : mobs ) {
+        refreshMobs();
         
-            Activity current = ed.getComponent(e.getId(), Activity.class);
-            if( current != null && current.getEndTime() > gameTime ) {
-                // Not done with the last move yet
-                continue;
-            }
- 
-            // See what the last direction was
-            Direction last = temp.get(e.getId());
-            if( last == null ) 
-                last = Direction.South;            
- 
-            Position pos = e.get(Position.class);
-            Vector3f loc = pos.getLocation();
-            int x = (int)(loc.x / 2);
-            int y = (int)(loc.z / 2);
- 
-            // See if we will keep the same direction or not
-            // if we are blocked or if a random chance decides we
-            // will turn... then we will turn.
-            Direction dir = last;
-            if( Math.random() < 0.25 || mazeService.isOccupied(dir, x, y) ) {
-                dir = Direction.random();
-//System.out.println( "Random:" + dir );                
-                if( mazeService.isOccupied(dir, x, y) ) {
-                    // See if we can find a dir that isn't occupied
-                    int i;
-                    for( i = 0; i < 4; i++ ) {
-                        dir = dir.right(); 
-                        if( !mazeService.isOccupied(dir, x, y) )
-                            break;
-                    }
-                    if( i == 4 ) {
-                        System.out.println( "No way out right now." );
-                        continue;
-                    }
-                }                
-            }
- 
-            // So if the dir is different then we are turning and
-            // not walking.
-            if( dir != last ) {
-                temp.put(e.getId(), dir);
-            
-                long actionTimeMs = 200;  // 200 ms  // ogres take longer to turn than monkeys 
-                long actionTimeNanos = actionTimeMs * 1000000;
-            
-                Position next = new Position(pos.getLocation(), dir.getFacing(), gameTime, gameTime + actionTimeNanos);
-                Activity act = new Activity(Activity.TURNING, gameTime, gameTime + actionTimeNanos);                                           
-                ed.setComponents(e.getId(), next, act);
-//System.out.println( "Turning:" + e.getId() + "  to:" + dir + "             at to:" + next );
-            } else {
-                
-                // We move forward               
-                double distance = 2.0;       
-                long actionTimeMs = (long)(distance/MonkeyTrapConstants.OGRE_SPEED * 1000.0);
-                long actionTimeNanos = actionTimeMs * 1000000;
-                Position next = new Position(dir.forward(loc, 2),
-                                            dir.getFacing(),
-                                            gameTime,
-                                            gameTime + actionTimeNanos);
-                Activity act = new Activity(Activity.WALKING, gameTime, gameTime + actionTimeNanos);                                           
-                ed.setComponents(e.getId(), next, act);
-//System.out.println( "Moving:" + e.getId() + " to:" + next );
-            }                
+        // And now update the state machines
+        for( Mob mob : mobMap.values() ) {
+            mob.getStateMachine().update(gameTime);
         }
     }
 
     public void terminate( GameSystems systems ) {
+        removeMobs(mobs);
         mobs.release();
     }
 }
