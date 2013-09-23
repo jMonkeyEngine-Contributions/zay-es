@@ -101,7 +101,35 @@ public class MazeService implements Service {
         return new Vector3f(maze.getXSeed(), 0, maze.getYSeed());                    
     }
 
-    public boolean isOccupied( int x, int y ) {
+    public boolean isSolid( int x, int y ) {
+        int t = maze.get(x,y);
+        return maze.isSolid(t);
+    } 
+
+    public boolean isSolid( Direction dir, int x, int y ) {
+        x += dir.getXDelta();
+        y += dir.getYDelta();
+        return isSolid(x, y);
+    } 
+
+    public boolean isBlocked( Direction dir, int x, int y, boolean includeObjects ) {
+        x += dir.getXDelta();
+        y += dir.getYDelta();
+        return isBlocked(x, y, includeObjects);
+    }
+    
+    public boolean isBlocked( int x, int y, boolean includeObjects ) {
+        int t = maze.get(x,y);
+        if( maze.isSolid(t) ) {
+            return true;
+        } else if( !includeObjects ) {
+            return false;
+        }
+        refreshIndex();
+        return !getEntities(x, y).isEmpty();        
+    } 
+
+    public boolean isOccupied( int x, int y ) {    
         int t = maze.get(x,y);
         if( maze.isSolid(t) ) {
             return true;

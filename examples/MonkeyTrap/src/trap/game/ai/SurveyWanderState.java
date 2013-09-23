@@ -43,11 +43,23 @@ import trap.game.Position;
 
 
 /**
- *  Randomly wanders around without any real strategy.
+ *  This state attempts to algorithmically cover the
+ *  whole maze by essentially dragging a hand against
+ *  the left wall.  If it detects a loop then it switches
+ *  hands but the maze generator often generates mazes
+ *  with intersecting loops that will still confuse
+ *  this approach.  Not only that, two meeting wanderers
+ *  will block each other... if mobsRedirect is false.
+ *  In any case, on its own this wander state will get
+ *  into loops a lot.  Might want to detect frequent
+ *  loops and temporarily switch to random or cast out
+ *  to an unvisited cell.
  *
  *  @author    Paul Speed
  */
-public class RandomWanderState implements State {
+public class SurveyWanderState implements State {
+
+    private boolean mobsRedirect = true;
 
     public void enter( StateMachine fsm, Mob mob ) {
     }
@@ -63,42 +75,68 @@ public class RandomWanderState implements State {
         // See what the last direction was
         Direction last = mob.get("lastDirection");
         if( last == null ) {
-            last = Direction.random();
             mob.set("distance", 0);
         }
         Integer distance = mob.get("distance");
-        
+        boolean leftHand = mob.get("leftHand", true);
+
         Position pos = mob.getPosition();
         Vector3f loc = pos.getLocation();
         int x = (int)(loc.x / 2);
         int y = (int)(loc.z / 2);
+
+        Direction dir = last != null ? last : Direction.South;
         
-        // See if we will keep the same direction or not
-        // if we are blocked or if a random chance decides we
-        // will turn... then we will turn.
-        Direction dir = last;
+        // First we will always try to go left if we have gone even
+        // one step in this direction
         MazeService mazeService = fsm.getSystems().getService(MazeService.class);
-        if( (distance < 1 && Math.random() < 0.25) || mazeService.isOccupied(dir, x, y) ) {
-            dir = Direction.random();
-//System.out.println( "Random:" + dir );                
-            if( mazeService.isOccupied(dir, x, y) ) {
-                // See if we can find a dir that isn't occupied
+        if( distance > 0 || mazeService.isBlocked(dir, x, y, mobsRedirect) )  
+            dir = leftHand ? dir.left() : dir.right();
+            // If that direction is blocked then we go right from it
+            // until we find an unblocked direction.  We treat
+            // mobs differently than blocks.
+            if( mazeService.isBlocked(dir, x, y, mobsRedirect) ) {
                 int i;
                 for( i = 0; i < 4; i++ ) {
-                    dir = dir.right(); 
-                    if( !mazeService.isOccupied(dir, x, y) )
+                    dir = leftHand ? dir.right() : dir.left(); 
+                    if( !mazeService.isBlocked(dir, x, y, mobsRedirect) ) {
                         break;
+                    }
                 }
                 if( i == 4 ) {
-                    System.out.println( "No way out right now." );
+                    System.out.println( "No way out.   " + mob.getEntity().getId() );
                     return;
                 }
-            }                
+            }
         }
-                       
-        // So if the dir is different then we are turning and
-        // not walking.
-        if( dir != last ) {
+
+        // Once we've picked a direction to go, see if we've looped
+        Vector3f start = mob.get("start");
+        Direction startDir = mob.get("startDir");
+        if( start == null ) {
+            // keep the starting position and direction
+            mob.set( "start", loc );
+            mob.set( "startDir", dir );
+            mob.set( "traveled", 0 );
+        } 
+        Integer traveled = mob.get("traveled");
+        if( traveled > 0 && startDir == dir && start.equals(loc) ) {
+            traveled = 0;
+            mob.set( "traveled", 0 );            
+            // Flip the hand rule
+            mob.set( "leftHand", !leftHand );
+            mob.set( "start", null );
+        } 
+ 
+        // So, if we are blocked then we wait instead of trying to move
+        if( mazeService.isOccupied(dir, x, y) ) {        
+            long actionTimeMs = 100;  // 100 ms  just wait a bit
+            long actionTimeNanos = actionTimeMs * 1000000;            
+            Activity act = new Activity(Activity.WAITING, time, time + actionTimeNanos);                                           
+            mob.setComponents(act);
+        } else if( dir != last ) {
+            // So if the dir is different then we are turning and
+            // not walking.
             mob.set("lastDirection", dir);
             mob.set("distance", 0);
             
@@ -108,13 +146,11 @@ public class RandomWanderState implements State {
             Position next = new Position(pos.getLocation(), dir.getFacing(), time, time + actionTimeNanos);
             Activity act = new Activity(Activity.TURNING, time, time + actionTimeNanos);                                           
             mob.setComponents(next, act);
-//System.out.println( "Turning:" + e.getId() + "  to:" + dir + "             at to:" + next );
         } else {
-                
+            // We move forward               
             mob.set("lastDirection", dir);
             mob.set("distance", distance + 1);
-            
-            // We move forward               
+            mob.set("traveled", traveled + 1);
             double stepDistance = 2.0;       
             long actionTimeMs = (long)(stepDistance/MonkeyTrapConstants.OGRE_SPEED * 1000.0);
             long actionTimeNanos = actionTimeMs * 1000000;
@@ -124,7 +160,6 @@ public class RandomWanderState implements State {
                                          time + actionTimeNanos);
             Activity act = new Activity(Activity.WALKING, time, time + actionTimeNanos);
             mob.setComponents(next, act);
-//System.out.println( "Moving:" + e.getId() + " to:" + next );
         }                       
     }
     

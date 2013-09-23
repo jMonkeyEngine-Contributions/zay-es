@@ -63,7 +63,7 @@ public class GameSystems {
         services.add(new EntityDataService());
         services.add(new MazeService(48, 48));
         services.add(new AiService());        
-        services.add(new SpawnService(50));
+        services.add(new SpawnService(15));
 
         gameTime = new GameTimeProvider();     
         serviceRunner = new ServiceRunnable();

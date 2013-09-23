@@ -49,4 +49,5 @@ public class MonkeyTrapConstants {
     public static final ModelType TYPE_OGRE = new ModelType("Ogre");
     
     public static final AiType AI_DRUNK = new AiType("Drunk");
+    public static final AiType AI_SURVEY = new AiType("Survey");
 }

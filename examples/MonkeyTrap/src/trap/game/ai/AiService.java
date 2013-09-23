@@ -69,7 +69,10 @@ public class AiService implements Service {
     
         // Some default configurations
         StateMachineConfig cfg = new StateMachineConfig(new RandomWanderState());        
-        configs.put( MonkeyTrapConstants.AI_DRUNK, cfg ); 
+        configs.put( MonkeyTrapConstants.AI_DRUNK, cfg );
+         
+        cfg = new StateMachineConfig(new SurveyWanderState());        
+        configs.put( MonkeyTrapConstants.AI_SURVEY, cfg ); 
     }
 
     public void initialize( GameSystems systems ) {

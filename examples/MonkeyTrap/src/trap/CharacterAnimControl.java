@@ -79,7 +79,6 @@ public class CharacterAnimControl extends AbstractControl {
         return result;
     }
 
-    //public void setAnimation( String name, double duration ) {
     public void setAnimation( String name, long startTime, long endTime ) {
         this.current = new AnimationTime(name, startTime, endTime);
     }

@@ -108,5 +108,10 @@ public class Mob {
     
     public <T> T get( String s ) {
         return (T)attributes.get(s);
+    }
+      
+    public <T> T get( String s, T defaultValue ) {
+        T result = (T)attributes.get(s);
+        return result != null ? result : defaultValue;
     }  
 }
