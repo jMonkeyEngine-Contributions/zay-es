@@ -60,6 +60,41 @@ public enum Direction
         this.facing = facing;
     }
  
+    public static Direction random() {
+        int i = (int)(Math.random() * 4);
+        return values()[i];
+    }
+    
+    public Direction left() {
+        switch( this ) {
+            case North:
+                return West;
+            case South:
+                return East;
+            case East:
+                return North;
+            case West:
+                return South;
+            default:
+                return this;                
+        }
+    }
+
+    public Direction right() {
+        switch( this ) {
+            case North:
+                return East;
+            case South:
+                return West;
+            case East:
+                return South;
+            case West:
+                return North;
+            default:
+                return this;                
+        }
+    }
+ 
     public int getXDelta() {
         return xDelta;
     }

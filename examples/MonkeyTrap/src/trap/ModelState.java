@@ -79,6 +79,8 @@ public class ModelState extends BaseAppState {
     }
 
     public Spatial getSpatial( EntityId entity ) {
+        // Make sure we are up to date
+        refreshModels();
         return models.get(entity);
     }
 
@@ -139,6 +141,14 @@ public class ModelState extends BaseAppState {
         }
     }
 
+    protected void refreshModels() {
+        if( entities.applyChanges() ) {
+            removeModels(entities.getRemovedEntities());
+            addModels(entities.getAddedEntities());
+            updateModels(entities.getChangedEntities());
+        }
+    }
+
     @Override
     protected void initialize( Application app ) {
 
@@ -170,11 +180,7 @@ public class ModelState extends BaseAppState {
 
     @Override
     public void update( float tpf ) {
-        if( entities.applyChanges() ) {
-            removeModels(entities.getRemovedEntities());
-            addModels(entities.getAddedEntities());
-            updateModels(entities.getChangedEntities());
-        }
+        refreshModels();
     }
 
     @Override

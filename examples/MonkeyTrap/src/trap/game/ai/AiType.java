@@ -32,21 +32,45 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package trap.game;
+package trap.game.ai;
 
-import trap.game.ai.AiType;
+import com.google.common.base.Objects;
+import com.simsilica.es.EntityComponent;
 
 
 /**
+ *  A component representing the type of AI that an
+ *  entity is using.
  *
  *  @author    Paul Speed
  */
-public class MonkeyTrapConstants {
+public class AiType implements EntityComponent {
+    private String type;
+
+    public AiType( String type ) {
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if( o == this )
+            return true;
+        if( o == null || o.getClass() != getClass() )
+            return false;
+        return Objects.equal(type, ((AiType)o).type);
+    }
     
-    public static final double MONKEY_SPEED = 4.0; // m/sec
-    public static final double OGRE_SPEED = 3.0; // m/sec
-    public static final ModelType TYPE_MONKEY = new ModelType("Monkey");
-    public static final ModelType TYPE_OGRE = new ModelType("Ogre");
-    
-    public static final AiType AI_OGRE = new AiType("Ogre");
+    @Override
+    public int hashCode() {
+        return type.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "AiType[" + type + "]";
+    }        
 }

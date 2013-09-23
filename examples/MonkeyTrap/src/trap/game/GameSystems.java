@@ -39,6 +39,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import trap.game.ai.AiService;
 
 
 /**
@@ -60,7 +61,9 @@ public class GameSystems {
     public GameSystems() {        
         // Setup the Monkey Trap services
         services.add(new EntityDataService());
-        services.add(new SpawnService(10));
+        services.add(new MazeService(48, 48));
+        services.add(new AiService());        
+        services.add(new SpawnService(50));
 
         gameTime = new GameTimeProvider();     
         serviceRunner = new ServiceRunnable();

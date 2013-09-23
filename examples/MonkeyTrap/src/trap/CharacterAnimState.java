@@ -98,7 +98,7 @@ public class CharacterAnimState extends BaseAppState {
         Activity act = e.get(Activity.class);
         if( act == null ) //|| act.getType() != Activity.WALKING )
             return;
-        cac.setAnimation( "Walk", act.getStartTime(), act.getEndTime() );           
+        cac.setAnimation("Walk", act.getStartTime(), act.getEndTime());           
     }
 
     protected void updateModels( Set<Entity> set ) {

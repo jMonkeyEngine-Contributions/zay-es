@@ -73,7 +73,6 @@ public class SinglePlayerState extends BaseAppState
     @Override
     protected void initialize(Application app) {
         GameSystems systems = new GameSystems();
-        systems.addService(new MazeService(48, 48));
  
         // Create the single player client and start it up               
         client = new SinglePlayerClient(systems);

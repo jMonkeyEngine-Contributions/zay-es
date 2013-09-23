@@ -91,7 +91,7 @@ public class SinglePlayerClient implements GameClient
     }
     
     public final long getGameTime() {
-        return System.nanoTime();
+        return systems.getGameTime();
     }
    
     public final long getRenderTime() {
@@ -99,7 +99,7 @@ public class SinglePlayerClient implements GameClient
     }
  
     public void updateRenderTime() {
-        renderTime = System.nanoTime() - frameDelay;
+        renderTime = getGameTime() - frameDelay;
     }
     
     public TimeProvider getRenderTimeProvider() {

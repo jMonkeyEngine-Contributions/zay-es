@@ -82,8 +82,7 @@ public class MazeService implements Service {
         int y = (int)(Math.random() * (xSize-1)) + 1;
         
         // Is it occupied?
-        int t = maze.get(x,y);
-        if( !maze.isSolid(t) && !isOccupied(x,y) )
+        if( !isOccupied(x,y) )
             return new Vector3f(x, 0, y);
  
         // Else we need to find one... basically, we will
@@ -91,8 +90,7 @@ public class MazeService implements Service {
         for( int radius = 1; radius < xSize; radius++ ) {
             for( int xTest = x - radius; xTest <= x + radius; xTest++ ) {
                 for( int yTest = y - radius; yTest <= y + radius; yTest++ ) {
-                    t = maze.get(xTest, yTest);
-                    if( !maze.isSolid(t) && !isOccupied(xTest, yTest) ) {
+                    if( !isOccupied(xTest, yTest) ) {
                         return new Vector3f(xTest, 0, yTest);
                     }
                 } 
@@ -104,7 +102,27 @@ public class MazeService implements Service {
     }
 
     public boolean isOccupied( int x, int y ) {
+        int t = maze.get(x,y);
+        if( maze.isSolid(t) ) {
+            return true;
+        }
+        refreshIndex();
         return !getEntities(x, y).isEmpty();
+    } 
+
+    public boolean isOccupied( Direction dir, int x, int y ) {
+        x += dir.getXDelta();
+        y += dir.getYDelta();
+        return isOccupied(x, y);
+        /*int t = maze.get(x,y);
+        if( maze.isSolid(t) ) {
+            return true;
+        }
+        List<EntityId> list = getEntities(x, y);
+        if( !list.isEmpty() ) {
+            return true;              
+        }
+        return false;*/
     } 
 
     public void initialize( GameSystems systems ) {
@@ -158,12 +176,13 @@ public class MazeService implements Service {
     }
     
     protected void setPosition( EntityId id, Vector3f pos ) {
-        Vector3f old = lastPositions.get(id);
+        Vector3f old = lastPositions.remove(id);
         if( old != null ) {
             remove(id, old);
         }
         if( pos != null ) {
-            add(id, pos);           
+            add(id, pos);
+            lastPositions.put(id, pos);           
         }
     }
 
@@ -185,14 +204,19 @@ public class MazeService implements Service {
         }
     }  
 
-    public void update( long gameTime ) {
+    protected void refreshIndex() {
         if( objects.applyChanges() ) {
             removeObjects(objects.getRemovedEntities());
             addObjects(objects.getAddedEntities());
-            updateObjects(objects.getChangedEntities());           
+            updateObjects(objects.getChangedEntities());
         }
     }
 
+    public void update( long gameTime ) {
+        refreshIndex();
+    }
+
     public void terminate( GameSystems systems ) {
+        objects.release();
     }
 }

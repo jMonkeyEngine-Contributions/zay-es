@@ -63,7 +63,7 @@ public class SpawnService implements Service {
 
     public void initialize( GameSystems systems ) {
         this.systems = systems;
-        this.ed = systems.getService(EntityDataService.class).getEntityData();
+        this.ed = systems.getEntityData();
         this.mazeService = systems.getService(MazeService.class); 
         this.maze = mazeService.getMaze();
  
@@ -78,8 +78,11 @@ public class SpawnService implements Service {
         // Find a random spot in the maze
         Vector3f loc = mazeService.findRandomLocation();
         loc.multLocal(2);
+        //loc.x = maze.getXSeed() * 2;
+        //loc.z = maze.getYSeed() * 2;
         ed.setComponent(mob, new Position(loc, systems.getGameTime(), systems.getGameTime())); 
         ed.setComponent(mob, MonkeyTrapConstants.TYPE_OGRE);   
+        ed.setComponent(mob, MonkeyTrapConstants.AI_OGRE);   
 
         // ...and whatever else
     }
@@ -92,6 +95,7 @@ public class SpawnService implements Service {
     }
 
     public void terminate( GameSystems systems ) {
+        mobs.release();
     }
     
 }
