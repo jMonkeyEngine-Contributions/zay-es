@@ -38,35 +38,23 @@ import com.simsilica.es.EntityComponent;
 
 
 /**
- *  An entity's movement and turning speed.
+ *  A destructable entity's health.
  *
  *  @author    Paul Speed
  */
-public class Speed implements EntityComponent {
-    private double move;
-    private double turn;
+public class HitPoints implements EntityComponent {
+    private int health;
     
-    public Speed( double move, double turn ) {
-        this.move = move;
-        this.turn = turn;
+    public HitPoints( int health ) {
+        this.health = health;
     }
     
-    /**
-     *  Returns the movement speed in meters per second.
-     */
-    public double getMoveSpeed() {
-        return move;
-    }
- 
-    /**
-     *  Returns the turn speed in revolutions per second.
-     */   
-    public double getTurnSpeed() {
-        return turn;
+    public int getHealth() {
+        return health;
     }
     
     @Override
     public String toString() {
-        return "Speed[move=" + move + ", turn=" + turn + "]";
+        return "HitPoints[" + health + "]";
     }
 }

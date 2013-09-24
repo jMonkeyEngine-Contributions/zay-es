@@ -144,14 +144,14 @@ public class SurveyWanderState implements State {
         mob.set("lastLocation", loc);
  
         if( !mobsRedirect && mazeService.isOccupied(dir, x, y) ) {
-System.out.println( "...waiting." );        
+//System.out.println( "...waiting." );        
             // Just wait
             long actionTimeMs = 100;  // 100 ms  just wait a bit
             long actionTimeNanos = actionTimeMs * 1000000;            
             Activity act = new Activity(Activity.WAITING, time, time + actionTimeNanos);                                           
             mob.setComponents(act);
         } else {
-System.out.println( "...move to:" + dir.forward(loc, 2) );         
+//System.out.println( "...move to:" + dir.forward(loc, 2) );         
             // Let the move service know we wish to go there.
             mob.setComponents(new MoveTo(dir.forward(loc, 2), time));            
         } 

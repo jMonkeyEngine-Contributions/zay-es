@@ -50,9 +50,10 @@ import com.simsilica.es.EntityId;
 import com.simsilica.lemur.event.BaseAppState;
 import java.util.ArrayList;
 import java.util.List;
-import trap.game.EntityDataService;
 import trap.game.GameSystems;
+import trap.game.HitPoints;
 import trap.game.MazeService;
+import trap.game.MonkeyTrapConstants;
 
 
 /**
@@ -98,6 +99,18 @@ public class SinglePlayerState extends BaseAppState
         // Use the maze seed as starting position
         //ed.setComponent(test, new Position(location, -1, -1));        
         //ed.setComponent(test, TrapModelFactory.TYPE_OGRE);        
+ 
+        EntityId test = ed.createEntity();
+        ed.setComponent(test, new Position(new Vector3f(maze.getXSeed()*2, 0, maze.getYSeed()*2), -1, -1));        
+        ed.setComponents(test, MonkeyTrapConstants.TYPE_BARRELS, new HitPoints(MonkeyTrapConstants.BARREL_HITPOINTS));           
+
+        test = ed.createEntity();
+        ed.setComponent(test, new Position(new Vector3f((maze.getXSeed()-1)*2, 0, maze.getYSeed()*2), -1, -1));        
+        ed.setComponent(test, MonkeyTrapConstants.TYPE_BANANA);        
+
+        test = ed.createEntity();
+        ed.setComponent(test, new Position(new Vector3f((maze.getXSeed()+1)*2, 0, maze.getYSeed()*2), -1, -1));        
+        ed.setComponents(test, MonkeyTrapConstants.TYPE_CHEST, new HitPoints(MonkeyTrapConstants.CHEST_HITPOINTS));           
         
         // Attach them all
         AppStateManager stateMgr = app.getStateManager();

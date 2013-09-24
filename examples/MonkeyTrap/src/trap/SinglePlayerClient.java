@@ -43,8 +43,8 @@ import trap.game.TimeProvider;
 import com.jme3.math.Vector3f;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
-import trap.game.EntityDataService;
 import trap.game.GameSystems;
+import trap.game.HitPoints;
 import trap.game.MazeService;
 
 
@@ -84,6 +84,7 @@ public class SinglePlayerClient implements GameClient
         System.out.println( "Setting player to location:" + location );
         ed.setComponent(player, new Position(location, -1, -1));        
         ed.setComponent(player, MonkeyTrapConstants.TYPE_MONKEY);                
+        ed.setComponent(player, new HitPoints(MonkeyTrapConstants.MONKEY_HITPOINTS));       
     }
     
     public void close() {

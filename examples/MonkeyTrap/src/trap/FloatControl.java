@@ -32,41 +32,55 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package trap.game;
+package trap;
 
-import com.simsilica.es.EntityComponent;
+import com.jme3.math.FastMath;
+import com.jme3.math.Vector3f;
+import com.jme3.renderer.RenderManager;
+import com.jme3.renderer.ViewPort;
+import com.jme3.scene.Spatial;
+import com.jme3.scene.control.AbstractControl;
 
 
 /**
- *  An entity's movement and turning speed.
+ *  Bobbing and floating... for powerups.
  *
  *  @author    Paul Speed
  */
-public class Speed implements EntityComponent {
-    private double move;
-    private double turn;
+public class FloatControl extends AbstractControl {
+
+    private float bobRate = 4f;
+    private float turnRate = 1f;
+    private float baseY;
     
-    public Speed( double move, double turn ) {
-        this.move = move;
-        this.turn = turn;
-    }
-    
-    /**
-     *  Returns the movement speed in meters per second.
-     */
-    public double getMoveSpeed() {
-        return move;
-    }
- 
-    /**
-     *  Returns the turn speed in revolutions per second.
-     */   
-    public double getTurnSpeed() {
-        return turn;
-    }
-    
+    private float bobScale = 0.1f;
+    private float bobAngle;
+    private float angle;
+
     @Override
-    public String toString() {
-        return "Speed[move=" + move + ", turn=" + turn + "]";
+    public void setSpatial( Spatial s ) {
+        super.setSpatial(s);
+        baseY = s.getLocalTranslation().y;
     }
+
+    @Override
+    protected void controlUpdate( float tpf ) {
+        bobAngle += tpf * bobRate;
+        if( bobAngle > FastMath.TWO_PI ) {
+            bobAngle -= FastMath.TWO_PI; 
+        }
+        angle += tpf * turnRate;
+        if( angle > FastMath.TWO_PI ) {
+            angle -= FastMath.TWO_PI; 
+        }
+        Vector3f loc = spatial.getLocalTranslation();         
+        loc.y = baseY + bobScale + FastMath.sin(bobAngle) * bobScale; 
+        spatial.setLocalTranslation(loc);
+        spatial.setLocalRotation(spatial.getLocalRotation().fromAngles(0, angle, 0));
+    }
+
+    @Override
+    protected void controlRender( RenderManager rm, ViewPort vp ) {
+    }
+    
 }

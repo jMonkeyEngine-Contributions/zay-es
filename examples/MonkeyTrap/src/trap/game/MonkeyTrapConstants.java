@@ -47,12 +47,20 @@ public class MonkeyTrapConstants {
     public static final double OGRE_MOVE_SPEED = 3.0; // m/sec
     public static final double MONKEY_TURN_SPEED = 2.5; // rotations/sec, 90 degrees in 100 ms
     public static final double OGRE_TURN_SPEED = 1.25; // rotations/sec, 90 degrees in 200 ms
-    
+ 
+    public static final int MONKEY_HITPOINTS = 25;
+    public static final int OGRE_HITPOINTS = 15;
+    public static final int CHEST_HITPOINTS = 5;
+    public static final int BARREL_HITPOINTS = 1;
+        
     public static final Speed SPEED_MONKEY = new Speed(MONKEY_MOVE_SPEED, MONKEY_TURN_SPEED);
     public static final Speed SPEED_OGRE = new Speed(OGRE_MOVE_SPEED, OGRE_TURN_SPEED);
     
     public static final ModelType TYPE_MONKEY = new ModelType("Monkey");
     public static final ModelType TYPE_OGRE = new ModelType("Ogre");
+    public static final ModelType TYPE_BARRELS = new ModelType("Barrel");
+    public static final ModelType TYPE_CHEST = new ModelType("Chest");
+    public static final ModelType TYPE_BANANA = new ModelType("Banana");
     
     public static final AiType AI_DRUNK = new AiType("Drunk");
     public static final AiType AI_SURVEY = new AiType("Survey");

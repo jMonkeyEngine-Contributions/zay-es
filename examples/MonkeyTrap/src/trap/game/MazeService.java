@@ -167,7 +167,10 @@ public class MazeService implements Service {
         // We'll keep track of the positioned entities in the maze
         // so that we can answer intersection queries and so on
         ed = systems.getEntityData();
-        objects = ed.getEntities(Position.class, ModelType.class);
+        
+        // We only watch for entity's with hit points because otherwise
+        // they are traversable.
+        objects = ed.getEntities(Position.class, ModelType.class, HitPoints.class);
         addObjects(objects);        
     }
  
