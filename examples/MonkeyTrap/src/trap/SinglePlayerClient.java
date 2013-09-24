@@ -134,7 +134,7 @@ public class SinglePlayerClient implements GameClient
                 return;
                 
             double distance = 2.0;       
-            long actionTimeMs = (long)(distance/MonkeyTrapConstants.MONKEY_SPEED * 1000.0);
+            long actionTimeMs = (long)(distance/MonkeyTrapConstants.MONKEY_MOVE_SPEED * 1000.0);
             long actionTimeNanos = actionTimeMs * 1000000;
             
             Position next = new Position(dir.forward(loc, 2),

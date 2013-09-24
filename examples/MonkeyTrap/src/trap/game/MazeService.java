@@ -125,7 +125,7 @@ public class MazeService implements Service {
         } else if( !includeObjects ) {
             return false;
         }
-        refreshIndex();
+        //refreshIndex();
         return !getEntities(x, y).isEmpty();        
     } 
 
@@ -134,7 +134,7 @@ public class MazeService implements Service {
         if( maze.isSolid(t) ) {
             return true;
         }
-        refreshIndex();
+        //refreshIndex();
         return !getEntities(x, y).isEmpty();
     } 
 

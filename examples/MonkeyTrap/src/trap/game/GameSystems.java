@@ -62,8 +62,9 @@ public class GameSystems {
         // Setup the Monkey Trap services
         services.add(new EntityDataService());
         services.add(new MazeService(48, 48));
-        services.add(new AiService());        
         services.add(new SpawnService(15));
+        services.add(new AiService());        
+        services.add(new MovementService());
 
         gameTime = new GameTimeProvider();     
         serviceRunner = new ServiceRunnable();

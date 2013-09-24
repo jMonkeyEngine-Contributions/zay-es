@@ -34,26 +34,42 @@
 
 package trap.game;
 
-import trap.game.ai.AiType;
+import com.jme3.math.Vector3f;
+import com.simsilica.es.EntityComponent;
 
 
 /**
+ *  Signals the intent of an entity to move to a 
+ *  particular location... direction change is implied.
+ *  A time property is included just in case priority
+ *  is ever needed... though most of these will all
+ *  be at the same time for any given frame anyway.
  *
  *  @author    Paul Speed
  */
-public class MonkeyTrapConstants {
+public class MoveTo implements EntityComponent {
+    private long time;
+    private Vector3f pos;
     
-    public static final double MONKEY_MOVE_SPEED = 4.0; // m/sec
-    public static final double OGRE_MOVE_SPEED = 3.0; // m/sec
-    public static final double MONKEY_TURN_SPEED = 2.5; // rotations/sec, 90 degrees in 100 ms
-    public static final double OGRE_TURN_SPEED = 1.25; // rotations/sec, 90 degrees in 200 ms
+    public MoveTo( Vector3f pos, long time ) {
+        this.time = time;
+        this.pos = pos;
+    }
+ 
+    public MoveTo newTime( long time ) {
+        return new MoveTo(pos, time);
+    }
     
-    public static final Speed SPEED_MONKEY = new Speed(MONKEY_MOVE_SPEED, MONKEY_TURN_SPEED);
-    public static final Speed SPEED_OGRE = new Speed(OGRE_MOVE_SPEED, OGRE_TURN_SPEED);
+    public long getTime() {
+        return time;
+    }
     
-    public static final ModelType TYPE_MONKEY = new ModelType("Monkey");
-    public static final ModelType TYPE_OGRE = new ModelType("Ogre");
+    public Vector3f getLocation() {
+        return pos;
+    }
     
-    public static final AiType AI_DRUNK = new AiType("Drunk");
-    public static final AiType AI_SURVEY = new AiType("Survey");
+    @Override
+    public String toString() {
+        return "MoveTo[" + pos + " at:" + time + "]";
+    }
 }

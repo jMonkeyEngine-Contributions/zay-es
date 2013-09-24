@@ -34,26 +34,39 @@
 
 package trap.game;
 
-import trap.game.ai.AiType;
+import com.simsilica.es.EntityComponent;
 
 
 /**
+ *  An entities movement and turning speed.
  *
  *  @author    Paul Speed
  */
-public class MonkeyTrapConstants {
+public class Speed implements EntityComponent {
+    private double move;
+    private double turn;
     
-    public static final double MONKEY_MOVE_SPEED = 4.0; // m/sec
-    public static final double OGRE_MOVE_SPEED = 3.0; // m/sec
-    public static final double MONKEY_TURN_SPEED = 2.5; // rotations/sec, 90 degrees in 100 ms
-    public static final double OGRE_TURN_SPEED = 1.25; // rotations/sec, 90 degrees in 200 ms
+    public Speed( double move, double turn ) {
+        this.move = move;
+        this.turn = turn;
+    }
     
-    public static final Speed SPEED_MONKEY = new Speed(MONKEY_MOVE_SPEED, MONKEY_TURN_SPEED);
-    public static final Speed SPEED_OGRE = new Speed(OGRE_MOVE_SPEED, OGRE_TURN_SPEED);
+    /**
+     *  Returns the movement speed in meters per second.
+     */
+    public double getMoveSpeed() {
+        return move;
+    }
+ 
+    /**
+     *  Returns the turn speed in revolutions per second.
+     */   
+    public double getTurnSpeed() {
+        return turn;
+    }
     
-    public static final ModelType TYPE_MONKEY = new ModelType("Monkey");
-    public static final ModelType TYPE_OGRE = new ModelType("Ogre");
-    
-    public static final AiType AI_DRUNK = new AiType("Drunk");
-    public static final AiType AI_SURVEY = new AiType("Survey");
+    @Override
+    public String toString() {
+        return "Speed[move=" + move + ", turn=" + turn + "]";
+    }
 }

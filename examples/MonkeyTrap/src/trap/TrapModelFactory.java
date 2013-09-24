@@ -104,7 +104,7 @@ public class TrapModelFactory implements ModelFactory {
             
             CharacterAnimControl cac = new CharacterAnimControl(time, anim);
             cac.addMapping("Idle", "Idle", 1);
-            cac.addMapping("Walk", "Walk", 1.55f * (float)MonkeyTrapConstants.MONKEY_SPEED); 
+            cac.addMapping("Walk", "Walk", 1.55f * (float)MonkeyTrapConstants.MONKEY_MOVE_SPEED); 
             monkey.addControl(cac);
             return monkey;
         } else if( MonkeyTrapConstants.TYPE_OGRE.equals(type) ) {
@@ -139,8 +139,8 @@ public class TrapModelFactory implements ModelFactory {
             CharacterAnimControl cac = new CharacterAnimControl(time, anim);
             cac.addMapping("Idle", "IdleTop", 1);
             cac.addMapping("Idle", "IdleBase", 1);
-            cac.addMapping("Walk", "RunTop", 0.2f * (float)MonkeyTrapConstants.OGRE_SPEED);
-            cac.addMapping("Walk", "RunBase", 0.2f * (float)MonkeyTrapConstants.OGRE_SPEED);
+            cac.addMapping("Walk", "RunTop", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
+            cac.addMapping("Walk", "RunBase", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
             wrapper.addControl(cac);
             return wrapper;         
         } 

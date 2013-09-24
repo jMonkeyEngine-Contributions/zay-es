@@ -83,7 +83,8 @@ public class SpawnService implements Service {
         ed.setComponent(mob, new Position(loc, systems.getGameTime(), systems.getGameTime())); 
         ed.setComponent(mob, MonkeyTrapConstants.TYPE_OGRE);   
         //ed.setComponent(mob, MonkeyTrapConstants.AI_DRUNK);   
-        ed.setComponent(mob, MonkeyTrapConstants.AI_SURVEY);   
+        ed.setComponent(mob, MonkeyTrapConstants.AI_SURVEY);
+        ed.setComponent(mob, MonkeyTrapConstants.SPEED_OGRE);   
 
         // ...and whatever else
     }

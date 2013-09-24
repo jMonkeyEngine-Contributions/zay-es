@@ -38,7 +38,7 @@ import com.jme3.math.Vector3f;
 import trap.game.Activity;
 import trap.game.Direction;
 import trap.game.MazeService;
-import trap.game.MonkeyTrapConstants;
+import trap.game.MoveTo;
 import trap.game.Position;
 
 
@@ -67,23 +67,35 @@ public class SurveyWanderState implements State {
     public void execute( StateMachine fsm, long time, Mob mob ) {
  
         Activity current = mob.getComponent(Activity.class);
-        if( current != null && current.getEndTime() > time ) {
+        MoveTo moving = mob.getComponent(MoveTo.class);
+        if( moving != null || (current != null && current.getEndTime() >= time) ) {
             // Not done with the last activity yet
             return;
         }
- 
-        // See what the last direction was
-        Direction last = mob.get("lastDirection");
-        if( last == null ) {
-            mob.set("distance", 0);
-        }
-        Integer distance = mob.get("distance");
+//System.out.println( "activity:" + current + "  time:" + time + "  moving:" + moving ); 
+//        if( last == null ) {
+//            mob.set("distance", 0);
+//        }
+//        Integer distance = mob.get("distance");
         boolean leftHand = mob.get("leftHand", true);
 
         Position pos = mob.getPosition();
         Vector3f loc = pos.getLocation();
         int x = (int)(loc.x / 2);
         int y = (int)(loc.z / 2);
+
+        // See what the last direction was
+        Vector3f lastLocation = mob.get("lastLocation");        
+        Direction last;
+        int distance;
+        if( lastLocation == null ) {
+            last = null;
+            distance = 0;
+        } else {
+            last = Direction.fromDelta(lastLocation, loc);
+            distance = (int)loc.distance(lastLocation); 
+        }
+//System.out.println( "lastLocation:" + lastLocation + "  loc:" + loc + "  lastDir:" + last + "  distance:" + distance );
 
         Direction dir = last != null ? last : Direction.South;
         
@@ -111,7 +123,7 @@ public class SurveyWanderState implements State {
         }
 
         // Once we've picked a direction to go, see if we've looped
-        Vector3f start = mob.get("start");
+/*        Vector3f start = mob.get("start");
         Direction startDir = mob.get("startDir");
         if( start == null ) {
             // keep the starting position and direction
@@ -126,8 +138,24 @@ public class SurveyWanderState implements State {
             // Flip the hand rule
             mob.set( "leftHand", !leftHand );
             mob.set( "start", null );
-        } 
+        }*/ 
+
+        //mob.set("lastDirection", dir);
+        mob.set("lastLocation", loc);
  
+        if( !mobsRedirect && mazeService.isOccupied(dir, x, y) ) {
+System.out.println( "...waiting." );        
+            // Just wait
+            long actionTimeMs = 100;  // 100 ms  just wait a bit
+            long actionTimeNanos = actionTimeMs * 1000000;            
+            Activity act = new Activity(Activity.WAITING, time, time + actionTimeNanos);                                           
+            mob.setComponents(act);
+        } else {
+System.out.println( "...move to:" + dir.forward(loc, 2) );         
+            // Let the move service know we wish to go there.
+            mob.setComponents(new MoveTo(dir.forward(loc, 2), time));            
+        } 
+/* 
         // So, if we are blocked then we wait instead of trying to move
         if( mazeService.isOccupied(dir, x, y) ) {        
             long actionTimeMs = 100;  // 100 ms  just wait a bit
@@ -152,7 +180,7 @@ public class SurveyWanderState implements State {
             mob.set("distance", distance + 1);
             mob.set("traveled", traveled + 1);
             double stepDistance = 2.0;       
-            long actionTimeMs = (long)(stepDistance/MonkeyTrapConstants.OGRE_SPEED * 1000.0);
+            long actionTimeMs = (long)(stepDistance/MonkeyTrapConstants.OGRE_MOVE_SPEED * 1000.0);
             long actionTimeNanos = actionTimeMs * 1000000;
             Position next = new Position(dir.forward(loc, 2),
                                          dir.getFacing(),
@@ -160,7 +188,7 @@ public class SurveyWanderState implements State {
                                          time + actionTimeNanos);
             Activity act = new Activity(Activity.WALKING, time, time + actionTimeNanos);
             mob.setComponents(next, act);
-        }                       
+        }*/                       
     }
     
     public void leave( StateMachine fsm, Mob mob ) {

@@ -64,6 +64,16 @@ public enum Direction
         int i = (int)(Math.random() * 4);
         return values()[i];
     }
+ 
+    public static Direction fromDelta( Vector3f from, Vector3f to ) {
+        float x = to.x - from.x;
+        float z = to.z - from.z;
+        if( x == 0 ) {
+            return z < 0 ? North : South;
+        } else {
+            return x < 0 ? West : East;
+        }        
+    }
     
     public Direction left() {
         switch( this ) {

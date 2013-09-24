@@ -38,7 +38,7 @@ import com.jme3.math.Vector3f;
 import trap.game.Activity;
 import trap.game.Direction;
 import trap.game.MazeService;
-import trap.game.MonkeyTrapConstants;
+import trap.game.MoveTo;
 import trap.game.Position;
 
 
@@ -55,7 +55,8 @@ public class RandomWanderState implements State {
     public void execute( StateMachine fsm, long time, Mob mob ) {
  
         Activity current = mob.getComponent(Activity.class);
-        if( current != null && current.getEndTime() > time ) {
+        MoveTo moving = mob.getComponent(MoveTo.class);
+        if( moving != null || (current != null && current.getEndTime() >= time) ) {
             // Not done with the last activity yet
             return;
         }
@@ -64,9 +65,9 @@ public class RandomWanderState implements State {
         Direction last = mob.get("lastDirection");
         if( last == null ) {
             last = Direction.random();
-            mob.set("distance", 0);
+//            mob.set("distance", 0);
         }
-        Integer distance = mob.get("distance");
+//        Integer distance = mob.get("distance");
         
         Position pos = mob.getPosition();
         Vector3f loc = pos.getLocation();
@@ -78,7 +79,8 @@ public class RandomWanderState implements State {
         // will turn... then we will turn.
         Direction dir = last;
         MazeService mazeService = fsm.getSystems().getService(MazeService.class);
-        if( (distance < 1 && Math.random() < 0.25) || mazeService.isOccupied(dir, x, y) ) {
+        //if( (distance < 1 && Math.random() < 0.25) || mazeService.isOccupied(dir, x, y) ) {
+        if( (Math.random() < 0.25) || mazeService.isOccupied(dir, x, y) ) {
             dir = Direction.random();
 //System.out.println( "Random:" + dir );                
             if( mazeService.isOccupied(dir, x, y) ) {
@@ -95,7 +97,12 @@ public class RandomWanderState implements State {
                 }
             }                
         }
-                       
+ 
+        // Set the desire to move to the specific location and 
+        // let the movement system work out turning and stuff
+        mob.setComponents(new MoveTo(dir.forward(loc, 2), time));
+ 
+ /*                      
         // So if the dir is different then we are turning and
         // not walking.
         if( dir != last ) {
@@ -116,7 +123,7 @@ public class RandomWanderState implements State {
             
             // We move forward               
             double stepDistance = 2.0;       
-            long actionTimeMs = (long)(stepDistance/MonkeyTrapConstants.OGRE_SPEED * 1000.0);
+            long actionTimeMs = (long)(stepDistance/MonkeyTrapConstants.OGRE_MOVE_SPEED * 1000.0);
             long actionTimeNanos = actionTimeMs * 1000000;
             Position next = new Position(dir.forward(loc, 2),
                                          dir.getFacing(),
@@ -125,7 +132,7 @@ public class RandomWanderState implements State {
             Activity act = new Activity(Activity.WALKING, time, time + actionTimeNanos);
             mob.setComponents(next, act);
 //System.out.println( "Moving:" + e.getId() + " to:" + next );
-        }                       
+        }*/                       
     }
     
     public void leave( StateMachine fsm, Mob mob ) {

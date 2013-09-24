@@ -233,7 +233,7 @@ public class MazeState extends BaseAppState {
         if( fogMixLevel < 1 ) {
             // Mix at the rate we travel... so that it looks
             // the coolest while we are walking.
-            float rate = (float)(MonkeyTrapConstants.MONKEY_SPEED / 2f);
+            float rate = (float)(MonkeyTrapConstants.MONKEY_MOVE_SPEED / 2f);
             fogMixLevel += tpf * rate; //4; //0.1f;
             fogMixLevel = Math.min(fogMixLevel, 1);
             remix();
