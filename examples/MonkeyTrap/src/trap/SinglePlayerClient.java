@@ -43,6 +43,7 @@ import trap.game.TimeProvider;
 import com.jme3.math.Vector3f;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
+import trap.game.Decay;
 import trap.game.GameSystems;
 import trap.game.HitPoints;
 import trap.game.MazeService;
@@ -98,9 +99,22 @@ public class SinglePlayerClient implements GameClient
     public final long getRenderTime() {
         return renderTime; //System.nanoTime() - frameDelay;
     }
- 
+
+long nextBling; 
     public void updateRenderTime() {
         renderTime = getGameTime() - frameDelay;
+        
+        if( renderTime > nextBling ) {
+            nextBling = renderTime + 2000 * 1000000L;
+                
+/*            EntityId test = ed.createEntity();
+            Position pos = ed.getComponent(player, Position.class);
+if( pos == null ) {
+    System.out.println( "Player has no position..." );
+    return;
+}            
+            ed.setComponents(test, pos, MonkeyTrapConstants.TYPE_BLING, new Decay(nextBling));*/
+        }                   
     }
     
     public TimeProvider getRenderTimeProvider() {

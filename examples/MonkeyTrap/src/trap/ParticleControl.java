@@ -32,72 +32,60 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package trap.game;
+package trap;
 
-import com.jme3.math.Quaternion;
-import com.jme3.math.Vector3f;
-import com.simsilica.es.EntityComponent;
+import com.jme3.audio.AudioNode;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.renderer.RenderManager;
+import com.jme3.renderer.ViewPort;
+import com.jme3.scene.control.AbstractControl;
+import trap.game.TimeProvider;
 
 
 /**
- *  Represents a position and orientation of an entity
- *  starting at a specific point in time.  
  *
  *  @author    Paul Speed
  */
-public class Position implements EntityComponent {
-    private Vector3f location;
-    private Quaternion facing;
+public class ParticleControl extends AbstractControl {
+
+    private ParticleEmitter emitter;
+    private TimeProvider time;
     private long startTime;
     private long endTime;
-
-    public Position( Vector3f location, long startTime, long endTime ) {
-        this(location, new Quaternion(), startTime, endTime);
-    }
-
-    public Position( Vector3f location, Direction facing, long startTime, long endTime ) {
-        this(location, facing.getFacing(), startTime, endTime);
-    }
-    
-    public Position( Vector3f location, Quaternion facing, long startTime, long endTime ) {
-        this.location = location;
-        this.facing = facing;
+    private boolean started;
+    private boolean stopped;
+    private AudioNode sound;
+ 
+    public ParticleControl( ParticleEmitter emitter, AudioNode sound, long startTime, TimeProvider time ) {
+        this.emitter = emitter;
+        this.sound = sound;
         this.startTime = startTime;
-        this.endTime = endTime;
-    }
-
-    public Position newDirection( Direction dir, long startTime, long endTime ) {
-        return new Position(location, dir, startTime, endTime);
-    }
-
-    public Position newLocation( Vector3f location, long startTime, long endTime ) {
-        return new Position(location, facing, startTime, endTime);
-    }
-
-    public Position newTime( long startTime, long endTime ) {
-        return new Position(location, facing, startTime, endTime);
-    }
-
-    public long getTime() {
-        return endTime;
-    }
-
-    public long getChangeTime() {
-        return startTime;
-    }
-
-    public Vector3f getLocation() {
-        return location;
-    }
-
-    public Quaternion getFacing() {
-        return facing;
+        this.endTime = startTime + 1000 * 1000000L;
+        this.time = time;
+    } 
+    
+    @Override
+    protected void controlUpdate( float tpf ) {
+        if( stopped ) {
+            return;
+        }
+ 
+        if( !started && time.getTime() > startTime ) {        
+            emitter.emitAllParticles();
+            started = true;
+System.out.println( "Playing sound:" + sound + " at volume:" + sound.getVolume() );            
+            sound.play();
+        }
+        
+        if( started && time.getTime() > endTime ) {
+            emitter.killAllParticles();
+            stopped = true;
+            started = false;
+        }                       
     }
 
     @Override
-    public String toString() {
-        return "Position[" + location + ", " + facing + ", at:" + endTime + "]";
+    protected void controlRender( RenderManager rm, ViewPort vp ) {
     }
 }
-
 

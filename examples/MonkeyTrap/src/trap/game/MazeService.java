@@ -213,7 +213,17 @@ System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + coll
                                  new Collision(e.getId(), e.get(ModelType.class), 
                                                collider.getId(), collider.get(ModelType.class)),
                                  pos,
-                                 new Decay(pos.getTime() + 2000 * 1000000L));                                                                  
+                                 new Decay(pos.getTime() + 2000 * 1000000L));
+                                 
+ 
+                if( e.get(ModelType.class) == MonkeyTrapConstants.TYPE_MONKEY 
+                    && collider.get(ModelType.class) != MonkeyTrapConstants.TYPE_BLING ) {                                
+                    // For testing....
+                    EntityId test = ed.createEntity();
+                    ed.setComponents(test, pos.newTime(pos.getTime(), pos.getTime()), 
+                                     MonkeyTrapConstants.TYPE_BLING, 
+                                     new Decay(pos.getTime() + 2000 * 1000000L));
+                }                                                                                                                                                         
             }
         }            
         cell.add(e);
@@ -232,7 +242,7 @@ System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + coll
     
     protected void setPosition( Entity e, Position pos ) {
         Vector3f old = lastPositions.get(e.getId());
-        if( pos.getLocation().equals(old) ) {
+        if( pos != null && pos.getLocation().equals(old) ) {
 //System.out.println( "Locations are same, probably just turned." + old + "  new:" + pos.getLocation() );        
             return; // we just turned
         } else {

@@ -39,13 +39,19 @@ import trap.game.ModelType;
 import trap.game.TimeProvider;
 import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
+import com.jme3.asset.AssetManager;
+import com.jme3.audio.AudioNode;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.collision.Collidable;
 import com.jme3.collision.CollisionResults;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh.Type;
+import com.jme3.effect.shapes.EmitterSphereShape;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
+import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
@@ -53,6 +59,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.simsilica.es.Entity;
+import trap.game.Position;
 
 
 /**
@@ -269,7 +276,50 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             setupMaterials(wrapper, diffuse, ambient);
                        
             return wrapper;            
-        } 
+        } else if( MonkeyTrapConstants.TYPE_BLING.equals(type) ) {
+System.out.println( "Creating bling..." );        
+            Node wrapper = new Node("Bling");
+
+            ParticleEmitter emitter = new ParticleEmitter("StarBurst", Type.Point, 32);
+            emitter.setSelectRandomImage(true);
+            emitter.setStartColor(new ColorRGBA(.3f, 0.6f, 0.7f, 1));
+            emitter.setEndColor(new ColorRGBA(.1f, .2f, .3f, 0f));
+            emitter.setStartSize(0.05f);
+            emitter.setEndSize(0.1f);
+            emitter.setShape(new EmitterSphereShape(Vector3f.ZERO, 0.1f));
+            emitter.setParticlesPerSec(0);
+            emitter.setGravity(0, -1, 0);
+            emitter.setLowLife(0.4f);
+            emitter.setHighLife(0.75f);
+            emitter.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 2, 0));
+            emitter.getParticleInfluencer().setVelocityVariation(1f);
+            emitter.setImagesX(16);
+            emitter.setImagesY(1);
+            
+            AssetManager assets = state.getApplication().getAssetManager();
+            Material mat = new Material(assets, "Common/MatDefs/Misc/Particle.j3md");
+            mat.setTexture("Texture", assets.loadTexture("Textures/Smoke.png"));
+            mat.setBoolean("PointSprite", true);
+            emitter.setMaterial(mat);
+            emitter.setLocalTranslation(0, 1f, 0);
+            
+            wrapper.attachChild(emitter);
+            
+            AudioNode bling = new AudioNode(assets, "Sounds/bling.ogg", false);
+            bling.setVolume(0.15f);
+            // It's sort of in tune with the ambient music already so this sounds
+            // really off.
+            //float random = (float)(Math.random() * 0.05 - 0.025);
+            //bling.setPitch(1 + random);
+            
+            // Having to pass a time index is not ideal.
+            Position pos = e.get(Position.class);
+            long timeIndex = pos != null ? pos.getTime() : time.getTime();
+            timeIndex = Math.max(timeIndex, time.getTime());
+            wrapper.addControl(new ParticleControl(emitter, bling, timeIndex, time));
+            
+            return wrapper;            
+        }
         
         return null;
     }
