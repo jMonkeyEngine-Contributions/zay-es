@@ -83,7 +83,8 @@ public class MovementService implements Service {
         // already checked space availability at that time.  We
         // only have to check for availability that changes because
         // of these moves.
-               
+ 
+//System.out.println( "Doing actual movements..." );               
         // Perform all movements for all active mobs
         for( Entity e : mobs ) {
             MoveTo to = e.get(MoveTo.class);
@@ -101,11 +102,23 @@ public class MovementService implements Service {
             // set from dir.getFacing()
             if( dir.getFacing().equals(pos.getFacing()) ) {
                 // Then we can move
+//System.out.println( "Move:" + e + " to:" + pos );                
  
                 // Remove the component because we no longer need it
                 ed.removeComponent(e.getId(), MoveTo.class);
  
                 if( !occupied.add(to.getLocation()) ) {
+                    // Something already moved here... nothing left
+                    // to do
+                    continue;
+                }
+                
+                // Check the maze service, too because if we delayed
+                // moving because of a turn then something might have
+                // moved into our spot.
+                if( mazeService.isOccupied(to.getLocation()) ) {
+//System.out.println( "  already occupied:" + to.getLocation() );
+//System.out.println( "    by:" + mazeService.getEntities( (int)(to.getLocation().x/2), (int)(to.getLocation().z/2) ) );                
                     // Something already moved here... nothing left
                     // to do
                     continue;
@@ -123,6 +136,7 @@ public class MovementService implements Service {
                 ed.setComponents(e.getId(), next, act);
                 
             } else {
+//System.out.println( "Turn:" + e + " to:" + pos );                
                 // We need to turn first
                 long actionTimeMs = (long)(0.25/speed.getTurnSpeed() * 1000.0);
                 long actionTimeNanos = actionTimeMs * 1000000;

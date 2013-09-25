@@ -38,43 +38,24 @@ import com.simsilica.es.EntityComponent;
 
 
 /**
- *  Represents an activity that a MOB or player is actively
- *  engaged in over a period of time.  During this time, no
- *  other activities can be performed.
+ *  An entity with a decay component will be deleted
+ *  at some point in the future.
  *
  *  @author    Paul Speed
  */
-public class Activity implements EntityComponent {
-
-    public static final byte SPAWNING = 0;
-    public static final byte WALKING = 1;
-    public static final byte TURNING = 2;
-    public static final byte WAITING = 3;
-
-    private byte type;  
-    private long startTime;
-    private long endTime;
+public class Decay implements EntityComponent {
+    private long at;
     
-    public Activity( byte type, long startTime, long endTime ) {
-        this.type = type;
-        this.startTime = startTime;
-        this.endTime = endTime;
+    public Decay( long at ) {
+        this.at = at;
     }
     
-    public byte getType() {
-        return type;
-    }
-    
-    public long getStartTime() {
-        return startTime;
-    }
-    
-    public long getEndTime() {
-        return endTime;
+    public long getTime() {
+        return at;
     }
     
     @Override
     public String toString() {
-        return "Activity[" + type + ", from:" + startTime + ", to:" + endTime + "]";
+        return "Decay[" + at + "]";
     }
 }

@@ -34,72 +34,44 @@
 
 package trap.game;
 
-import com.jme3.math.Vector3f;
-import com.simsilica.es.ComponentFilter;
+import com.simsilica.es.Entity;
 import com.simsilica.es.EntityData;
-import com.simsilica.es.EntityId;
 import com.simsilica.es.EntitySet;
-import com.simsilica.es.Filters;
 
 
 /**
- *  Keeps the maze filled with mobs.
+ *  Removes any entities whose Decay time has come.
  *  
  *  @author    Paul Speed
  */
-public class SpawnService implements Service {
+public class DecayService implements Service {
  
-    private GameSystems systems;
-    private EntityData ed;
-    private MazeService mazeService;
-    private Maze maze;
-    private int mobCount;
-    
-    private EntitySet mobs;
+    private EntityData ed;    
+    private EntitySet decaying;
        
-    public SpawnService( int optimalMobCount ) {
-        this.mobCount = optimalMobCount;
+    public DecayService() {
     }
 
     public void initialize( GameSystems systems ) {
-        this.systems = systems;
         this.ed = systems.getEntityData();
-        this.mazeService = systems.getService(MazeService.class); 
-        this.maze = mazeService.getMaze();
- 
-        ComponentFilter filter = Filters.fieldEquals(ModelType.class, "type", 
-                                                     MonkeyTrapConstants.TYPE_OGRE.getType());        
-        mobs = ed.getEntities(filter, ModelType.class, Position.class);
-    }
-
-    protected void spawnMob() {
-        EntityId mob = ed.createEntity();
-
-        // Find a random spot in the maze
-        Vector3f loc = mazeService.findRandomLocation();
-        loc.multLocal(2);
-        //loc.x = maze.getXSeed() * 2;
-        //loc.z = maze.getYSeed() * 2;
-        ed.setComponent(mob, new Activity(Activity.SPAWNING, systems.getGameTime(), systems.getGameTime() + 2000 * 1000000L));    
-        ed.setComponent(mob, new Position(loc, systems.getGameTime(), systems.getGameTime())); 
-        ed.setComponent(mob, MonkeyTrapConstants.TYPE_OGRE);   
-        //ed.setComponent(mob, MonkeyTrapConstants.AI_DRUNK);   
-        ed.setComponent(mob, MonkeyTrapConstants.AI_SURVEY);
-        ed.setComponent(mob, MonkeyTrapConstants.SPEED_OGRE);
-        ed.setComponent(mob, new HitPoints(MonkeyTrapConstants.OGRE_HITPOINTS));
-
-        // ...and whatever else
+        decaying = ed.getEntities(Decay.class);
     }
 
     public void update( long gameTime ) {
-        mobs.applyChanges();
-        // Just one per "frame" at most
-        if( mobs.size() < mobCount )
-            spawnMob();
+        decaying.applyChanges();
+        if( !decaying.isEmpty() ) {
+            for( Entity e : decaying ) {
+                Decay decay = e.get(Decay.class);
+                if( gameTime > decay.getTime() ) {
+System.out.println( "Removing entity:" + e );            
+                    ed.removeEntity(e.getId());
+                }
+            }
+        }
     }
 
     public void terminate( GameSystems systems ) {
-        mobs.release();
+        decaying.release();
     }
     
 }

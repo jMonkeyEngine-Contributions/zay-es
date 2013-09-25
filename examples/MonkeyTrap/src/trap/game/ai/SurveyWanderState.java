@@ -122,6 +122,7 @@ public class SurveyWanderState implements State {
             }
         }
 
+//System.out.println( "Block check:" + mob.getEntity().getId() + "  is blocked?:" + mazeService.isBlocked(dir, x, y, mobsRedirect));
         // Once we've picked a direction to go, see if we've looped
 /*        Vector3f start = mob.get("start");
         Direction startDir = mob.get("startDir");
@@ -144,14 +145,14 @@ public class SurveyWanderState implements State {
         mob.set("lastLocation", loc);
  
         if( !mobsRedirect && mazeService.isOccupied(dir, x, y) ) {
-//System.out.println( "...waiting." );        
+//System.out.println( "...waiting. " + mob.getEntity() );        
             // Just wait
             long actionTimeMs = 100;  // 100 ms  just wait a bit
             long actionTimeNanos = actionTimeMs * 1000000;            
             Activity act = new Activity(Activity.WAITING, time, time + actionTimeNanos);                                           
             mob.setComponents(act);
         } else {
-//System.out.println( "...move to:" + dir.forward(loc, 2) );         
+//System.out.println( "...move to:" + dir.forward(loc, 2) + "   " + mob.getEntity() );                
             // Let the move service know we wish to go there.
             mob.setComponents(new MoveTo(dir.forward(loc, 2), time));            
         } 

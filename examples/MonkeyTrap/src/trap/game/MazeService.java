@@ -64,7 +64,7 @@ public class MazeService implements Service {
  
     private EntityData ed;
     private EntitySet objects;
-    private Map<Vector3f, List<EntityId>> index = new HashMap<Vector3f, List<EntityId>>();
+    private Map<Vector3f, CellEntities> solidIndex = new HashMap<Vector3f, CellEntities>();
     private Map<EntityId, Vector3f> lastPositions = new HashMap<EntityId, Vector3f>(); 
     
     public MazeService( int xSize, int ySize ) {
@@ -125,32 +125,33 @@ public class MazeService implements Service {
         } else if( !includeObjects ) {
             return false;
         }
-        //refreshIndex();
-        return !getEntities(x, y).isEmpty();        
+        CellEntities cell = getCellEntities(new Vector3f(x*2, 0, y*2), false);
+        if( cell == null ) {
+            return false;
+        } 
+        return cell.isOccupied();        
     } 
+
+    public boolean isOccupied( Vector3f loc ) {
+        return isOccupied((int)(loc.x * 0.5), (int)(loc.z * 0.5));
+    }
 
     public boolean isOccupied( int x, int y ) {    
         int t = maze.get(x,y);
         if( maze.isSolid(t) ) {
             return true;
         }
-        //refreshIndex();
-        return !getEntities(x, y).isEmpty();
+        CellEntities cell = getCellEntities(new Vector3f(x*2, 0, y*2), false);
+        if( cell == null ) {
+            return false;
+        } 
+        return cell.isOccupied();        
     } 
 
     public boolean isOccupied( Direction dir, int x, int y ) {
         x += dir.getXDelta();
         y += dir.getYDelta();
         return isOccupied(x, y);
-        /*int t = maze.get(x,y);
-        if( maze.isSolid(t) ) {
-            return true;
-        }
-        List<EntityId> list = getEntities(x, y);
-        if( !list.isEmpty() ) {
-            return true;              
-        }
-        return false;*/
     } 
 
     public void initialize( GameSystems systems ) {
@@ -169,74 +170,105 @@ public class MazeService implements Service {
         ed = systems.getEntityData();
         
         // We only watch for entity's with hit points because otherwise
-        // they are traversable.
-        objects = ed.getEntities(Position.class, ModelType.class, HitPoints.class);
+        // they are traversable.  Well, we'll grab them all and sort
+        // out the "solidness" later.
+        objects = ed.getEntities(Position.class, ModelType.class);
         addObjects(objects);        
     }
  
-    public List<EntityId> getEntities( int x, int y ) {
-        List<EntityId> list = getEntities(new Vector3f(x*2, 0, y*2), false);
-        if( list == null ) {
+    public List<Entity> getEntities( int x, int y ) {
+        CellEntities cell = getCellEntities(new Vector3f(x*2, 0, y*2), false);
+        if( cell == null || cell.entities == null ) {
             return Collections.emptyList();
         }
-        return Collections.unmodifiableList(list);
+        return Collections.unmodifiableList(cell.entities);
     }
  
-    protected List<EntityId> getEntities( Vector3f pos, boolean create ) {
-        List<EntityId> result = index.get(pos);
+    protected CellEntities getCellEntities( Vector3f pos, boolean create ) {
+        CellEntities result = solidIndex.get(pos);
         if( result == null && create ) {
-            result = new ArrayList<EntityId>();
-            index.put(pos, result);
+            result = new CellEntities();
+            solidIndex.put(pos, result);
         }
         return result;
     }
     
-    protected void add( EntityId id, Vector3f pos ) {
-        getEntities(pos, true).add(id);
+    protected void add( Entity e, Position pos ) {
+        CellEntities cell = getCellEntities(pos.getLocation(), true);
+        if( !cell.isEmpty() && pos.getChangeTime() != pos.getTime() ) {
+            // Calculate the collisions before we add ourselves to
+            // the list.
+            for( Entity collider : cell.entities ) {
+                if( e.get(ModelType.class) == collider.get(ModelType.class) ) {
+                    log.error("Ogre collided with itself which means other checks are failing:" 
+                                + e + " and " + collider);
+                }
+                
+                // Generate the collision
+                // Give it a 2 second decay so that if anything doesn't
+                // handle the collision it will eventually get removed.
+                EntityId collision = ed.createEntity();
+System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + collider );                                
+                ed.setComponents(collision, 
+                                 new Collision(e.getId(), e.get(ModelType.class), 
+                                               collider.getId(), collider.get(ModelType.class)),
+                                 pos,
+                                 new Decay(pos.getTime() + 2000 * 1000000L));                                                                  
+            }
+        }            
+        cell.add(e);
     }
     
-    protected void remove( EntityId id, Vector3f pos ) {
-        List<EntityId> list = getEntities(pos, false);
-        if( list == null ) {
+    protected void remove( Entity e, Vector3f pos ) {
+        CellEntities cell = getCellEntities(pos, false);
+        if( cell == null ) {
             return;
         }
-        list.remove(id);
-        if( list.isEmpty() ) {
-            index.remove(pos);
+        cell.remove(e);
+        if( cell.isEmpty() ) {
+            solidIndex.remove(pos);
         }
     }
     
-    protected void setPosition( EntityId id, Vector3f pos ) {
-        Vector3f old = lastPositions.remove(id);
+    protected void setPosition( Entity e, Position pos ) {
+        Vector3f old = lastPositions.get(e.getId());
+        if( pos.getLocation().equals(old) ) {
+//System.out.println( "Locations are same, probably just turned." + old + "  new:" + pos.getLocation() );        
+            return; // we just turned
+        } else {
+            lastPositions.remove(e.getId());
+        }
+        
         if( old != null ) {
-            remove(id, old);
+            remove(e, old);
         }
         if( pos != null ) {
-            add(id, pos);
-            lastPositions.put(id, pos);           
+            add(e, pos);
+            lastPositions.put(e.getId(), pos.getLocation());           
         }
     }
 
     protected void addObjects( Set<Entity> set ) {
         for( Entity e : set ) {
-            setPosition(e.getId(), e.get(Position.class).getLocation());
+            setPosition(e, e.get(Position.class));
         }
     }
     
     protected void updateObjects( Set<Entity> set ) {
         for( Entity e : set ) {
-            setPosition(e.getId(), e.get(Position.class).getLocation());
+            setPosition(e, e.get(Position.class));
         }
     }
     
     protected void removeObjects( Set<Entity> set ) {
         for( Entity e : set ) {
-            setPosition(e.getId(), null);
+            setPosition(e, null);
         }
     }  
 
     protected void refreshIndex() {
         if( objects.applyChanges() ) {
+//System.out.println( "Upating index..." );        
             removeObjects(objects.getRemovedEntities());
             addObjects(objects.getAddedEntities());
             updateObjects(objects.getChangedEntities());
@@ -249,5 +281,40 @@ public class MazeService implements Service {
 
     public void terminate( GameSystems systems ) {
         objects.release();
+    }
+    
+    protected class CellEntities {
+        List<Entity> entities;
+        List<Entity> solid;
+        
+        public CellEntities() {
+        }
+        
+        public void add( Entity e ) {
+            if( entities == null ) {
+                entities = new ArrayList<Entity>();
+            }
+            if( entities.add(e) ) {
+                if( ed.getComponent(e.getId(), HitPoints.class) != null ) {                
+                    if( solid == null ) {
+                        solid = new ArrayList<Entity>();
+                    }
+                    solid.add(e);
+                }
+            }
+        }
+        
+        public void remove( Entity e ) {
+            entities.remove(e);
+            solid.remove(e);
+        }
+ 
+        public boolean isOccupied() {
+            return !solid.isEmpty();
+        }
+        
+        public boolean isEmpty() {
+            return entities == null || entities.isEmpty();
+        }
     }
 }

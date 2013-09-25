@@ -35,46 +35,45 @@
 package trap.game;
 
 import com.simsilica.es.EntityComponent;
+import com.simsilica.es.EntityId;
 
 
 /**
- *  Represents an activity that a MOB or player is actively
- *  engaged in over a period of time.  During this time, no
- *  other activities can be performed.
  *
  *  @author    Paul Speed
  */
-public class Activity implements EntityComponent {
-
-    public static final byte SPAWNING = 0;
-    public static final byte WALKING = 1;
-    public static final byte TURNING = 2;
-    public static final byte WAITING = 3;
-
-    private byte type;  
-    private long startTime;
-    private long endTime;
+public class Collision implements EntityComponent {
+    private EntityId collider1;
+    private EntityId collider2;
+    private ModelType type1;
+    private ModelType type2;
     
-    public Activity( byte type, long startTime, long endTime ) {
-        this.type = type;
-        this.startTime = startTime;
-        this.endTime = endTime;
+    public Collision( EntityId collider1, ModelType type1,
+                      EntityId collider2, ModelType type2 ) {
+        this.collider1 = collider1;
+        this.type1 = type1;
+        this.collider2 = collider2;
+        this.type2 = type2;                      
     }
     
-    public byte getType() {
-        return type;
+    public EntityId getCollider1() {
+        return collider1;
     }
     
-    public long getStartTime() {
-        return startTime;
+    public ModelType getType1() {
+        return type1;
+    }
+ 
+    public EntityId getCollider2() {
+        return collider2;
     }
     
-    public long getEndTime() {
-        return endTime;
+    public ModelType getType2() {
+        return type2;
     }
     
     @Override
     public String toString() {
-        return "Activity[" + type + ", from:" + startTime + ", to:" + endTime + "]";
-    }
+        return "Collision[" + collider1 + ":" + type1 + ", " + collider2 + ":" + type2 + "]";
+    }                      
 }
