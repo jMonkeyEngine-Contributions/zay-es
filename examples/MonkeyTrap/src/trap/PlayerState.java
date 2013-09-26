@@ -38,6 +38,7 @@ import trap.game.Direction;
 import trap.game.Position;
 import trap.game.SensorArea;
 import com.jme3.app.Application;
+import com.jme3.audio.Listener;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
@@ -67,12 +68,15 @@ public class PlayerState extends BaseAppState
     private Position lastPos;
     private Quaternion cameraAngle;
     private Vector3f cameraDelta;
+    private Vector3f audioDelta;
     private float cameraDistance = 20; //12;
  
     // Here for the moment
     private SensorArea sensor;
     private int xLast = -1;
     private int yLast = -1;
+ 
+    private Listener audioListener = new Listener();
  
     public PlayerState( GameClient client ) {
         this.client = client;
@@ -85,6 +89,8 @@ public class PlayerState extends BaseAppState
     @Override
     protected void initialize( Application app ) {
  
+        app.getAudioRenderer().setListener(audioListener);
+         
         this.ed = client.getEntityData();
         this.player = client.getPlayer();
     
@@ -98,6 +104,10 @@ public class PlayerState extends BaseAppState
         cameraAngle = new Quaternion().fromAngles(FastMath.QUARTER_PI * 1.3f, FastMath.PI, 0);
         cameraDelta = cameraAngle.mult(Vector3f.UNIT_Z);
         cameraDelta.multLocal(-cameraDistance);
+
+        audioListener.setRotation(cameraAngle);
+        audioDelta = cameraAngle.mult(Vector3f.UNIT_Z);
+        audioDelta.multLocal(4);        
         
         // Back it up a little so the framing is more even
         cameraDelta.addLocal(0, -1, 0);
@@ -138,6 +148,11 @@ public class PlayerState extends BaseAppState
             loc.set(interpNode.getLocalTranslation());
             loc.addLocal(cameraDelta);
             cam.setLocation(loc);
+ 
+            loc = audioListener.getLocation(); 
+            loc.set(interpNode.getLocalTranslation());
+            loc.addLocal(audioDelta);
+            audioListener.setLocation(loc);
         }                
         
         if( pos != null ) {        

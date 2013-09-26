@@ -58,7 +58,7 @@ public class SpawnService implements Service {
     private EntitySet mobs;
        
     public SpawnService( int optimalMobCount ) {
-        this.mobCount = optimalMobCount;
+        this.mobCount = 1; //optimalMobCount;
     }
 
     public void initialize( GameSystems systems ) {
@@ -78,8 +78,8 @@ public class SpawnService implements Service {
         // Find a random spot in the maze
         Vector3f loc = mazeService.findRandomLocation();
         loc.multLocal(2);
-        //loc.x = maze.getXSeed() * 2;
-        //loc.z = maze.getYSeed() * 2;
+        loc.x = maze.getXSeed() * 2;
+        loc.z = maze.getYSeed() * 2;
         
         EntityFactories.createObject(MonkeyTrapConstants.TYPE_OGRE, systems.getGameTime(), loc); 
 

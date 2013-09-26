@@ -39,8 +39,10 @@ import com.jme3.animation.AnimChannel;
 import java.util.*;
 
 import com.jme3.animation.AnimControl;
+import com.jme3.audio.AudioNode;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
+import com.jme3.scene.Node;
 import com.jme3.scene.control.AbstractControl;
 
 
@@ -53,14 +55,16 @@ import com.jme3.scene.control.AbstractControl;
  *  @author    Paul Speed
  */
 public class CharacterAnimControl extends AbstractControl {
-
+ 
     private TimeProvider time;
     private AnimControl anim;
     private Map<String, List<Mapping>> mappings = new HashMap<String, List<Mapping>>();
+    private Map<String, AudioNode> sounds = new HashMap<String, AudioNode>();
     private String defaultAnimation = "Idle";
     private String animation;
     private AnimationTime current;
-    
+    private AudioNode currentSound;
+ 
     public CharacterAnimControl( TimeProvider time, AnimControl anim ) {
         this.time = time;
         this.anim = anim;
@@ -68,6 +72,10 @@ public class CharacterAnimControl extends AbstractControl {
 
     public void addMapping( String name, String animation, float speed ) {
         getMappings(name, true).add(new Mapping(animation, speed));       
+    }
+    
+    public void addMapping( String name, AudioNode node ) {
+        sounds.put(name, node);
     }
 
     protected List<Mapping> getMappings( String name, boolean create ) {
@@ -92,6 +100,16 @@ public class CharacterAnimControl extends AbstractControl {
         this.animation = name;
         
         anim.clearChannels();
+               
+        if( currentSound != null ) {
+            currentSound.stop();
+            currentSound.removeFromParent();
+        }
+        currentSound = sounds.get(name);
+        if( currentSound != null ) {
+            currentSound.play();
+            ((Node)spatial).attachChild(currentSound);
+        }                
                
         for( int i = 0; i < mappings.size(); i++ ) {
             Mapping m = mappings.get(i);

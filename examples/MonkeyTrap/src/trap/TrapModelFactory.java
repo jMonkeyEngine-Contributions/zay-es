@@ -122,9 +122,11 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
         ModelType type = e.get(ModelType.class);
  
         TimeProvider time = state.getState(PlayerState.class).getClient().getRenderTimeProvider();
+ 
+        AssetManager assets = state.getApplication().getAssetManager(); 
                
-        if( MonkeyTrapConstants.TYPE_MONKEY.equals(type) ) {
-            Node monkey = (Node)state.getApplication().getAssetManager().loadModel( "Models/Jaime/Jaime.j3o" );
+        if( MonkeyTrapConstants.TYPE_MONKEY.equals(type) ) {        
+            Node monkey = (Node)assets.loadModel( "Models/Jaime/Jaime.j3o" );
             AnimControl anim = monkey.getControl(AnimControl.class);
             AnimChannel channel = anim.createChannel();
             channel.setAnim("Idle");
@@ -141,7 +143,12 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             
             CharacterAnimControl cac = new CharacterAnimControl(time, anim);
             cac.addMapping("Idle", "Idle", 1);
-            cac.addMapping("Walk", "Walk", 1.55f * (float)MonkeyTrapConstants.MONKEY_MOVE_SPEED); 
+            cac.addMapping("Walk", "Walk", 1.55f * (float)MonkeyTrapConstants.MONKEY_MOVE_SPEED);
+            AudioNode walkSound = new AudioNode(assets, "Sounds/monkey-feet.ogg", false);
+            walkSound.setVolume(0.75f);
+            walkSound.setLooping(true);
+            walkSound.setRefDistance(4);
+            cac.addMapping("Walk", walkSound); 
             monkey.addControl(cac);
  
             ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
@@ -183,6 +190,11 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             cac.addMapping("Idle", "IdleBase", 1);
             cac.addMapping("Walk", "RunTop", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
             cac.addMapping("Walk", "RunBase", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
+            AudioNode walkSound = new AudioNode(assets, "Sounds/ogre-feet.ogg", false);
+            walkSound.setVolume(0.75f);
+            walkSound.setLooping(true);
+            walkSound.setRefDistance(4);
+            cac.addMapping("Walk", walkSound); 
             wrapper.addControl(cac);
 
             ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
@@ -296,7 +308,6 @@ System.out.println( "Creating bling..." );
             emitter.setImagesX(16);
             emitter.setImagesY(1);
             
-            AssetManager assets = state.getApplication().getAssetManager();
             Material mat = new Material(assets, "Common/MatDefs/Misc/Particle.j3md");
             mat.setTexture("Texture", assets.loadTexture("Textures/Smoke.png"));
             mat.setBoolean("PointSprite", true);
@@ -306,7 +317,8 @@ System.out.println( "Creating bling..." );
             wrapper.attachChild(emitter);
             
             AudioNode bling = new AudioNode(assets, "Sounds/bling.ogg", false);
-            bling.setVolume(0.15f);
+            bling.setVolume(0.25f);
+            bling.setPositional(false);
             // It's sort of in tune with the ambient music already so this sounds
             // really off.
             //float random = (float)(Math.random() * 0.05 - 0.025);
