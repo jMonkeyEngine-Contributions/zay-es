@@ -43,17 +43,23 @@ import com.simsilica.es.EntityId;
  *  @author    Paul Speed
  */
 public class Collision implements EntityComponent {
+    private long time;
     private EntityId collider1;
     private EntityId collider2;
     private ModelType type1;
     private ModelType type2;
     
-    public Collision( EntityId collider1, ModelType type1,
+    public Collision( long time, EntityId collider1, ModelType type1,
                       EntityId collider2, ModelType type2 ) {
-        this.collider1 = collider1;
+        this.time = time;                      
+        this.collider1 = collider1;        
         this.type1 = type1;
         this.collider2 = collider2;
         this.type2 = type2;                      
+    }
+    
+    public long getTime() {
+        return time;
     }
     
     public EntityId getCollider1() {
@@ -74,6 +80,6 @@ public class Collision implements EntityComponent {
     
     @Override
     public String toString() {
-        return "Collision[" + collider1 + ":" + type1 + ", " + collider2 + ":" + type2 + "]";
+        return "Collision[at:" + time + ", " + collider1 + ":" + type1 + ", " + collider2 + ":" + type2 + "]";
     }                      
 }

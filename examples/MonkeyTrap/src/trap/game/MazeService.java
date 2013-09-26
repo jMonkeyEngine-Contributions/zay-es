@@ -207,24 +207,35 @@ public class MazeService implements Service {
                 // Generate the collision
                 // Give it a 2 second decay so that if anything doesn't
                 // handle the collision it will eventually get removed.
-                EntityId collision = ed.createEntity();
+                EntityId collision = EntityFactories.createCollision( e.getId(), e.get(ModelType.class),
+                                                                      collider.getId(), collider.get(ModelType.class),
+                                                                      pos.getTime(), 2000 * 1000000L,
+                                                                      pos );
+                 
+                //EntityId collision = ed.createEntity();
 System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + collider );                                
-                ed.setComponents(collision, 
-                                 new Collision(e.getId(), e.get(ModelType.class), 
+                /*ed.setComponents(collision, 
+                                 new Collision(pos.getTime(), e.getId(), e.get(ModelType.class), 
                                                collider.getId(), collider.get(ModelType.class)),
                                  pos,
-                                 new Decay(pos.getTime() + 2000 * 1000000L));
+                                 new Decay(pos.getTime() + 2000 * 1000000L));*/
                                  
  
                 if( e.get(ModelType.class) == MonkeyTrapConstants.TYPE_MONKEY 
                     && collider.get(ModelType.class) != MonkeyTrapConstants.TYPE_BLING ) {                                
                     // For testing....
-                    EntityId test = ed.createEntity();
+                    EntityFactories.createObject( MonkeyTrapConstants.TYPE_BLING, pos.getTime(),
+                                                  pos.newTime(pos.getTime(), pos.getTime()), 
+                                                  new Decay(pos.getTime() + 2000 * 1000000L));
+                         
+                    /*EntityId test = ed.createEntity();
                     ed.setComponents(test, pos.newTime(pos.getTime(), pos.getTime()), 
                                      MonkeyTrapConstants.TYPE_BLING, 
-                                     new Decay(pos.getTime() + 2000 * 1000000L));
-                    EntityId buff = ed.createEntity();
-                    ed.setComponents(buff, new Buff(e.getId(), pos.getTime()), new HealthChange(2));
+                                     new Decay(pos.getTime() + 2000 * 1000000L));*/
+                                     
+                    //EntityId buff = ed.createEntity();
+                    //ed.setComponents(buff, new Buff(e.getId(), pos.getTime()), new HealthChange(2));
+                    EntityFactories.createBuff(pos.getTime(), e.getId(), new HealthChange(2)); 
                 }                                                                                                                                                         
             }
         }            

@@ -80,13 +80,16 @@ public class SpawnService implements Service {
         loc.multLocal(2);
         //loc.x = maze.getXSeed() * 2;
         //loc.z = maze.getYSeed() * 2;
+        
+        EntityFactories.createObject(MonkeyTrapConstants.TYPE_OGRE, systems.getGameTime(), loc); 
+        /*
         ed.setComponent(mob, new Activity(Activity.SPAWNING, systems.getGameTime(), systems.getGameTime() + 2000 * 1000000L));    
         ed.setComponent(mob, new Position(loc, systems.getGameTime(), systems.getGameTime())); 
         ed.setComponent(mob, MonkeyTrapConstants.TYPE_OGRE);   
         //ed.setComponent(mob, MonkeyTrapConstants.AI_DRUNK);   
         ed.setComponent(mob, MonkeyTrapConstants.AI_SURVEY);
         ed.setComponent(mob, MonkeyTrapConstants.SPEED_OGRE);
-        ed.setComponent(mob, new HitPoints(MonkeyTrapConstants.OGRE_HITPOINTS));
+        ed.setComponent(mob, new HitPoints(MonkeyTrapConstants.OGRE_HITPOINTS));*/
 
         // ...and whatever else
     }

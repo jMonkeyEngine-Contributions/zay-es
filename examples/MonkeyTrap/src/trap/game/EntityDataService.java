@@ -58,6 +58,9 @@ public class EntityDataService implements Service {
     
     public void initialize( GameSystems systems ) {
         this.ed = createEntityData();
+        
+        // Take care of this here
+        EntityFactories.initialize(ed);
     }
     
     public void update( long gameTime ) {
