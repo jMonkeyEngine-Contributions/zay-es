@@ -35,6 +35,8 @@
 package trap.game.ai;
 
 import com.jme3.math.Vector3f;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import trap.game.Activity;
 import trap.game.Direction;
 import trap.game.MazeService;
@@ -59,6 +61,8 @@ import trap.game.Position;
  */
 public class SurveyWanderState implements State {
 
+    static Logger log = LoggerFactory.getLogger(SurveyWanderState.class);
+    
     private boolean mobsRedirect = true;
 
     public void enter( StateMachine fsm, Mob mob ) {
@@ -66,17 +70,11 @@ public class SurveyWanderState implements State {
     
     public void execute( StateMachine fsm, long time, Mob mob ) {
  
-        Activity current = mob.getComponent(Activity.class);
-        MoveTo moving = mob.getComponent(MoveTo.class);
-        if( moving != null || (current != null && current.getEndTime() >= time) ) {
+        if( mob.isBusy(time) ) {
             // Not done with the last activity yet
             return;
         }
-//System.out.println( "activity:" + current + "  time:" + time + "  moving:" + moving ); 
-//        if( last == null ) {
-//            mob.set("distance", 0);
-//        }
-//        Integer distance = mob.get("distance");
+        
         boolean leftHand = mob.get("leftHand", true);
 
         Position pos = mob.getPosition();
@@ -95,7 +93,10 @@ public class SurveyWanderState implements State {
             last = Direction.fromDelta(lastLocation, loc);
             distance = (int)loc.distance(lastLocation); 
         }
-//System.out.println( "lastLocation:" + lastLocation + "  loc:" + loc + "  lastDir:" + last + "  distance:" + distance );
+//        if( last == null ) {
+//            mob.set("distance", 0);
+//        }
+//        Integer distance = mob.get("distance");
 
         Direction dir = last != null ? last : Direction.South;
         
@@ -122,7 +123,6 @@ public class SurveyWanderState implements State {
             }
         }
 
-//System.out.println( "Block check:" + mob.getEntity().getId() + "  is blocked?:" + mazeService.isBlocked(dir, x, y, mobsRedirect));
         // Once we've picked a direction to go, see if we've looped
 /*        Vector3f start = mob.get("start");
         Direction startDir = mob.get("startDir");
@@ -141,55 +141,24 @@ public class SurveyWanderState implements State {
             mob.set( "start", null );
         }*/ 
 
-        //mob.set("lastDirection", dir);
         mob.set("lastLocation", loc);
  
         if( !mobsRedirect && mazeService.isOccupied(dir, x, y) ) {
-//System.out.println( "...waiting. " + mob.getEntity() );        
+            if( log.isDebugEnabled() ) {
+                log.debug("...waiting:" + mob.getEntity());
+            }                
             // Just wait
             long actionTimeMs = 100;  // 100 ms  just wait a bit
             long actionTimeNanos = actionTimeMs * 1000000;            
             Activity act = new Activity(Activity.WAITING, time, time + actionTimeNanos);                                           
             mob.setComponents(act);
         } else {
-//System.out.println( "...move to:" + dir.forward(loc, 2) + "   " + mob.getEntity() );                
+            if( log.isDebugEnabled() ) {
+                log.debug("...move to:" + dir.forward(loc, 2) + "   " + mob.getEntity());
+            }                
             // Let the move service know we wish to go there.
             mob.setComponents(new MoveTo(dir.forward(loc, 2), time));            
         } 
-/* 
-        // So, if we are blocked then we wait instead of trying to move
-        if( mazeService.isOccupied(dir, x, y) ) {        
-            long actionTimeMs = 100;  // 100 ms  just wait a bit
-            long actionTimeNanos = actionTimeMs * 1000000;            
-            Activity act = new Activity(Activity.WAITING, time, time + actionTimeNanos);                                           
-            mob.setComponents(act);
-        } else if( dir != last ) {
-            // So if the dir is different then we are turning and
-            // not walking.
-            mob.set("lastDirection", dir);
-            mob.set("distance", 0);
-            
-            long actionTimeMs = 200;  // 200 ms  // ogres take longer to turn than monkeys 
-            long actionTimeNanos = actionTimeMs * 1000000;
-            
-            Position next = new Position(pos.getLocation(), dir.getFacing(), time, time + actionTimeNanos);
-            Activity act = new Activity(Activity.TURNING, time, time + actionTimeNanos);                                           
-            mob.setComponents(next, act);
-        } else {
-            // We move forward               
-            mob.set("lastDirection", dir);
-            mob.set("distance", distance + 1);
-            mob.set("traveled", traveled + 1);
-            double stepDistance = 2.0;       
-            long actionTimeMs = (long)(stepDistance/MonkeyTrapConstants.OGRE_MOVE_SPEED * 1000.0);
-            long actionTimeNanos = actionTimeMs * 1000000;
-            Position next = new Position(dir.forward(loc, 2),
-                                         dir.getFacing(),
-                                         time,
-                                         time + actionTimeNanos);
-            Activity act = new Activity(Activity.WALKING, time, time + actionTimeNanos);
-            mob.setComponents(next, act);
-        }*/                       
     }
     
     public void leave( StateMachine fsm, Mob mob ) {

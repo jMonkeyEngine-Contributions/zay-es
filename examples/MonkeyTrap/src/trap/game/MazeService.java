@@ -212,29 +212,14 @@ public class MazeService implements Service {
                                                                       pos.getTime(), 2000 * 1000000L,
                                                                       pos );
                  
-                //EntityId collision = ed.createEntity();
 System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + collider );                                
-                /*ed.setComponents(collision, 
-                                 new Collision(pos.getTime(), e.getId(), e.get(ModelType.class), 
-                                               collider.getId(), collider.get(ModelType.class)),
-                                 pos,
-                                 new Decay(pos.getTime() + 2000 * 1000000L));*/
-                                 
  
                 if( e.get(ModelType.class) == MonkeyTrapConstants.TYPE_MONKEY 
                     && collider.get(ModelType.class) != MonkeyTrapConstants.TYPE_BLING ) {                                
                     // For testing....
                     EntityFactories.createObject( MonkeyTrapConstants.TYPE_BLING, pos.getTime(),
                                                   pos.newTime(pos.getTime(), pos.getTime()), 
-                                                  new Decay(pos.getTime() + 2000 * 1000000L));
-                         
-                    /*EntityId test = ed.createEntity();
-                    ed.setComponents(test, pos.newTime(pos.getTime(), pos.getTime()), 
-                                     MonkeyTrapConstants.TYPE_BLING, 
-                                     new Decay(pos.getTime() + 2000 * 1000000L));*/
-                                     
-                    //EntityId buff = ed.createEntity();
-                    //ed.setComponents(buff, new Buff(e.getId(), pos.getTime()), new HealthChange(2));
+                                                  new Decay(pos.getTime() + 2000 * 1000000L));                         
                     EntityFactories.createBuff(pos.getTime(), e.getId(), new HealthChange(2)); 
                 }                                                                                                                                                         
             }
@@ -333,7 +318,7 @@ System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + coll
         }
  
         public boolean isOccupied() {
-            return !solid.isEmpty();
+            return solid != null && !solid.isEmpty();
         }
         
         public boolean isEmpty() {

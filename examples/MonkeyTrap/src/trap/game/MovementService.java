@@ -40,6 +40,8 @@ import com.simsilica.es.EntityData;
 import com.simsilica.es.EntitySet;
 import java.util.HashSet;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -51,6 +53,8 @@ import java.util.Set;
  */
 public class MovementService implements Service {
  
+    static Logger log = LoggerFactory.getLogger(MovementService.class);
+    
     private GameSystems systems;
     private EntityData ed;
     private MazeService mazeService;
@@ -84,7 +88,8 @@ public class MovementService implements Service {
         // only have to check for availability that changes because
         // of these moves.
  
-//System.out.println( "Doing actual movements..." );               
+        log.debug("Doing actual movements...");
+                       
         // Perform all movements for all active mobs
         for( Entity e : mobs ) {
             MoveTo to = e.get(MoveTo.class);
@@ -102,7 +107,10 @@ public class MovementService implements Service {
             // set from dir.getFacing()
             if( dir.getFacing().equals(pos.getFacing()) ) {
                 // Then we can move
-//System.out.println( "Move:" + e + " to:" + pos );                
+                
+                if( log.isDebugEnabled() ) {
+                    log.debug("Move:" + e + " to:" + pos);
+                }                
  
                 // Remove the component because we no longer need it
                 ed.removeComponent(e.getId(), MoveTo.class);
@@ -117,8 +125,10 @@ public class MovementService implements Service {
                 // moving because of a turn then something might have
                 // moved into our spot.
                 if( mazeService.isOccupied(to.getLocation()) ) {
-//System.out.println( "  already occupied:" + to.getLocation() );
-//System.out.println( "    by:" + mazeService.getEntities( (int)(to.getLocation().x/2), (int)(to.getLocation().z/2) ) );                
+                    if( log.isDebugEnabled() ) {
+                        log.debug("Already occupied:" + to.getLocation() 
+                                    + " by:" + mazeService.getEntities( (int)(to.getLocation().x/2), (int)(to.getLocation().z/2) ) );
+                    }                                        
                     // Something already moved here... nothing left
                     // to do
                     continue;
@@ -136,7 +146,9 @@ public class MovementService implements Service {
                 ed.setComponents(e.getId(), next, act);
                 
             } else {
-//System.out.println( "Turn:" + e + " to:" + pos );                
+                if( log.isDebugEnabled() ) {
+                    log.debug("Turn:" + e + " to:" + pos);
+                }                
                 // We need to turn first
                 long actionTimeMs = (long)(0.25/speed.getTurnSpeed() * 1000.0);
                 long actionTimeNanos = actionTimeMs * 1000000;

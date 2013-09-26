@@ -142,34 +142,4 @@ public class EntityFactories {
     }                                          
 }
 
-/*
 
-        ed.setComponent(mob, new Activity(Activity.SPAWNING, systems.getGameTime(), systems.getGameTime() + 2000 * 1000000L));    
-        ed.setComponent(mob, new Position(loc, systems.getGameTime(), systems.getGameTime())); 
-        ed.setComponent(mob, MonkeyTrapConstants.TYPE_OGRE);   
-        //ed.setComponent(mob, MonkeyTrapConstants.AI_DRUNK);   
-        ed.setComponent(mob, MonkeyTrapConstants.AI_SURVEY);
-        ed.setComponent(mob, MonkeyTrapConstants.SPEED_OGRE);
-        ed.setComponent(mob, new HitPoints(MonkeyTrapConstants.OGRE_HITPOINTS));
-
-
-                EntityId collision = ed.createEntity();
-System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + collider );                                
-                ed.setComponents(collision, 
-                                 new Collision(e.getId(), e.get(ModelType.class), 
-                                               collider.getId(), collider.get(ModelType.class)),
-                                 pos,
-                                 new Decay(pos.getTime() + 2000 * 1000000L));
-                                 
- 
-                if( e.get(ModelType.class) == MonkeyTrapConstants.TYPE_MONKEY 
-                    && collider.get(ModelType.class) != MonkeyTrapConstants.TYPE_BLING ) {                                
-                    // For testing....
-                    EntityId test = ed.createEntity();
-                    ed.setComponents(test, pos.newTime(pos.getTime(), pos.getTime()), 
-                                     MonkeyTrapConstants.TYPE_BLING, 
-                                     new Decay(pos.getTime() + 2000 * 1000000L));
-                    EntityId buff = ed.createEntity();
-                    ed.setComponents(buff, new Buff(e.getId(), pos.getTime()), new HealthChange(2));
-                }                                                                                                                                                         
-*/

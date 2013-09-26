@@ -37,6 +37,8 @@ package trap.game;
 import com.simsilica.es.Entity;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntitySet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -45,6 +47,8 @@ import com.simsilica.es.EntitySet;
  *  @author    Paul Speed
  */
 public class DecayService implements Service {
+ 
+    static Logger log = LoggerFactory.getLogger(DecayService.class); 
  
     private EntityData ed;    
     private EntitySet decaying;
@@ -63,7 +67,9 @@ public class DecayService implements Service {
             for( Entity e : decaying ) {
                 Decay decay = e.get(Decay.class);
                 if( gameTime > decay.getTime() ) {
-System.out.println( "Removing entity:" + e );            
+                    if( log.isDebugEnabled() ) {
+                        log.debug("Removing entity:" + e);                                   
+                    }
                     ed.removeEntity(e.getId());
                 }
             }

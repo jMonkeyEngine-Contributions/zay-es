@@ -43,14 +43,6 @@ import trap.game.ai.AiType;
  */
 public class MonkeyTrapConstants {
  
-    public static final String E_MONKEY = "Monkey";
-    public static final String E_OGRE = "Ogre";
-    public static final String E_BLING = "Bling";
-    public static final String E_HEALTH = "Health";
-    public static final String E_BARREL = "Barrel";
-    public static final String E_BANANA = "Banana";
-    public static final String E_CHEST = "Chest";
-    
     public static final double MONKEY_MOVE_SPEED = 4.0; // m/sec
     public static final double OGRE_MOVE_SPEED = 3.0; // m/sec
     public static final double MONKEY_TURN_SPEED = 2.5; // rotations/sec, 90 degrees in 100 ms

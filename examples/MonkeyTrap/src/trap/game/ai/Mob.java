@@ -39,6 +39,8 @@ import com.simsilica.es.EntityComponent;
 import com.simsilica.es.EntityData;
 import java.util.HashMap;
 import java.util.Map;
+import trap.game.Activity;
+import trap.game.MoveTo;
 import trap.game.Position;
 
 
@@ -74,6 +76,20 @@ public class Mob {
  
     public Position getPosition() {
         return entity.get(Position.class);
+    }
+ 
+    public boolean isBusy(long time) {
+        MoveTo moving = getComponent(MoveTo.class);
+        if( moving != null ) {
+            return true;
+        }
+        
+        Activity current = getComponent(Activity.class);
+        if( current != null && current.getEndTime() >= time ) {
+            // Not done with the last activity yet
+            return true;
+        }
+        return false;
     }
  
     public boolean setAiType( AiType type ) {
