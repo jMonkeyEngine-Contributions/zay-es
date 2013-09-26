@@ -191,9 +191,10 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             cac.addMapping("Walk", "RunTop", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
             cac.addMapping("Walk", "RunBase", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
             AudioNode walkSound = new AudioNode(assets, "Sounds/ogre-feet.ogg", false);
-            walkSound.setVolume(0.75f);
+            walkSound.addControl(new AudioControl(state.getState(PlayerState.class).getAudioListener()));
+            //walkSound.setVolume(0.75f);
             walkSound.setLooping(true);
-            walkSound.setRefDistance(4);
+            walkSound.setRefDistance(10);
             cac.addMapping("Walk", walkSound); 
             wrapper.addControl(cac);
 

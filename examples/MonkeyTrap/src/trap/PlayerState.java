@@ -86,6 +86,10 @@ public class PlayerState extends BaseAppState
         return client;
     }
 
+    public Listener getAudioListener() {
+        return audioListener;
+    }
+
     @Override
     protected void initialize( Application app ) {
  

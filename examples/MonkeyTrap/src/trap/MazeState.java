@@ -105,6 +105,14 @@ public class MazeState extends BaseAppState {
         return maze;
     }
 
+    public int getVisibility( int x, int y ) {
+        return fogState[x][y];
+    }
+    
+    public boolean isVisible( int x, int y ) {
+        return (fogState[x][y] & PLAYER_VISIBLE) != 0; 
+    }
+
     public void setVisited( int x, int y ) {
         fogState[x][y] |= PLAYER_VISITED;
     }
