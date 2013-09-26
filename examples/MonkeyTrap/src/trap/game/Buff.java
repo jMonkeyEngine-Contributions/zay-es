@@ -35,30 +35,34 @@
 package trap.game;
 
 import com.simsilica.es.EntityComponent;
+import com.simsilica.es.EntityId;
 
 
 /**
- *  A destructable entity's health.
+ *  Associated with entities that apply some effect to
+ *  another entity.
  *
  *  @author    Paul Speed
  */
-public class HitPoints implements EntityComponent {
-    private int health;
+public class Buff implements EntityComponent {
+    private EntityId target;
+    private long startTime;
     
-    public HitPoints( int health ) {
-        this.health = health;
-    }
- 
-    public HitPoints newAdjusted( int delta ) {
-        return new HitPoints(health + delta);
+    public Buff( EntityId target, long startTime ) {
+        this.target = target;
+        this.startTime = startTime;
     }
     
-    public int getHealth() {
-        return health;
+    public EntityId getTarget() {
+        return target;
+    }
+    
+    public long getStartTime() {
+        return startTime;
     }
     
     @Override
     public String toString() {
-        return "HitPoints[" + health + "]";
-    }
+        return "Buff[" + target + ", at:" + startTime + "]";
+    }    
 }

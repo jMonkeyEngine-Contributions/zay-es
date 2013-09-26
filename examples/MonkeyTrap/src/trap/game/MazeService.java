@@ -223,6 +223,8 @@ System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + coll
                     ed.setComponents(test, pos.newTime(pos.getTime(), pos.getTime()), 
                                      MonkeyTrapConstants.TYPE_BLING, 
                                      new Decay(pos.getTime() + 2000 * 1000000L));
+                    EntityId buff = ed.createEntity();
+                    ed.setComponents(buff, new Buff(e.getId(), pos.getTime()), new HealthChange(2));
                 }                                                                                                                                                         
             }
         }            

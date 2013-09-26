@@ -38,27 +38,23 @@ import com.simsilica.es.EntityComponent;
 
 
 /**
- *  A destructable entity's health.
+ *  A buff for health.
  *
  *  @author    Paul Speed
  */
-public class HitPoints implements EntityComponent {
-    private int health;
-    
-    public HitPoints( int health ) {
-        this.health = health;
-    }
- 
-    public HitPoints newAdjusted( int delta ) {
-        return new HitPoints(health + delta);
+public class HealthChange implements EntityComponent {
+    private int delta;
+              
+    public HealthChange( int delta ) {
+        this.delta = delta;
     }
     
-    public int getHealth() {
-        return health;
+    public int getDelta() {
+        return delta;
     }
     
     @Override
     public String toString() {
-        return "HitPoints[" + health + "]";
+        return "HealthChange[" + delta + "]";
     }
 }
