@@ -58,7 +58,8 @@ public class AudioControl extends AbstractControl {
     private float current;
     private float cutOff = 12;  // 6 blocks
     private float cutOffSq = cutOff * cutOff;
-    private float baseVolume;  
+    private float baseVolume;
+    private boolean stopped;  
 
     public AudioControl( Listener listener ) {
         this.listener = listener;
@@ -67,15 +68,22 @@ public class AudioControl extends AbstractControl {
     public void setSpatial( Spatial s ) {
         super.setSpatial(s);
         node = (AudioNode)s;
-System.out.println( "AudioControl.setSpatial(" + s + ")" );
         duration = node.getAudioData().getDuration();         
-System.out.println( "  duration:" + duration );
         baseVolume = node.getVolume();
+    }
+ 
+    public void play() {
+        stopped = false;
+        current = 0;
+    }
+    
+    public void stop() {
+        stopped = true;
+        node.stop();
     }
 
     @Override
     protected void controlUpdate( float tpf ) {
-        //System.out.println( node.getWorldTranslation() + "   heard from:" + listener.getLocation() );
         current += tpf;
 
         Vector3f v1 = node.getWorldTranslation();
@@ -86,15 +94,12 @@ System.out.println( "  duration:" + duration );
         float z = v1.z - v2.z;  
         float distSq = x * x + z * z; 
         boolean audible = distSq < cutOffSq;
-//System.out.println( "distSq:" + distSq );        
-        if( audible && node.getStatus() == Status.Stopped ) {        
+        if( !stopped && audible && node.getStatus() == Status.Stopped ) {        
             // Need to play it... but have to do it at the right time
             float seek = current % duration;
-System.out.println( "Playing at:" + seek );            
             node.setTimeOffset(seek);
             node.play();
         } else if( !audible && node.getStatus() != Status.Stopped ) {
-System.out.println( "Stopping." );        
             node.stop();
         }
           

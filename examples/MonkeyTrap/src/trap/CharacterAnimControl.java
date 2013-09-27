@@ -59,11 +59,11 @@ public class CharacterAnimControl extends AbstractControl {
     private TimeProvider time;
     private AnimControl anim;
     private Map<String, List<Mapping>> mappings = new HashMap<String, List<Mapping>>();
-    private Map<String, AudioNode> sounds = new HashMap<String, AudioNode>();
+    private Map<String, SoundMapping> sounds = new HashMap<String, SoundMapping>();
     private String defaultAnimation = "Idle";
     private String animation;
     private AnimationTime current;
-    private AudioNode currentSound;
+    private SoundMapping currentSound;
  
     public CharacterAnimControl( TimeProvider time, AnimControl anim ) {
         this.time = time;
@@ -75,7 +75,11 @@ public class CharacterAnimControl extends AbstractControl {
     }
     
     public void addMapping( String name, AudioNode node ) {
-        sounds.put(name, node);
+        addMapping(name, node, 0);
+    }
+
+    public void addMapping( String name, AudioNode node, float delay ) {
+        sounds.put(name, new SoundMapping(node, delay));
     }
 
     protected List<Mapping> getMappings( String name, boolean create ) {
@@ -102,13 +106,13 @@ public class CharacterAnimControl extends AbstractControl {
         anim.clearChannels();
                
         if( currentSound != null ) {
-            currentSound.stop();
-            currentSound.removeFromParent();
+            currentSound.reset();
+            currentSound.sound.removeFromParent();
         }
         currentSound = sounds.get(name);
         if( currentSound != null ) {
-            currentSound.play();
-            ((Node)spatial).attachChild(currentSound);
+            currentSound.reset(); // just in case
+            ((Node)spatial).attachChild(currentSound.sound);
         }                
                
         for( int i = 0; i < mappings.size(); i++ ) {
@@ -130,6 +134,9 @@ public class CharacterAnimControl extends AbstractControl {
                 play(current.animation);
             }
         }
+        if( currentSound != null ) {
+            currentSound.update(tpf);
+        }
     }
 
     @Override
@@ -144,6 +151,43 @@ public class CharacterAnimControl extends AbstractControl {
             this.animation = animation;
             this.speed = speed;
         }   
+    }
+
+    private class SoundMapping {
+        AudioNode sound;
+        AudioControl control;
+        boolean started;
+        float delay;
+        float time;
+        
+        public SoundMapping( AudioNode sound, float delay ) {
+            this.sound = sound;
+            this.delay = delay;
+            this.control = sound.getControl(AudioControl.class);
+        }
+        
+        public void reset() {
+            time = 0;
+            if( control != null ) {
+                control.stop();
+            } else {
+                sound.stop();
+            }
+            started = false;
+        }
+        
+        public void update( float tpf ) {
+            time += tpf;
+            if( !started && time > delay ) {
+                if( control != null ) {
+                    control.play();
+                } else {
+                    sound.play();
+                }
+                    
+                started = true;
+            } 
+        }
     }
     
     private class AnimationTime {

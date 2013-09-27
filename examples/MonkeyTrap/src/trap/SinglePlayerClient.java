@@ -156,6 +156,9 @@ public class SinglePlayerClient implements GameClient
             int value = maze.get(dir, x, y);            
             if( maze.isSolid(value) )
                 return;
+
+            long moveTime = activity != null ? activity.getEndTime() : time;
+            moveTime = Math.max(moveTime, time);
  
             // Else see if there is something to attack.
             // Note: in multiplayer this check would be done on the server
@@ -164,11 +167,15 @@ public class SinglePlayerClient implements GameClient
             if( mazeService.isOccupied(dir, x, y) ) {
                 // Attack instead of move
                 System.out.println( "ATTACK!!!" );
+                
+                // Just for testing
+                long actTimeNanos = 500 * 1000000L;
+                Activity fight = new Activity(Activity.FIGHTING, moveTime, moveTime + actTimeNanos);  
+                ed.setComponent(player, fight);                
+                
                 return;
             }                
  
-            long moveTime = activity != null ? activity.getEndTime() : time;
-            moveTime = Math.max(moveTime, time);
             
             //System.out.println( "Trying to move to:" + dir.forward(loc, 2) + "  at:" + (moveTime/1000000.0) ); 
             ed.setComponent(player, new MoveTo(dir.forward(loc, 2), moveTime));

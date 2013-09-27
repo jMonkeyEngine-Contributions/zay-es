@@ -145,10 +145,19 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             cac.addMapping("Idle", "Idle", 1);
             cac.addMapping("Walk", "Walk", 1.55f * (float)MonkeyTrapConstants.MONKEY_MOVE_SPEED);
             AudioNode walkSound = new AudioNode(assets, "Sounds/monkey-feet.ogg", false);
+            walkSound.addControl(new AudioControl(state.getState(PlayerState.class).getAudioListener()));
             walkSound.setVolume(0.75f);
             walkSound.setLooping(true);
             walkSound.setRefDistance(4);
-            cac.addMapping("Walk", walkSound); 
+            cac.addMapping("Walk", walkSound);
+            
+            AudioNode punchSound = new AudioNode(assets, "Sounds/monkey-punch.ogg", false);
+            punchSound.addControl(new AudioControl(state.getState(PlayerState.class).getAudioListener()));
+            //walkSound.setVolume(0.75f);
+            //punchSound.setLooping(true);
+            punchSound.setRefDistance(4);
+            cac.addMapping("Attack", "Punches", 2);
+            cac.addMapping("Attack", punchSound, 0.1f); 
             monkey.addControl(cac);
  
             ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           

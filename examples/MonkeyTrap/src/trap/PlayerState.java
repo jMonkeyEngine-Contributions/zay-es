@@ -69,7 +69,7 @@ public class PlayerState extends BaseAppState
     private Quaternion cameraAngle;
     private Vector3f cameraDelta;
     private Vector3f audioDelta;
-    private float cameraDistance = 20; //12;
+    private float cameraDistance = 15; //20; //12;
  
     // Here for the moment
     private SensorArea sensor;

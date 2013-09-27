@@ -50,6 +50,7 @@ public class Activity implements EntityComponent {
     public static final byte WALKING = 1;
     public static final byte TURNING = 2;
     public static final byte WAITING = 3;
+    public static final byte FIGHTING = 4;
 
     private byte type;  
     private long startTime;

@@ -106,6 +106,11 @@ public class CharacterAnimState extends BaseAppState {
             case Activity.WAITING:
                 cac.setAnimation("Idle", act.getStartTime(), act.getEndTime());
                 break;
+            
+            // for the moment
+            case Activity.FIGHTING:
+                cac.setAnimation("Attack", act.getStartTime(), act.getEndTime());
+                break;
         }            
     }
 
@@ -130,11 +135,6 @@ public class CharacterAnimState extends BaseAppState {
         // Grab the set of entities we are interested in
         ed = getState(EntityDataState.class).getEntityData();
         entities = ed.getEntities(Position.class, ModelType.class, Activity.class);
-        
-        /*temp = new AudioNode( app.getAssetManager(), "Sounds/Foot steps-fast.ogg", false );
-        temp.setPositional(false);
-        temp.setVolume(0.75f);
-        temp.setLooping(true);*/
     }
 
     @Override
