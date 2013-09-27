@@ -63,11 +63,6 @@ public class MazeService implements Service {
  
     private EntityData ed;
     private EntitySet objects;
-    
-    /*
-    private Map<Vector3f, CellEntities> solidIndex = new HashMap<Vector3f, CellEntities>();
-    private Map<EntityId, Vector3f> lastPositions = new HashMap<EntityId, Vector3f>();
-    */
     private MazeIndex index; 
     
     public MazeService( int xSize, int ySize ) {
@@ -197,78 +192,6 @@ public class MazeService implements Service {
         return cell.getEntities();
     }
  
-    /*protected CellEntities getCellEntities( Vector3f pos, boolean create ) {
-        CellEntities result = solidIndex.get(pos);
-        if( result == null && create ) {
-            result = new CellEntities();
-            solidIndex.put(pos, result);
-        }
-        return result;
-    }*/
-    
-    /*protected void add( Entity e, Position pos ) {
-        CellEntities cell = getCellEntities(pos.getLocation(), true);
-        if( !cell.isEmpty() && pos.getChangeTime() != pos.getTime() ) {
-            // Calculate the collisions before we add ourselves to
-            // the list.
-            for( Entity collider : cell.entities ) {
-                if( e.get(ModelType.class) == collider.get(ModelType.class) ) {
-                    log.error("Ogre collided with itself which means other checks are failing:" 
-                                + e + " and " + collider);
-                }
-                
-                // Generate the collision
-                // Give it a 2 second decay so that if anything doesn't
-                // handle the collision it will eventually get removed.
-                EntityId collision = EntityFactories.createCollision( e.getId(), e.get(ModelType.class),
-                                                                      collider.getId(), collider.get(ModelType.class),
-                                                                      pos.getTime(), 2000 * 1000000L,
-                                                                      pos );
-                 
-System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + collider );                                
- 
-                if( e.get(ModelType.class) == MonkeyTrapConstants.TYPE_MONKEY 
-                    && collider.get(ModelType.class) != MonkeyTrapConstants.TYPE_BLING ) {                                
-                    // For testing....
-                    EntityFactories.createObject( MonkeyTrapConstants.TYPE_BLING, pos.getTime(),
-                                                  pos.newTime(pos.getTime(), pos.getTime()), 
-                                                  new Decay(pos.getTime() + 2000 * 1000000L));                         
-                    EntityFactories.createBuff(pos.getTime(), e.getId(), new HealthChange(2)); 
-                }                                                                                                                                                         
-            }
-        }            
-        cell.add(e);
-    }*/
-    
-    /*protected void remove( Entity e, Vector3f pos ) {
-        CellEntities cell = getCellEntities(pos, false);
-        if( cell == null ) {
-            return;
-        }
-        cell.remove(e);
-        if( cell.isEmpty() ) {
-            solidIndex.remove(pos);
-        }
-    }
-    
-    protected void setPosition( Entity e, Position pos ) {
-        Vector3f old = lastPositions.get(e.getId());
-        if( pos != null && pos.getLocation().equals(old) ) {
-//System.out.println( "Locations are same, probably just turned." + old + "  new:" + pos.getLocation() );        
-            return; // we just turned
-        } else {
-            lastPositions.remove(e.getId());
-        }
-        
-        if( old != null ) {
-            remove(e, old);
-        }
-        if( pos != null ) {
-            add(e, pos);
-            lastPositions.put(e.getId(), pos.getLocation());           
-        }
-    } */
- 
     protected EntityId createCollision( Entity mover, Entity collider, 
                                         long time, long delay, EntityComponent... adds ) {
         EntityId collision = EntityFactories.createCollision( mover.getId(), mover.get(ModelType.class),
@@ -343,7 +266,6 @@ System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + coll
 
     protected void refreshIndex() {
         if( objects.applyChanges() ) {
-//System.out.println( "Upating index..." );        
             removeObjects(objects.getRemovedEntities());
             addObjects(objects.getAddedEntities());
             updateObjects(objects.getChangedEntities());
@@ -357,41 +279,6 @@ System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + coll
     public void terminate( GameSystems systems ) {
         objects.release();
     }
-    
- /*   protected class CellEntities {
-        List<Entity> entities;
-        List<Entity> solid;
-        
-        public CellEntities() {
-        }
-        
-        public void add( Entity e ) {
-            if( entities == null ) {
-                entities = new ArrayList<Entity>();
-            }
-            if( entities.add(e) ) {
-                if( ed.getComponent(e.getId(), HitPoints.class) != null ) {                
-                    if( solid == null ) {
-                        solid = new ArrayList<Entity>();
-                    }
-                    solid.add(e);
-                }
-            }
-        }
-        
-        public void remove( Entity e ) {
-            entities.remove(e);
-            solid.remove(e);
-        }
- 
-        public boolean isOccupied() {
-            return solid != null && !solid.isEmpty();
-        }
-        
-        public boolean isEmpty() {
-            return entities == null || entities.isEmpty();
-        }
-    }*/
     
     private class ObjectDropper implements MazeVisitor {
  
