@@ -36,14 +36,12 @@ package trap.game;
 
 import com.jme3.math.Vector3f;
 import com.simsilica.es.Entity;
+import com.simsilica.es.EntityComponent;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntitySet;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -56,7 +54,7 @@ import org.slf4j.LoggerFactory;
  */ 
 public class MazeService implements Service {
 
-    private Logger log = LoggerFactory.getLogger(GameSystems.class);
+    private Logger log = LoggerFactory.getLogger(MazeService.class);
     
     private int xSize;
     private int ySize;
@@ -65,13 +63,18 @@ public class MazeService implements Service {
  
     private EntityData ed;
     private EntitySet objects;
+    
+    /*
     private Map<Vector3f, CellEntities> solidIndex = new HashMap<Vector3f, CellEntities>();
-    private Map<EntityId, Vector3f> lastPositions = new HashMap<EntityId, Vector3f>(); 
+    private Map<EntityId, Vector3f> lastPositions = new HashMap<EntityId, Vector3f>();
+    */
+    private MazeIndex index; 
     
     public MazeService( int xSize, int ySize ) {
         this.xSize = xSize;
         this.ySize = ySize;
         this.maze = new Maze(xSize, ySize);
+        this.index = new MazeIndex();
     }
     
     public Maze getMaze() {
@@ -125,12 +128,12 @@ public class MazeService implements Service {
             return true;
         } else if( !includeObjects ) {
             return false;
-        }
-        CellEntities cell = getCellEntities(new Vector3f(x*2, 0, y*2), false);
+        }                
+        CellEntities cell = index.getCellEntities(new Vector3f(x*2, 0, y*2), false);
         if( cell == null ) {
             return false;
         } 
-        return cell.isOccupied();        
+        return cell.hasSolids();        
     } 
 
     public boolean isOccupied( Vector3f loc ) {
@@ -142,11 +145,11 @@ public class MazeService implements Service {
         if( maze.isSolid(t) ) {
             return true;
         }
-        CellEntities cell = getCellEntities(new Vector3f(x*2, 0, y*2), false);
+        CellEntities cell = index.getCellEntities(new Vector3f(x*2, 0, y*2), false);
         if( cell == null ) {
             return false;
         } 
-        return cell.isOccupied();        
+        return cell.hasSolids();        
     } 
 
     public boolean isOccupied( Direction dir, int x, int y ) {
@@ -186,24 +189,24 @@ public class MazeService implements Service {
         System.out.println( "Visited " + count + " cells" );      
     }
  
-    public List<Entity> getEntities( int x, int y ) {
-        CellEntities cell = getCellEntities(new Vector3f(x*2, 0, y*2), false);
-        if( cell == null || cell.entities == null ) {
+    public List<EntityId> getEntities( int x, int y ) {
+        CellEntities cell = index.getCellEntities(new Vector3f(x*2, 0, y*2), false);
+        if( cell == null ) {
             return Collections.emptyList();
         }
-        return Collections.unmodifiableList(cell.entities);
+        return cell.getEntities();
     }
  
-    protected CellEntities getCellEntities( Vector3f pos, boolean create ) {
+    /*protected CellEntities getCellEntities( Vector3f pos, boolean create ) {
         CellEntities result = solidIndex.get(pos);
         if( result == null && create ) {
             result = new CellEntities();
             solidIndex.put(pos, result);
         }
         return result;
-    }
+    }*/
     
-    protected void add( Entity e, Position pos ) {
+    /*protected void add( Entity e, Position pos ) {
         CellEntities cell = getCellEntities(pos.getLocation(), true);
         if( !cell.isEmpty() && pos.getChangeTime() != pos.getTime() ) {
             // Calculate the collisions before we add ourselves to
@@ -235,9 +238,9 @@ System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + coll
             }
         }            
         cell.add(e);
-    }
+    }*/
     
-    protected void remove( Entity e, Vector3f pos ) {
+    /*protected void remove( Entity e, Vector3f pos ) {
         CellEntities cell = getCellEntities(pos, false);
         if( cell == null ) {
             return;
@@ -264,6 +267,60 @@ System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + coll
             add(e, pos);
             lastPositions.put(e.getId(), pos.getLocation());           
         }
+    } */
+ 
+    protected EntityId createCollision( Entity mover, Entity collider, 
+                                        long time, long delay, EntityComponent... adds ) {
+        EntityId collision = EntityFactories.createCollision( mover.getId(), mover.get(ModelType.class),
+                                                              collider.getId(), collider.get(ModelType.class),
+                                                              time, delay, adds );
+        return collision;
+    }
+    
+    protected void setPosition( Entity e, Position pos ) {
+        boolean isSolid = ed.getComponent(e.getId(), HitPoints.class) != null;
+        Vector3f loc = pos != null ? pos.getLocation(): null;
+        CellEntities cell = index.setPosition(e.getId(), loc, isSolid);
+        if( cell != null ) {
+            // It was actually moved so check for collisions maybe
+            // If we were not the first in the cell and we were moving...
+            if( cell.size() > 1 && pos.getChangeTime() != pos.getTime() ) {
+                // There was a collision
+                for( EntityId c : cell ) {
+                    Entity collider = objects.getEntity(c);
+                    if( collider == null ) {
+                        throw new RuntimeException("Found cell entity that we aren't managing:" + c);
+                    }
+                    
+                    // If the entity is us then we skip
+                    if( collider == e ) {
+                        continue;
+                    }
+                    
+                    // A safety check for other systems
+                    if( e.get(ModelType.class) == collider.get(ModelType.class) ) {
+                        log.error("Ogre collided with itself which means other checks are failing:" 
+                                    + e + " and " + collider);
+                    }
+                
+                    // Generate the collision
+                    // Give it a 2 second decay so that if anything doesn't
+                    // handle the collision it will eventually get removed.
+                    EntityId collision = createCollision(e, collider, pos.getTime(), 2000 * 1000000L, pos);
+                    
+System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + collider );                                
+ 
+                    if( e.get(ModelType.class) == MonkeyTrapConstants.TYPE_MONKEY 
+                        && collider.get(ModelType.class) != MonkeyTrapConstants.TYPE_BLING ) {                                
+                        // For testing....
+                        EntityFactories.createObject( MonkeyTrapConstants.TYPE_BLING, pos.getTime(),
+                                                      pos.newTime(pos.getTime(), pos.getTime()), 
+                                                      new Decay(pos.getTime() + 2000 * 1000000L));                         
+                        EntityFactories.createBuff(pos.getTime(), e.getId(), new HealthChange(2)); 
+                    }                                                                                                                                                         
+                }                
+            }            
+        } 
     }
 
     protected void addObjects( Set<Entity> set ) {
@@ -301,7 +358,7 @@ System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + coll
         objects.release();
     }
     
-    protected class CellEntities {
+ /*   protected class CellEntities {
         List<Entity> entities;
         List<Entity> solid;
         
@@ -334,7 +391,7 @@ System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + coll
         public boolean isEmpty() {
             return entities == null || entities.isEmpty();
         }
-    }
+    }*/
     
     private class ObjectDropper implements MazeVisitor {
  
