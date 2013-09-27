@@ -139,7 +139,8 @@ public class MovementService implements Service {
                 double stepDistance = 2.0;       
                 long actionTimeMs = (long)(stepDistance/speed.getMoveSpeed() * 1000.0);
                 long actionTimeNanos = actionTimeMs * 1000000;
-                long time = gameTime; // could also be to.getTime()... I'm torn.
+                //long time = gameTime; // could also be to.getTime()... I'm torn.
+                long time = to.getTime();
                 Position next = new Position(to.getLocation(), dir.getFacing(),
                                              time, time + actionTimeNanos);
                 Activity act = new Activity(Activity.WALKING, time, time + actionTimeNanos);
@@ -152,7 +153,8 @@ public class MovementService implements Service {
                 // We need to turn first
                 long actionTimeMs = (long)(0.25/speed.getTurnSpeed() * 1000.0);
                 long actionTimeNanos = actionTimeMs * 1000000;
-                long time = gameTime; // could also be to.getTime()... I'm torn.
+                //aaalong time = gameTime; // could also be to.getTime()... I'm torn.
+                long time = to.getTime();
                 
                 Position next = new Position(pos.getLocation(), dir.getFacing(), 
                                              time, time + actionTimeNanos);
