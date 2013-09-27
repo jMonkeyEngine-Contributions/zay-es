@@ -100,21 +100,8 @@ public class SinglePlayerClient implements GameClient
         return renderTime; //System.nanoTime() - frameDelay;
     }
 
-long nextBling; 
     public void updateRenderTime() {
         renderTime = getGameTime() - frameDelay;
-        
-        if( renderTime > nextBling ) {
-            nextBling = renderTime + 2000 * 1000000L;
-                
-/*            EntityId test = ed.createEntity();
-            Position pos = ed.getComponent(player, Position.class);
-if( pos == null ) {
-    System.out.println( "Player has no position..." );
-    return;
-}            
-            ed.setComponents(test, pos, MonkeyTrapConstants.TYPE_BLING, new Decay(nextBling));*/
-        }                   
     }
     
     public TimeProvider getRenderTimeProvider() {
@@ -144,7 +131,7 @@ if( pos == null ) {
             Vector3f loc = current.getLocation();
             int x = (int)(loc.x / 2);
             int y = (int)(loc.z / 2);
-            int value = maze.get(dir, x, y);
+            int value = maze.get(dir, x, y);            
             if( maze.isSolid(value) )
                 return;
                 
