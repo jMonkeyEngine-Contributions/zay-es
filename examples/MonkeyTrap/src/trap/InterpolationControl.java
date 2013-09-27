@@ -67,7 +67,7 @@ public class InterpolationControl extends AbstractControl {
         if( current != null ) {
             if( endTime < current.endTime ) {
                 throw new RuntimeException( "Interpolation step goes back in time:" 
-                                            + target + ", " + startTime + ", " + endTime );
+                                            + target + ", " + startTime + ", " + endTime + "  current:" + current );
             }
         
             pending.add(new TimeSpan(target, rotation, startTime, endTime));
@@ -159,6 +159,10 @@ public class InterpolationControl extends AbstractControl {
                 
                 return true; // still have more to go
             }
+        }
+        
+        public String toString() {
+            return "TimeSpan[" + startPos + " to:" + endPos + ", from:" + startTime + " to:" + endTime + "]";
         }
     }
 }
