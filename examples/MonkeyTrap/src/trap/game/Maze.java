@@ -147,7 +147,7 @@ public class Maze
         // Seed all around
         for( int d = 0; d < 4; d++ )
             {
-            pending.add(new Move(d, x + dirs[d][0], y + dirs[d][1]));
+            pending.add(new Move(d, 0, x + dirs[d][0], y + dirs[d][1]));
             }
     }
                 
@@ -250,14 +250,54 @@ public class Maze
         
         return count;            
     }
+ 
+    public int visit( MazeVisitor visitor ) {
+ 
+        int result = 0;
+ 
+        boolean[][] visited = new boolean[xSize][ySize];
+                       
+        // Start at the seed location
+        LinkedList<Move> pending = new LinkedList<Move>();
+        pending.add(new Move(-1, 0, xSeed, ySeed));
+ 
+        while( !pending.isEmpty() ) {
+            Move m = pending.removeFirst();
+ 
+            // See if we've been here already
+            if( visited[m.x][m.y] ) {
+                continue;
+            }
+            
+            // Calculate the branches first
+            for( int d = 0; d < 4; d++ ) {
+                Move next = m.next(d);
+                int value = next.cell();
+                if( isSolid(value) ) {
+                    continue;
+                }
+                pending.add(next);                
+            }
+ 
+            visited[m.x][m.y] = true;
+            result++;
+ 
+            if( !visitor.visit(this, m.x, m.y, m.cell(), m.depth, !pending.isEmpty()) ) {
+                return result;
+            }                      
+        }
+        return result;
+    }
     
     private class Move {
         int dir;
+        int depth;
         int x;
         int y;
         
-        public Move( int dir, int x, int y ) {
+        public Move( int dir, int depth, int x, int y ) {
             this.dir = dir;
+            this.depth = depth;
             this.x = x;
             this.y = y;
         }
@@ -267,7 +307,7 @@ public class Maze
         }
  
         public Move next( int dir ) {
-            return new Move(dir, x + dirs[dir][0], y + dirs[dir][1]);
+            return new Move(dir, depth+1, x + dirs[dir][0], y + dirs[dir][1]);
         }
         
         public int lookAhead() {
@@ -277,5 +317,5 @@ public class Maze
         public String toString() {
             return "Move[dir:" + dir + " into:" + x + ", " + y + "]";
         }
-    }
+    }    
 }

@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -164,6 +165,8 @@ public class MazeService implements Service {
         log.info("Using maze seed:" + s);
         maze.setSeed(s);
         maze.generate();
+ 
+        populateMaze(s);
         
         // We'll keep track of the positioned entities in the maze
         // so that we can answer intersection queries and so on
@@ -174,6 +177,13 @@ public class MazeService implements Service {
         // out the "solidness" later.
         objects = ed.getEntities(Position.class, ModelType.class);
         addObjects(objects);        
+    }
+ 
+    protected void populateMaze(long seed) {
+        Random random = new Random(seed);
+        ObjectDropper dropper = new ObjectDropper(random);
+        int count = maze.visit(dropper);
+        System.out.println( "Visited " + count + " cells" );      
     }
  
     public List<Entity> getEntities( int x, int y ) {
@@ -323,6 +333,43 @@ System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + coll
         
         public boolean isEmpty() {
             return entities == null || entities.isEmpty();
+        }
+    }
+    
+    private class ObjectDropper implements MazeVisitor {
+ 
+        Random random;   
+        double chanceToDrop = 0;
+        
+        public ObjectDropper(Random random) {
+            this.random = random;
+        }
+        
+        public boolean visit( Maze maze, int x, int y, int value, int depth, boolean pathsPending ) {
+            
+            double drop = random.nextDouble() * 100;
+            if( drop < chanceToDrop ) {
+            
+                // Create the drop
+                System.out.println( "Drop at:" + x + ", " + y );
+ 
+                double type = random.nextDouble();
+                if( type < 0.2 ) {
+                    // 20% chance of chest
+                    EntityFactories.createObject( MonkeyTrapConstants.TYPE_CHEST,
+                                                  -1, new Vector3f(x*2, 0, y*2));
+                } else {
+                    // else barrels           
+                    EntityFactories.createObject( MonkeyTrapConstants.TYPE_BARRELS,
+                                                  -1, new Vector3f(x*2, 0, y*2));
+                }                                         
+            
+                chanceToDrop = 0;
+            } else {
+                chanceToDrop += random.nextDouble();
+            }
+        
+            return true;
         }
     }
 }

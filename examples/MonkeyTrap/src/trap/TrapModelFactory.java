@@ -225,7 +225,11 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
                 }
  
                 float dir = startAngle + i * FastMath.TWO_PI/3;
-                float dist = (float)(Math.random() * 0.4 + 0.4);
+                float dist = 0.5f; //(float)(Math.random() * 0.4 + 0.3);
+                // ^^ there isn't really enough room to randomize that way.
+                // it would be better to lay them out initiallly and then
+                // randomly move them out based on what's left in the bounding
+                // shape.
                 
                 s.move( FastMath.cos(dir) * dist, 0, FastMath.sin(dir) * dist );
                 s.rotate( 0, (float)(Math.random() * FastMath.TWO_PI), 0 );
@@ -253,8 +257,10 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             chest.setLocalScale( 0.8f / (bounds.getYExtent() * 2) );
             bounds = (BoundingBox)chest.getWorldBound();                        
             chest.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
-            
-            wrapper.rotate( 0, (float)(Math.random() * FastMath.TWO_PI), 0 );            
+ 
+            // +/- 45 degrees for interest
+            float angle = (float)(Math.random() * FastMath.HALF_PI - FastMath.QUARTER_PI);           
+            chest.rotate( 0, angle, 0 );            
             wrapper.attachChild(createShadowBox(bounds.getXExtent() * 1.5f, 
                                                 bounds.getYExtent(), 
                                                 bounds.getZExtent() * 1.5f));

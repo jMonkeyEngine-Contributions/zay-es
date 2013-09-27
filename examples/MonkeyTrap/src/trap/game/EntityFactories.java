@@ -130,6 +130,10 @@ public class EntityFactories {
             ed.setComponents(e, new Activity(Activity.SPAWNING, time, time + 2000 * 1000000L),
                                 MonkeyTrapConstants.SPEED_MONKEY,
                                 new HitPoints(MonkeyTrapConstants.MONKEY_HITPOINTS));
+        } else if( MonkeyTrapConstants.TYPE_CHEST.equals(type) ) {
+            ed.setComponents(e, new HitPoints(MonkeyTrapConstants.CHEST_HITPOINTS)); 
+        } else if( MonkeyTrapConstants.TYPE_BARRELS.equals(type) ) {
+            ed.setComponents(e, new HitPoints(MonkeyTrapConstants.BARREL_HITPOINTS)); 
         } else {
             // Assume there is no more
         }
