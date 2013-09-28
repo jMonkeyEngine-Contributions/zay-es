@@ -38,6 +38,7 @@ import trap.game.Direction;
 import trap.game.Position;
 import trap.game.SensorArea;
 import com.jme3.app.Application;
+import com.jme3.audio.Environment;
 import com.jme3.audio.Listener;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
@@ -94,6 +95,10 @@ public class PlayerState extends BaseAppState
     protected void initialize( Application app ) {
  
         app.getAudioRenderer().setListener(audioListener);
+        
+        // Setup the audio environment... here for now              
+        app.getAudioRenderer().setEnvironment(Environment.Closet);
+        
          
         this.ed = client.getEntityData();
         this.player = client.getPlayer();

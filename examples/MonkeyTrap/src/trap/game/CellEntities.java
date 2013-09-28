@@ -98,6 +98,14 @@ public class CellEntities implements Iterable<EntityId> {
         } 
         return Collections.unmodifiableList(result); 
     }
+ 
+    public List<EntityId> getSolids() {
+        List<EntityId> result = solid;
+        if( result == null ) {
+            result = Collections.emptyList();  // generics are dumb again
+        } 
+        return Collections.unmodifiableList(result); 
+    }
     
     public Iterator<EntityId> iterator() {
         if( entities != null ) {

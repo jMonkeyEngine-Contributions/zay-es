@@ -66,7 +66,9 @@ public class GameSystems {
         services.add(new SpawnService(15));
         services.add(new AiService());        
         services.add(new MovementService());
+        services.add(new CombatInitiativeService());
         services.add(new HealthService());
+        services.add(new LootService());
 
         gameTime = new GameTimeProvider();     
         serviceRunner = new ServiceRunnable();

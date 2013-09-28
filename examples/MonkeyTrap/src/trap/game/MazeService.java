@@ -153,6 +153,16 @@ public class MazeService implements Service {
         return isOccupied(x, y);
     } 
 
+    public CellEntities getEntities( Direction dir, int x, int y ) {
+        x += dir.getXDelta();
+        y += dir.getYDelta();
+        return getEntities(x, y);
+    }
+     
+    public CellEntities getEntities( int x, int y ) {
+        return index.getCellEntities(new Vector3f(x*2, 0, y*2), false);
+    }
+
     public void initialize( GameSystems systems ) {
         long s;
         if( seed != null ) {
@@ -184,13 +194,13 @@ public class MazeService implements Service {
         System.out.println( "Visited " + count + " cells" );      
     }
  
-    public List<EntityId> getEntities( int x, int y ) {
+    /*public List<EntityId> getEntities( int x, int y ) {
         CellEntities cell = index.getCellEntities(new Vector3f(x*2, 0, y*2), false);
         if( cell == null ) {
             return Collections.emptyList();
         }
         return cell.getEntities();
-    }
+    }*/
  
     protected EntityId createCollision( Entity mover, Entity collider, 
                                         long time, long delay, EntityComponent... adds ) {

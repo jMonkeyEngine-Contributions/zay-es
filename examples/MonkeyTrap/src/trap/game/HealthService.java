@@ -112,7 +112,15 @@ public class HealthService implements Service {
             if( log.isInfoEnabled() ) {
                 log.info("Applying " + entry.getValue() + " to:" + target + " result:" + hp );
             } 
-            target.set(hp); 
+            target.set(hp);
+            
+            if( hp.getHealth() <= 0 ) {
+                System.out.println( target + " is dead" );
+                // don't set death if it is already dead.
+                if( ed.getComponent(target.getId(), Dead.class) == null ) {
+                    target.set(new Dead(gameTime));
+                } 
+            } 
         }
         
         // Clear our health book-keeping map.

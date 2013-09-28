@@ -43,9 +43,11 @@ import trap.game.TimeProvider;
 import com.jme3.math.Vector3f;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
+import trap.game.CellEntities;
 import trap.game.GameSystems;
 import trap.game.HitPoints;
 import trap.game.MazeService;
+import trap.game.MeleeTarget;
 import trap.game.MoveTo;
 
 
@@ -166,12 +168,18 @@ public class SinglePlayerClient implements GameClient
             //       maze service.
             if( mazeService.isOccupied(dir, x, y) ) {
                 // Attack instead of move
-                System.out.println( "ATTACK!!!" );
+                System.out.println( "ATTACK!!! at:" + moveTime );
                 
                 // Just for testing
                 long actTimeNanos = 500 * 1000000L;
                 Activity fight = new Activity(Activity.FIGHTING, moveTime, moveTime + actTimeNanos);  
                 ed.setComponent(player, fight);                
+ 
+                CellEntities cell = mazeService.getEntities(dir, x,y);
+                EntityId hit = cell.getSolids().get(0);
+                
+                MeleeTarget attack = new MeleeTarget( hit, moveTime );
+                ed.setComponent(player, attack);
                 
                 return;
             }                

@@ -18,6 +18,11 @@
    </appender>
 
 
+   <category name="trap.game.DecayService">
+      <priority value="DEBUG"/>
+   </category>   
+
+
    <!-- ======================= -->
    <!-- Setup the Root category -->
    <!-- ======================= -->
