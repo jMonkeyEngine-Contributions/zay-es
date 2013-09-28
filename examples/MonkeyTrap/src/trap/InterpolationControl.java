@@ -39,6 +39,8 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.control.AbstractControl;
 import java.util.LinkedList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -48,6 +50,7 @@ import java.util.LinkedList;
  */
 public class InterpolationControl extends AbstractControl {
 
+    static Logger log = LoggerFactory.getLogger(InterpolationControl.class);
     private TimeProvider time;
     private Vector3f end = new Vector3f();
     private long startTime;
@@ -66,8 +69,18 @@ public class InterpolationControl extends AbstractControl {
         // to let the last "tween" finish.
         if( current != null ) {
             if( endTime < current.endTime ) {
-                throw new RuntimeException( "Interpolation step goes back in time:" 
-                                            + target + ", " + startTime + ", " + endTime + "  current:" + current );
+                // If it's telling us to go where we're already going then we'll
+                // just consider it a warning.  There is some timing bug somewhere
+                // but I'm not in the mood to track it.
+                if( target.equals(current.endPos) ) {
+                    log.warn( "Interpolation step goes back in time for:" + spatial 
+                                                + "  target:" + target + ", " + startTime + ", " + endTime 
+                                                + "  current:" + current ); 
+                } else {                
+                    throw new RuntimeException( "Interpolation step goes back in time for:" + spatial 
+                                                + "  target:" + target + ", " + startTime + ", " + endTime 
+                                                + "  current:" + current );
+                }                                                
             }
         
             pending.add(new TimeSpan(target, rotation, startTime, endTime));

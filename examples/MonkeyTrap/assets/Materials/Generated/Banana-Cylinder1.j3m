@@ -7,7 +7,7 @@ Material MyMaterial : Common/MatDefs/Light/Lighting.j3md {
         Diffuse : 1.0 1.0 1.0 1.0
         UseMaterialColors : false
         ParallaxHeight : 0.05
-        Ambient : 0.0 0.0 0.0 1.0
+        Ambient : 1.0 1.0 1.0 1.0
         Shininess : 20.0
         WardIso : false
     }

@@ -39,6 +39,7 @@ import com.simsilica.es.EntityData;
 import com.simsilica.es.EntitySet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import trap.game.ai.AiType;
 
 
 /**
@@ -126,7 +127,20 @@ public class LootService implements Service {
             } else if( type == MonkeyTrapConstants.TYPE_MONKEY ) {
                 EntityFactories.createObject(MonkeyTrapConstants.TYPE_BANANA, death.getTime(), 
                                              pos.getLocation());
-            }            
+            }
+                        
+            // Also if it isn't an AI than remove its position and
+            // if it is an AI then remove it's brain
+            /*
+            The problem with doing this is that there is no time
+            associated with it... so it often is seen before the
+            actions that caused it.
+            AiType ai = ed.getComponent(e.getId(), AiType.class);
+            if( ai == null ) {
+                ed.removeComponent(e.getId(), Position.class);
+            } else {
+                ed.removeComponent(e.getId(), AiType.class);
+            }*/            
         }
     }
 

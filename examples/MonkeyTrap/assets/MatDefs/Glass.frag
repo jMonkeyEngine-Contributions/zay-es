@@ -280,7 +280,7 @@ void main(){
 
        // Add in some glass-like gloss and alpha                           
        float shine = 1.0 - dot(viewDir, normal);
-       alpha = max(light.y, shine * shine * shine * shine);
+       alpha = max(light.y, shine * shine * shine * shine) * alpha;
        gl_FragColor.rgb += gl_FragColor.rgb * shine; 
     #endif
     gl_FragColor.a = alpha;

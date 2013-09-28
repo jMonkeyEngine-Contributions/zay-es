@@ -127,7 +127,13 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
                 m.setColor( "Diffuse", diffuse );
                 m.setColor( "Ambient", ambient );
                 
-                m.getAdditionalRenderState().setBlendMode(BlendMode.Alpha); 
+                m.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+
+System.out.println( "---- after:" );                
+System.out.println( "  diffuse: " + m.getParam("Diffuse") );            
+System.out.println( "  ambient: " + m.getParam("Ambient") );            
+System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );            
+                 
             }
         } else {
             Node node = (Node)s;
@@ -166,7 +172,11 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
  
         wrapper.attachChild(ring);
 
-        setupMaterials(wrapper, diffuse, ambient);                       
+        //setupMaterials(wrapper, diffuse, ambient);
+        wrapper.addControl(new ColorControl(diffuse, ambient));
+                               
+        //wrapper.getControl(ColorControl.class).setColor(new ColorRGBA(0, 1, 0, 0.25f));
+                               
         return wrapper;            
     }
     
@@ -200,8 +210,12 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
  
         wrapper.attachChild(bottle);
 
-        fixMaterials(wrapper);           
+        //fixMaterials(wrapper);           
+        wrapper.addControl(new ColorControl(diffuse, ambient));                       
         //setupMaterials(wrapper, diffuse, ambient);
+ 
+        // testing                      
+        //wrapper.getControl(ColorControl.class).setColor(new ColorRGBA(0, 1, 0, 0.25f));                       
                        
         return wrapper;
     }
@@ -250,8 +264,9 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             monkey.addControl(cac);
  
             ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
-            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);           
-            setupMaterials(monkey, diffuse, ambient);
+            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
+            monkey.addControl(new ColorControl(diffuse, ambient));                                  
+            //setupMaterials(monkey, diffuse, ambient);
             
             return monkey;
         } else if( MonkeyTrapConstants.TYPE_OGRE.equals(type) ) {
@@ -297,8 +312,9 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             wrapper.addControl(cac);
 
             ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
-            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);           
-            setupMaterials(wrapper, diffuse, ambient);
+            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
+            wrapper.addControl(new ColorControl(diffuse, ambient));                                  
+            //setupMaterials(wrapper, diffuse, ambient);
 
             wrapper.setQueueBucket(Bucket.Transparent);
             wrapper.setUserData("layer", 10);
@@ -343,8 +359,9 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
                                                 bounds.getZExtent()));
                                                 
             ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
-            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);           
-            setupMaterials(wrapper, diffuse, ambient);
+            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
+            wrapper.addControl(new ColorControl(diffuse, ambient));                                  
+            //setupMaterials(wrapper, diffuse, ambient);
             
             return wrapper;            
         } else if( MonkeyTrapConstants.TYPE_CHEST.equals(type) ) {
@@ -366,8 +383,9 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             wrapper.attachChild(chest);
                        
             ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
-            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);           
-            setupMaterials(wrapper, diffuse, ambient);
+            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
+            wrapper.addControl(new ColorControl(diffuse, ambient));                                  
+            //setupMaterials(wrapper, diffuse, ambient);
             
             return wrapper;            
         } else if( MonkeyTrapConstants.TYPE_BANANA.equals(type) ) {
@@ -389,10 +407,12 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             wrapper.attachChild(banana);
 
             ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
-            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);           
-            setupMaterials(wrapper, diffuse, ambient);
+            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
+            wrapper.addControl(new ColorControl(diffuse, ambient));                                  
+            //setupMaterials(wrapper, diffuse, ambient);
                        
-            return wrapper;            
+            return wrapper;
+                        
         } else if( MonkeyTrapConstants.TYPE_RING1.equals(type) ) {
         
             ColorRGBA diffuse = new ColorRGBA(0.85f, 0.75f, 0.25f, 1);           

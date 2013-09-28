@@ -117,12 +117,12 @@ public class SinglePlayerState extends BaseAppState
         test = ed.createEntity();
         ed.setComponent(test, new Position(new Vector3f((maze.getXSeed()+2)*2, 0, maze.getYSeed()*2), -1, -1));        
         //ed.setComponents(test, MonkeyTrapConstants.TYPE_CHEST, new HitPoints(MonkeyTrapConstants.CHEST_HITPOINTS));           
-        ed.setComponents(test, MonkeyTrapConstants.TYPE_RING2);           
+        ed.setComponents(test, MonkeyTrapConstants.TYPE_RING1);           
 
         test = ed.createEntity();
         ed.setComponent(test, new Position(new Vector3f((maze.getXSeed()+3)*2, 0, maze.getYSeed()*2), -1, -1));        
         //ed.setComponents(test, MonkeyTrapConstants.TYPE_CHEST, new HitPoints(MonkeyTrapConstants.CHEST_HITPOINTS));           
-        ed.setComponents(test, MonkeyTrapConstants.TYPE_RING3);           
+        ed.setComponents(test, MonkeyTrapConstants.TYPE_RING2);           
         
         // Attach them all
         AppStateManager stateMgr = app.getStateManager();
