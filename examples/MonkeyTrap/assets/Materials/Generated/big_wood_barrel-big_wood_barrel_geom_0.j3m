@@ -1,0 +1,20 @@
+Material MyMaterial : Common/MatDefs/Light/Lighting.j3md {
+    MaterialParameters {
+        DiffuseMap : Models/big_wood_barrel/big_diffus.png
+        NormalMap : Models/big_wood_barrel/big_normal.png
+        SpecularMap : Models/big_wood_barrel/big_specular.png
+        ParallaxHeight : 0.05
+        Shininess : 64.0
+    }
+    AdditionalRenderState {
+        FaceCull Back
+        Wireframe Off
+        DepthWrite On
+        PolyOffset 0.0 0.0
+        AlphaTestFalloff 0.0
+        Blend Off
+        PointSprite Off
+        ColorWrite On
+        DepthTest On
+    }
+}

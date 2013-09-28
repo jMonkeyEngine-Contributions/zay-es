@@ -91,6 +91,26 @@ public class TrapModelFactory implements ModelFactory {
         return shadowBox;
     }
 
+    protected void fixMaterials( Spatial s ) {
+        System.out.println( "Checking:" + s );
+        if( s instanceof Geometry ) {
+            Geometry geom = (Geometry)s;
+            Material m = geom.getMaterial();
+System.out.println( "  material name:" + m.getName() + "  asset name:" + m.getAssetName() );            
+System.out.println( "  material def name:" + m.getMaterialDef().getName() + "  asset name:" + m.getMaterialDef().getAssetName() );
+            
+            System.out.println( "  Blend mode:" + m.getAdditionalRenderState().getBlendMode() );
+            if( m.getAdditionalRenderState().getBlendMode() == BlendMode.Alpha ) {
+                geom.setQueueBucket(Bucket.Transparent);
+            } 
+        } else {
+            Node node = (Node)s;
+            for( Spatial child : node.getChildren() ) {
+                fixMaterials(child);
+            }
+        }
+    }
+
     protected void setupMaterials( Spatial s, ColorRGBA diffuse, ColorRGBA ambient ) {
         System.out.println( "Checking:" + s );
         if( s instanceof Geometry ) {
@@ -302,6 +322,135 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
             ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);           
             setupMaterials(wrapper, diffuse, ambient);
+                       
+            return wrapper;            
+        } else if( MonkeyTrapConstants.TYPE_RING1.equals(type) ) {
+            Node wrapper = new Node("Ring1");
+ 
+            Node rings = (Node)assets.loadModel( "Models/rings/rings.j3o" );
+            
+            Spatial ring = rings.getChild( "Ouroboros" );
+            ring.removeFromParent();
+            ring.setLocalScale(1);
+            ring.setLocalTranslation(0, 0, 0);            
+            
+            
+            BoundingBox bounds = (BoundingBox)ring.getWorldBound();
+            ring.setLocalScale( 0.6f / (bounds.getYExtent() * 2) );
+            bounds = (BoundingBox)ring.getWorldBound();                        
+            ring.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
+            ring.move(0, 0.75f, 0);
+            
+            wrapper.attachChild(createShadowBox(bounds.getXExtent() * 1.5f, 
+                                                bounds.getYExtent(), 
+                                                bounds.getZExtent() * 1.5f));
+            wrapper.addControl(new FloatControl());
+ 
+            wrapper.attachChild(ring);
+
+            ColorRGBA diffuse = new ColorRGBA(0.85f, 0.75f, 0.25f, 1);           
+            ColorRGBA ambient = new ColorRGBA(0.4f, 0.3f, 0.15f, 1);           
+            setupMaterials(wrapper, diffuse, ambient);
+                       
+            return wrapper;            
+        } else if( MonkeyTrapConstants.TYPE_RING2.equals(type) ) {
+            Node wrapper = new Node("Ring2");
+ 
+            Node rings = (Node)assets.loadModel( "Models/rings/rings.j3o" );
+            
+            Spatial ring = rings.getChild( "RubyRing" );
+            ring.removeFromParent();
+            ring.setLocalScale(1);
+            ring.setLocalTranslation(0, 0, 0);            
+ 
+            /*
+                DiamondRing
+                EmeraldRing
+                GoldBand
+                GoldRing
+                Ouroboros
+                RubyRing
+                SapphireRing
+                SignetRing
+                SilverBand
+                SilverRing
+            */           
+            
+            BoundingBox bounds = (BoundingBox)ring.getWorldBound();
+            ring.setLocalScale( 0.6f / (bounds.getYExtent() * 2) );
+            bounds = (BoundingBox)ring.getWorldBound();                        
+            ring.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
+            ring.move(0, 0.75f, 0);
+            
+            wrapper.attachChild(createShadowBox(bounds.getXExtent() * 1.5f, 
+                                                bounds.getYExtent(), 
+                                                bounds.getZExtent() * 1.5f));
+            wrapper.addControl(new FloatControl());
+ 
+            wrapper.attachChild(ring);
+
+            ColorRGBA diffuse = new ColorRGBA(0.75f, 0.75f, 0.25f, 1);           
+            ColorRGBA ambient = new ColorRGBA(0.5f, 0.5f, 0.15f, 1);           
+            //setupMaterials(wrapper, diffuse, ambient);
+                       
+            return wrapper;            
+        } else if( MonkeyTrapConstants.TYPE_RING3.equals(type) ) {
+            Node wrapper = new Node("Ring3");
+ 
+            Node rings = (Node)assets.loadModel( "Models/rings/rings.j3o" );
+            
+            Spatial ring = rings.getChild( "EmeraldRing" );
+            ring.removeFromParent();
+            ring.setLocalScale(1);
+            ring.setLocalTranslation(0, 0, 0);            
+ 
+            BoundingBox bounds = (BoundingBox)ring.getWorldBound();
+            ring.setLocalScale( 0.6f / (bounds.getYExtent() * 2) );
+            bounds = (BoundingBox)ring.getWorldBound();                        
+            ring.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
+            ring.move(0, 0.75f, 0);
+            
+            wrapper.attachChild(createShadowBox(bounds.getXExtent() * 1.5f, 
+                                                bounds.getYExtent(), 
+                                                bounds.getZExtent() * 1.5f));
+            wrapper.addControl(new FloatControl());
+ 
+            wrapper.attachChild(ring);
+
+            ColorRGBA diffuse = new ColorRGBA(0.75f, 0.75f, 0.25f, 1);           
+            ColorRGBA ambient = new ColorRGBA(0.5f, 0.5f, 0.15f, 1);           
+            //setupMaterials(wrapper, diffuse, ambient);
+                       
+            return wrapper;            
+        } else if( MonkeyTrapConstants.TYPE_POTION1.equals(type) ) {
+            Node wrapper = new Node("Potion1");
+ 
+            Node potions = (Node)assets.loadModel( "Models/potions_0/potions_0.j3o" );
+            
+            Spatial bottle = potions.getChild( "HealthBomb" );
+            bottle.removeFromParent();
+            bottle.setLocalScale(1);
+            bottle.setLocalTranslation(0, 0, 0);            
+ 
+            BoundingBox bounds = (BoundingBox)bottle.getWorldBound();
+            bottle.setLocalScale( 0.6f / (bounds.getYExtent() * 2) );
+            bounds = (BoundingBox)bottle.getWorldBound();                        
+            bottle.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
+            bottle.move(0, 0.75f, 0);
+            
+            bottle.rotate(FastMath.QUARTER_PI, 0, 0);
+            
+            wrapper.attachChild(createShadowBox(bounds.getXExtent() * 1.5f, 
+                                                bounds.getYExtent(), 
+                                                bounds.getZExtent() * 1.5f));
+            wrapper.addControl(new FloatControl());
+ 
+            wrapper.attachChild(bottle);
+
+            ColorRGBA diffuse = new ColorRGBA(0.75f, 0.75f, 0.25f, 1);           
+            ColorRGBA ambient = new ColorRGBA(0.5f, 0.5f, 0.15f, 1);
+            fixMaterials(wrapper);           
+            //setupMaterials(wrapper, diffuse, ambient);
                        
             return wrapper;            
         } else if( MonkeyTrapConstants.TYPE_BLING.equals(type) ) {

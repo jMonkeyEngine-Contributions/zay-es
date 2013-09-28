@@ -100,9 +100,10 @@ public class SinglePlayerState extends BaseAppState
         //ed.setComponent(test, new Position(location, -1, -1));        
         //ed.setComponent(test, TrapModelFactory.TYPE_OGRE);        
  
-        EntityId test = ed.createEntity();
-        ed.setComponent(test, new Position(new Vector3f(maze.getXSeed()*2, 0, maze.getYSeed()*2), -1, -1));        
-        ed.setComponents(test, MonkeyTrapConstants.TYPE_BARRELS, new HitPoints(MonkeyTrapConstants.BARREL_HITPOINTS));           
+        EntityId test;// = ed.createEntity();
+        //ed.setComponent(test, new Position(new Vector3f(maze.getXSeed()*2, 0, maze.getYSeed()*2), -1, -1));        
+        //ed.setComponents(test, MonkeyTrapConstants.TYPE_BARRELS, new HitPoints(MonkeyTrapConstants.BARREL_HITPOINTS));           
+        //ed.setComponents(test, MonkeyTrapConstants.TYPE_RING1);           
 
         test = ed.createEntity();
         ed.setComponent(test, new Position(new Vector3f((maze.getXSeed()-1)*2, 0, maze.getYSeed()*2), -1, -1));        
@@ -110,7 +111,18 @@ public class SinglePlayerState extends BaseAppState
 
         test = ed.createEntity();
         ed.setComponent(test, new Position(new Vector3f((maze.getXSeed()+1)*2, 0, maze.getYSeed()*2), -1, -1));        
-        ed.setComponents(test, MonkeyTrapConstants.TYPE_CHEST, new HitPoints(MonkeyTrapConstants.CHEST_HITPOINTS));           
+        //ed.setComponents(test, MonkeyTrapConstants.TYPE_CHEST, new HitPoints(MonkeyTrapConstants.CHEST_HITPOINTS));           
+        ed.setComponents(test, MonkeyTrapConstants.TYPE_POTION1);           
+
+        test = ed.createEntity();
+        ed.setComponent(test, new Position(new Vector3f((maze.getXSeed()+2)*2, 0, maze.getYSeed()*2), -1, -1));        
+        //ed.setComponents(test, MonkeyTrapConstants.TYPE_CHEST, new HitPoints(MonkeyTrapConstants.CHEST_HITPOINTS));           
+        ed.setComponents(test, MonkeyTrapConstants.TYPE_RING2);           
+
+        test = ed.createEntity();
+        ed.setComponent(test, new Position(new Vector3f((maze.getXSeed()+3)*2, 0, maze.getYSeed()*2), -1, -1));        
+        //ed.setComponents(test, MonkeyTrapConstants.TYPE_CHEST, new HitPoints(MonkeyTrapConstants.CHEST_HITPOINTS));           
+        ed.setComponents(test, MonkeyTrapConstants.TYPE_RING3);           
         
         // Attach them all
         AppStateManager stateMgr = app.getStateManager();

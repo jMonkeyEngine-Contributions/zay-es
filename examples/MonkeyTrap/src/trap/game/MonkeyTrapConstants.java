@@ -61,6 +61,12 @@ public class MonkeyTrapConstants {
     public static final ModelType TYPE_BARRELS = new ModelType("Barrel");
     public static final ModelType TYPE_CHEST = new ModelType("Chest");
     public static final ModelType TYPE_BANANA = new ModelType("Banana");
+    public static final ModelType TYPE_RING1 = new ModelType("Ring1");
+    public static final ModelType TYPE_RING2 = new ModelType("Ring2");
+    public static final ModelType TYPE_RING3 = new ModelType("Ring3");
+    public static final ModelType TYPE_POTION1 = new ModelType("Potion1");
+    
+    
     public static final ModelType TYPE_BLING = new ModelType("Bling");
     
     public static final AiType AI_DRUNK = new AiType("Drunk");
