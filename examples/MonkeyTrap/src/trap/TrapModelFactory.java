@@ -136,6 +136,75 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             }
         }
     }
+    
+    protected Node createRing( String name, ColorRGBA diffuse, ColorRGBA ambient ) {
+        AssetManager assets = state.getApplication().getAssetManager(); 
+        Node wrapper = new Node("Ring:" + name);
+ 
+        Node rings = (Node)assets.loadModel( "Models/rings/rings.j3o" );
+ 
+        // Grab the child we want and make sure it's "clean"           
+        Spatial ring = rings.getChild( name );
+        ring.removeFromParent();
+        ring.setLocalScale(1);
+        ring.setLocalTranslation(0, 0, 0);            
+            
+        // Normalize the size and position.                                                            
+        BoundingBox bounds = (BoundingBox)ring.getWorldBound();
+        ring.setLocalScale( 0.6f / (bounds.getYExtent() * 2) );
+        bounds = (BoundingBox)ring.getWorldBound();                        
+        ring.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
+        ring.move(0, 0.75f, 0);
+
+        // Give it a nice shadow            
+        wrapper.attachChild(createShadowBox(bounds.getXExtent() * 1.5f, 
+                                            bounds.getYExtent(), 
+                                            bounds.getZExtent() * 1.5f));
+                                            
+        // Bob and turn                                            
+        wrapper.addControl(new FloatControl());
+ 
+        wrapper.attachChild(ring);
+
+        setupMaterials(wrapper, diffuse, ambient);                       
+        return wrapper;            
+    }
+    
+    protected Node createPotion( String name, ColorRGBA diffuse, ColorRGBA ambient ) {
+
+        AssetManager assets = state.getApplication().getAssetManager(); 
+        Node wrapper = new Node("Potion:" + name);
+ 
+        Node potions = (Node)assets.loadModel( "Models/potions_0/potions_0.j3o" );
+ 
+        // Grab the child and make sure it's "clean"           
+        Spatial bottle = potions.getChild( name );
+        bottle.removeFromParent();
+        bottle.setLocalScale(1);
+        bottle.setLocalTranslation(0, 0, 0);            
+ 
+        // Normalize the size and position.                                                            
+        BoundingBox bounds = (BoundingBox)bottle.getWorldBound();
+        bottle.setLocalScale( 0.6f / (bounds.getYExtent() * 2) );
+        bounds = (BoundingBox)bottle.getWorldBound();                        
+        bottle.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
+        bottle.move(0, 0.75f, 0);
+ 
+        // Give it a bit of a tilt so it looks better spinning           
+        bottle.rotate(FastMath.QUARTER_PI, 0, 0);
+            
+        wrapper.attachChild(createShadowBox(bounds.getXExtent() * 1.5f, 
+                                            bounds.getYExtent(), 
+                                            bounds.getZExtent() * 1.5f));
+        wrapper.addControl(new FloatControl());
+ 
+        wrapper.attachChild(bottle);
+
+        fixMaterials(wrapper);           
+        //setupMaterials(wrapper, diffuse, ambient);
+                       
+        return wrapper;
+    }
 
     public Spatial createModel(Entity e) {
 
@@ -325,7 +394,11 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
                        
             return wrapper;            
         } else if( MonkeyTrapConstants.TYPE_RING1.equals(type) ) {
-            Node wrapper = new Node("Ring1");
+        
+            ColorRGBA diffuse = new ColorRGBA(0.85f, 0.75f, 0.25f, 1);           
+            ColorRGBA ambient = new ColorRGBA(0.4f, 0.3f, 0.15f, 1);           
+            return createRing("Ouroboros", diffuse, ambient); 
+            /*Node wrapper = new Node("Ring1");
  
             Node rings = (Node)assets.loadModel( "Models/rings/rings.j3o" );
             
@@ -352,9 +425,14 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             ColorRGBA ambient = new ColorRGBA(0.4f, 0.3f, 0.15f, 1);           
             setupMaterials(wrapper, diffuse, ambient);
                        
-            return wrapper;            
+            return wrapper;*/            
         } else if( MonkeyTrapConstants.TYPE_RING2.equals(type) ) {
-            Node wrapper = new Node("Ring2");
+        
+            ColorRGBA diffuse = new ColorRGBA(1f, 1f, 1f, 1);           
+            ColorRGBA ambient = new ColorRGBA(0.5f, 0.5f, 0.5f, 1);           
+            return createRing("RubyRing", diffuse, ambient);
+             
+            /*Node wrapper = new Node("Ring2");
  
             Node rings = (Node)assets.loadModel( "Models/rings/rings.j3o" );
             
@@ -362,7 +440,7 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             ring.removeFromParent();
             ring.setLocalScale(1);
             ring.setLocalTranslation(0, 0, 0);            
- 
+              */
             /*
                 DiamondRing
                 EmeraldRing
@@ -376,7 +454,7 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
                 SilverRing
             */           
             
-            BoundingBox bounds = (BoundingBox)ring.getWorldBound();
+            /*BoundingBox bounds = (BoundingBox)ring.getWorldBound();
             ring.setLocalScale( 0.6f / (bounds.getYExtent() * 2) );
             bounds = (BoundingBox)ring.getWorldBound();                        
             ring.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
@@ -393,9 +471,14 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             ColorRGBA ambient = new ColorRGBA(0.5f, 0.5f, 0.15f, 1);           
             //setupMaterials(wrapper, diffuse, ambient);
                        
-            return wrapper;            
+            return wrapper;*/            
         } else if( MonkeyTrapConstants.TYPE_RING3.equals(type) ) {
-            Node wrapper = new Node("Ring3");
+        
+            ColorRGBA diffuse = new ColorRGBA(1f, 1f, 1f, 1);           
+            ColorRGBA ambient = new ColorRGBA(0.5f, 0.5f, 0.5f, 1);           
+            return createRing("EmeraldRing", diffuse, ambient);
+             
+            /*Node wrapper = new Node("Ring3");
  
             Node rings = (Node)assets.loadModel( "Models/rings/rings.j3o" );
             
@@ -421,8 +504,13 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             ColorRGBA ambient = new ColorRGBA(0.5f, 0.5f, 0.15f, 1);           
             //setupMaterials(wrapper, diffuse, ambient);
                        
-            return wrapper;            
+            return wrapper;*/            
         } else if( MonkeyTrapConstants.TYPE_POTION1.equals(type) ) {
+        
+            ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
+            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);           
+            return createPotion("HealthBomb", diffuse, ambient);
+            /*
             Node wrapper = new Node("Potion1");
  
             Node potions = (Node)assets.loadModel( "Models/potions_0/potions_0.j3o" );
@@ -452,8 +540,18 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             fixMaterials(wrapper);           
             //setupMaterials(wrapper, diffuse, ambient);
                        
-            return wrapper;            
-        } else if( MonkeyTrapConstants.TYPE_BLING.equals(type) ) {
+            return wrapper;*/            
+        } else if( MonkeyTrapConstants.TYPE_POTION2.equals(type) ) {
+        
+            ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
+            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);           
+            return createPotion("HealthFlask", diffuse, ambient);            
+        } else if( MonkeyTrapConstants.TYPE_POTION3.equals(type) ) {
+        
+            ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
+            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);           
+            return createPotion("HealthVial", diffuse, ambient);            
+        } else if( MonkeyTrapConstants.TYPE_BLING.equals(type) ) {        
 System.out.println( "Creating bling..." );        
             Node wrapper = new Node("Bling");
 
@@ -496,8 +594,8 @@ System.out.println( "Creating bling..." );
             wrapper.addControl(new ParticleControl(emitter, bling, timeIndex, time));
             
             return wrapper;            
+        } else {
+            throw new RuntimeException("Could not create model for:" + type);
         }
-        
-        return null;
     }
 }

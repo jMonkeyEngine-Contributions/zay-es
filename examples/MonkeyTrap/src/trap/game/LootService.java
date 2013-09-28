@@ -50,6 +50,34 @@ public class LootService implements Service {
  
     static Logger log = LoggerFactory.getLogger(LootService.class); 
  
+    private static ModelType[][] lootLevels = new ModelType[][] {
+            {
+                MonkeyTrapConstants.TYPE_BANANA,
+                MonkeyTrapConstants.TYPE_BANANA,
+                MonkeyTrapConstants.TYPE_BANANA,
+                MonkeyTrapConstants.TYPE_POTION1,
+                MonkeyTrapConstants.TYPE_POTION2,
+                MonkeyTrapConstants.TYPE_POTION3
+            }, {
+                MonkeyTrapConstants.TYPE_POTION1,
+                MonkeyTrapConstants.TYPE_POTION2,
+                MonkeyTrapConstants.TYPE_POTION3,
+                MonkeyTrapConstants.TYPE_POTION1,
+                MonkeyTrapConstants.TYPE_POTION2,
+                MonkeyTrapConstants.TYPE_POTION3,
+                MonkeyTrapConstants.TYPE_POTION1,
+                MonkeyTrapConstants.TYPE_POTION2,
+                MonkeyTrapConstants.TYPE_POTION3,
+                MonkeyTrapConstants.TYPE_RING1,
+                MonkeyTrapConstants.TYPE_RING2,
+                MonkeyTrapConstants.TYPE_RING3
+            }, {
+                MonkeyTrapConstants.TYPE_RING1,
+                MonkeyTrapConstants.TYPE_RING2,
+                MonkeyTrapConstants.TYPE_RING3
+            }};
+            
+ 
     private EntityData ed;    
     private EntitySet dead;
        
@@ -59,6 +87,12 @@ public class LootService implements Service {
     public void initialize( GameSystems systems ) {
         this.ed = systems.getEntityData();
         dead = ed.getEntities(Dead.class);
+    }
+
+    protected ModelType randomType( int level ) {
+        ModelType[] loot = lootLevels[level];
+        int index = (int)(Math.random() * loot.length);
+        return loot[index];
     }
 
     public void update( long gameTime ) {
@@ -81,13 +115,13 @@ public class LootService implements Service {
             }
             
             if( type == MonkeyTrapConstants.TYPE_BARRELS ) {
-                EntityFactories.createObject(MonkeyTrapConstants.TYPE_BANANA, death.getTime(), 
-                                             pos.getLocation());
-            } else if( type == MonkeyTrapConstants.TYPE_CHEST ) {
-                EntityFactories.createObject(MonkeyTrapConstants.TYPE_BANANA, death.getTime(), 
+                EntityFactories.createObject(randomType(0), death.getTime(), 
                                              pos.getLocation());
             } else if( type == MonkeyTrapConstants.TYPE_OGRE ) {            
-                EntityFactories.createObject(MonkeyTrapConstants.TYPE_BANANA, death.getTime(), 
+                EntityFactories.createObject(randomType(1), death.getTime(), 
+                                             pos.getLocation());
+            } else if( type == MonkeyTrapConstants.TYPE_CHEST ) {
+                EntityFactories.createObject(randomType(2), death.getTime(), 
                                              pos.getLocation());
             } else if( type == MonkeyTrapConstants.TYPE_MONKEY ) {
                 EntityFactories.createObject(MonkeyTrapConstants.TYPE_BANANA, death.getTime(), 
