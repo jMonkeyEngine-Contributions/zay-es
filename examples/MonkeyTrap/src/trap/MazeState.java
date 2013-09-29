@@ -43,10 +43,12 @@ import com.jme3.material.Material;
 import com.jme3.material.RenderState.BlendMode;
 import com.jme3.material.RenderState.TestFunction;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.texture.Image;
 import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture;
@@ -56,6 +58,7 @@ import com.jme3.util.BufferUtils;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.event.BaseAppState;
 import java.nio.ByteBuffer;
+import trap.game.Direction;
 
 
 /**
@@ -77,6 +80,7 @@ public class MazeState extends BaseAppState {
     
     private ColorRGBA[][] fogColors;
     private ColorRGBA[][] lastFogColors;
+    private ColorRGBA[][] currentColors;
     private ImageRaster fogOfWar;    
     private float fogMixLevel = 1f;
     
@@ -99,6 +103,7 @@ public class MazeState extends BaseAppState {
         this.fogState = new int[xSize][ySize];
         this.fogColors = new ColorRGBA[xSize][ySize]; 
         this.lastFogColors = new ColorRGBA[xSize][ySize]; 
+        this.currentColors = new ColorRGBA[xSize][ySize]; 
     }
     
     public Maze getMaze() {
@@ -110,6 +115,12 @@ public class MazeState extends BaseAppState {
     }
     
     public boolean isVisible( int x, int y ) {
+        if( x < 0 || x >= xSize ) {
+            return false;
+        }
+        if( y < 0 || y >= xSize ) {
+            return false;
+        }
         return (fogState[x][y] & PLAYER_VISIBLE) != 0; 
     }
 
@@ -151,6 +162,7 @@ public class MazeState extends BaseAppState {
                         color = mix;
                     }
                 }
+                currentColors[i][j] = color.clone();
                 fogOfWar.setPixel(i, j, color);  
             }
         }
@@ -187,6 +199,7 @@ public class MazeState extends BaseAppState {
         mat.setFloat("AlphaDiscardThreshold", 0.9f);
         geom.setMaterial(mat);
         geom.move(-mazeScale * 0.5f, 0, -mazeScale * 0.5f);
+        geom.setUserData("layer", 0);
 
         mazeRoot.attachChild(geom);
         
@@ -201,6 +214,7 @@ public class MazeState extends BaseAppState {
         geom.setMaterial(mat);
         geom.move(-mazeScale * 0.5f, 0, -mazeScale * 0.5f);
         geom.setQueueBucket(Bucket.Transparent);
+        geom.setUserData("layer", 1);
 
         mazeRoot.attachChild(geom);
  
@@ -219,6 +233,7 @@ public class MazeState extends BaseAppState {
         geom.setMaterial(mat);
         geom.move(-mazeScale * 0.5f, 0, -mazeScale * 0.5f);
         geom.setQueueBucket(Bucket.Transparent);
+        geom.setUserData("layer", 2);
         mazeRoot.attachChild(geom);
     }
 
@@ -245,6 +260,33 @@ public class MazeState extends BaseAppState {
             fogMixLevel += tpf * rate; //4; //0.1f;
             fogMixLevel = Math.min(fogMixLevel, 1);
             remix();
+        }
+        
+        for( Spatial s : getState(ModelState.class).spatials() ) {
+            ColorControl cc = s.getControl(ColorControl.class);
+            if( cc == null ) {
+                continue;
+            }
+            
+            Vector3f loc = s.getLocalTranslation();
+            int x = (int)(loc.x * 0.5);
+            int y = (int)(loc.z * 0.5);
+ 
+            float visLevel = 0;           
+            if( isVisible(x,y) ) {
+                visLevel = 1;            
+            } else {
+                // See if any neighbors are visible
+                for( Direction d : Direction.values() ) {
+                    int nx = x + d.getXDelta();
+                    int ny = y + d.getYDelta();
+                    if( isVisible(nx, ny) ) {
+                        visLevel += 1;
+                    }
+                }
+                visLevel = visLevel * 0.25f;
+            }                       
+            cc.setAlpha(visLevel);
         }
     }
 

@@ -354,9 +354,9 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
  
             // one shadow for all the barrels
             bounds = (BoundingBox)wrapper.getWorldBound();                                  
-            wrapper.attachChild(createShadowBox(bounds.getXExtent(), 
-                                                bounds.getYExtent(), 
-                                                bounds.getZExtent()));
+//            wrapper.attachChild(createShadowBox(bounds.getXExtent(), 
+//                                                bounds.getYExtent(), 
+//                                                bounds.getZExtent()));
                                                 
             ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
             ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
@@ -570,7 +570,7 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
         
             ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
             ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);           
-            return createPotion("HealthVial", diffuse, ambient);            
+            return createPotion("HealthJar", diffuse, ambient);            
         } else if( MonkeyTrapConstants.TYPE_BLING.equals(type) ) {        
 System.out.println( "Creating bling..." );        
             Node wrapper = new Node("Bling");

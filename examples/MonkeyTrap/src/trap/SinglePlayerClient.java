@@ -161,7 +161,7 @@ public class SinglePlayerClient implements GameClient
 
             long moveTime = activity != null ? activity.getEndTime() : time;
             moveTime = Math.max(moveTime, time);
- 
+System.out.println( "------------ MOVE -----------------" ); 
             // Else see if there is something to attack.
             // Note: in multiplayer this check would be done on the server
             //       and not the client, so would still have access to the

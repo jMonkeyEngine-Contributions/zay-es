@@ -44,6 +44,7 @@ import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntitySet;
 import com.simsilica.lemur.event.BaseAppState;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -82,6 +83,10 @@ public class ModelState extends BaseAppState {
         // Make sure we are up to date
         refreshModels();
         return models.get(entity);
+    }
+
+    public Collection<Spatial> spatials() {
+        return models.values();
     }
 
     protected Spatial createSpatial( Entity e ) {

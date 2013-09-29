@@ -44,6 +44,7 @@ import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.Spatial.CullHint;
 import com.jme3.scene.control.AbstractControl;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,7 +66,11 @@ public class ColorControl extends AbstractControl {
 
     private ColorRGBA baseDiffuse;
     private ColorRGBA baseAmbient;
-    private ColorRGBA color;
+    private ColorRGBA startColor = new ColorRGBA(1,1,1,1);
+    private ColorRGBA endColor = new ColorRGBA(1,1,1,1);
+    private ColorRGBA currentColor = new ColorRGBA(1,1,1,1);
+    private float tween = 1;
+    private float rate = 2; // change in half a second
 
     public ColorControl( ColorRGBA baseDiffuse, ColorRGBA baseAmbient ) {
         this.baseDiffuse = baseDiffuse;
@@ -75,23 +80,51 @@ public class ColorControl extends AbstractControl {
     @Override
     public void setSpatial( Spatial s ) {
         super.setSpatial(s);
-System.out.println( "Extracting colors from:" + s );        
+//System.out.println( "Extracting colors from:" + s );        
         setupMaterials(s);
         s.setQueueBucket(Bucket.Transparent);
+        s.setUserData("layer", 3);
+        refreshColors();
+    }
+
+    public void setAlpha( float alpha ) {
+        if( alpha == endColor.a ) {
+            return;
+        }
+        startColor.set(currentColor);
+        endColor.a = alpha;
+//System.out.println( "start:" + startColor + "  end:" + endColor );        
+        tween = 0;     
     }
 
     public void setColor( ColorRGBA color ) {
-        if( this.color != null && !this.color.equals(color) ) {
+        if( this.endColor.equals(color) ) {
             return;
         }
         
-        this.color = color.clone();
+        startColor.set(currentColor);
+        endColor.set(color);
+        tween = 0;
+    }
+    
+    protected void refreshColors() {
+        
+        currentColor.interpolate(startColor, endColor, tween);
+
+//currentColor.a = Math.max(0.5f, currentColor.a);
+//System.out.println( "current color:" + currentColor + "  " + spatial );        
         
         // Update all of the colors
         for( ColorEntry e : entryMap.values() ) {
-System.out.println( "Before:" + e );        
-            e.update(color);
-System.out.println( " after:" + e );            
+            e.update(currentColor);
+        }
+ 
+        if( currentColor.a <= 0 ) {
+//System.out.println( "Cull always:" + spatial );        
+            spatial.setCullHint(CullHint.Always);   
+        } else {
+//System.out.println( "Cull inherit:" + spatial );        
+            spatial.setCullHint(CullHint.Inherit);   
         } 
     } 
 
@@ -104,7 +137,7 @@ System.out.println( " after:" + e );
     }
 
     private ColorEntry updateEntry( ColorRGBA c, ColorRGBA base ) {
-System.out.println( "updateEntry(" + c + ", " + base + ")" );    
+//System.out.println( "updateEntry(" + c + ", " + base + ")" );    
         if( c == null ) {
             c = base;
         } else {
@@ -113,7 +146,7 @@ System.out.println( "updateEntry(" + c + ", " + base + ")" );
         
         ColorEntry result = entryMap.get(c);
         if( result == null ) {
-System.out.println( "New entry..." );        
+//System.out.println( "New entry..." );        
             result = new ColorEntry(c);
             entryMap.put(c, result);
         }
@@ -121,6 +154,7 @@ System.out.println( "New entry..." );
     }
 
     protected void setupMaterials( Spatial s ) {
+        s.setQueueBucket(Bucket.Inherit);
         if( s instanceof Node ) {
             Node n = (Node)s;
             for( Spatial child : n.getChildren() ) {
@@ -130,16 +164,16 @@ System.out.println( "New entry..." );
             Geometry geom = (Geometry)s;
             Material m = geom.getMaterial();
  
-System.out.println( "Material name:" + m.getName() + "  asset:" + m.getAssetName() ); 
+//System.out.println( "Material name:" + m.getName() + "  asset:" + m.getAssetName() ); 
             // If the blend mode is originally Alpha then we will
             // push it up a layer since we eventually set the blend
             // mode for everything to alpha
             if( m.getAdditionalRenderState().getBlendMode() == BlendMode.Alpha ) {
-                geom.setUserData("layer", 2);
-            }
+                geom.setUserData("layer", 4);
+            }                
 
             String defName = m.getMaterialDef().getAssetName();
-System.out.println( "Checking defName:" + defName );            
+//System.out.println( "Checking defName:" + defName );            
             if( "Common/MatDefs/Light/Lighting.j3md".equals(defName)
                 || "MatDefs/Glass.j3md".equals(defName) ) {
                 
@@ -150,12 +184,12 @@ System.out.println( "Checking defName:" + defName );
                 ColorEntry ambient = updateEntry(getColor(m, "Ambient"), baseAmbient);
                 m.setColor("Ambient", ambient.current);
                                
-System.out.println( "  diffuse: " + diffuse + "  result:" + getColor(m, "Diffuse") );            
-System.out.println( "  ambient: " + ambient + "  result:" + getColor(m, "Ambient") );            
-System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );            
+//System.out.println( "  diffuse: " + diffuse + "  result:" + getColor(m, "Diffuse") );            
+//System.out.println( "  ambient: " + ambient + "  result:" + getColor(m, "Ambient") );            
+//System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );            
 
                 m.setBoolean("UseMaterialColors", true);
-System.out.println( "  after: useMatColors: " + m.getParam("UseMaterialColors") );            
+//System.out.println( "  after: useMatColors: " + m.getParam("UseMaterialColors") );            
                 
                 m.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);                
             }                
@@ -164,6 +198,12 @@ System.out.println( "  after: useMatColors: " + m.getParam("UseMaterialColors") 
 
     @Override
     protected void controlUpdate( float tpf ) {
+        if( tween < 1 ) {
+            tween += tpf * rate;
+            if( tween > 1 )
+                tween = 1;
+            refreshColors();
+        }
     }
 
     @Override
@@ -180,7 +220,9 @@ System.out.println( "  after: useMatColors: " + m.getParam("UseMaterialColors") 
         }
         
         public void update( ColorRGBA color ) {
+//System.out.println( "  before:" + current + "  mult:" + original + "  by:" + color );            
             current.set(original.mult(color));
+//System.out.println( "   after:" + current );            
         }
         
         @Override
