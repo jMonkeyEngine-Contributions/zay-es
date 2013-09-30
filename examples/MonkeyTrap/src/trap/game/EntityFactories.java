@@ -125,11 +125,17 @@ public class EntityFactories {
             ed.setComponents(e, new Activity(Activity.SPAWNING, time, time + 2000 * 1000000L),
                                 MonkeyTrapConstants.AI_SURVEY,
                                 MonkeyTrapConstants.SPEED_OGRE,
-                                new HitPoints(MonkeyTrapConstants.OGRE_HITPOINTS));
+                                MonkeyTrapConstants.OGRE_COMBAT,
+                                MonkeyTrapConstants.OGRE_ARMOR, 
+                                new HitPoints(MonkeyTrapConstants.OGRE_HITPOINTS), 
+                                new MaxHitPoints(MonkeyTrapConstants.OGRE_HITPOINTS));
         } else if( MonkeyTrapConstants.TYPE_MONKEY.equals(type) ) {
             ed.setComponents(e, new Activity(Activity.SPAWNING, time, time + 2000 * 1000000L),
                                 MonkeyTrapConstants.SPEED_MONKEY,
-                                new HitPoints(MonkeyTrapConstants.MONKEY_HITPOINTS));
+                                new CombatStrength(),
+                                new ArmorStrength(), 
+                                new HitPoints(MonkeyTrapConstants.MONKEY_HITPOINTS), 
+                                new MaxHitPoints(MonkeyTrapConstants.MONKEY_HITPOINTS));
         } else if( MonkeyTrapConstants.TYPE_CHEST.equals(type) ) {
             ed.setComponents(e, new HitPoints(MonkeyTrapConstants.CHEST_HITPOINTS)); 
         } else if( MonkeyTrapConstants.TYPE_BARRELS.equals(type) ) {

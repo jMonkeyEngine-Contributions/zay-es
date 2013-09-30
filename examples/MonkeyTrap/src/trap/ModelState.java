@@ -46,10 +46,12 @@ import com.simsilica.es.EntitySet;
 import com.simsilica.lemur.event.BaseAppState;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import trap.game.TimeProvider;
 
 
 /**
@@ -67,11 +69,13 @@ public class ModelState extends BaseAppState {
 
     private EntityData ed;
     private EntitySet entities;
+    private TimeProvider time;
     private Map<EntityId, Spatial> models = new HashMap<EntityId, Spatial>();
     private Node modelRoot;
     private ModelFactory factory;
 
-    public ModelState( ModelFactory factory ) {
+    public ModelState( TimeProvider time, ModelFactory factory ) {
+        this.time = time;
         this.factory = factory;
     }
 
@@ -146,7 +150,7 @@ public class ModelState extends BaseAppState {
         }
     }
 
-    protected void refreshModels() {
+    protected void refreshModels() {    
         if( entities.applyChanges() ) {
             removeModels(entities.getRemovedEntities());
             addModels(entities.getAddedEntities());

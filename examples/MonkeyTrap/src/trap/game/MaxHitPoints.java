@@ -38,27 +38,27 @@ import com.simsilica.es.EntityComponent;
 
 
 /**
- *  A destructable entity's health.
+ *  A destructable entity's maximum health.
  *
  *  @author    Paul Speed
  */
-public class HitPoints implements EntityComponent {
+public class MaxHitPoints implements EntityComponent {
     private int health;
     
-    public HitPoints( int health ) { 
+    public MaxHitPoints( int health ) { 
         this.health = health;
     }
  
-    public HitPoints newAdjusted( int delta ) {
-        return new HitPoints(health + delta);
+    public MaxHitPoints newAdjusted( int delta ) {
+        return new MaxHitPoints(health + delta);
     }
     
-    public int getHealth() {
+    public int getMaxHealth() {
         return health;
     }
     
     @Override
     public String toString() {
-        return "HitPoints[" + health + "]";
+        return "MaxHitPoints[" + health + "]";
     }
 }

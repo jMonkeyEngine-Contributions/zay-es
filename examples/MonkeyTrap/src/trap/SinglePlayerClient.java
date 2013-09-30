@@ -43,9 +43,10 @@ import trap.game.TimeProvider;
 import com.jme3.math.Vector3f;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
+import com.simsilica.es.Name;
 import trap.game.CellEntities;
+import trap.game.EntityFactories;
 import trap.game.GameSystems;
-import trap.game.HitPoints;
 import trap.game.MazeService;
 import trap.game.MeleeTarget;
 import trap.game.MoveTo;
@@ -87,10 +88,9 @@ public class SinglePlayerClient implements GameClient
         // Use the maze seed as starting position
         Vector3f location = new Vector3f(maze.getXSeed() * 2, 0, maze.getYSeed() * 2);
         System.out.println( "Setting player to location:" + location );
-        ed.setComponent(player, new Position(location, -1, -1));        
-        ed.setComponent(player, MonkeyTrapConstants.TYPE_MONKEY);   
-        ed.setComponent(player, MonkeyTrapConstants.SPEED_MONKEY);             
-        ed.setComponent(player, new HitPoints(MonkeyTrapConstants.MONKEY_HITPOINTS));       
+        player = EntityFactories.createObject(MonkeyTrapConstants.TYPE_MONKEY,
+                                              systems.getGameTime(), location,
+                                              new Name("Single Player"));
     }
     
     public void close() {

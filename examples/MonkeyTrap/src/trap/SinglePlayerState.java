@@ -85,7 +85,7 @@ public class SinglePlayerState extends BaseAppState
         EntityData ed = client.getEntityData(); 
 
         gameStates.add(new EntityDataState(ed));
-        gameStates.add(new ModelState(new TrapModelFactory()));
+        gameStates.add(new ModelState(client.getRenderTimeProvider(), new TrapModelFactory()));
         gameStates.add(new CharacterAnimState());
         gameStates.add(new MazeState(maze));
         gameStates.add(new PlayerState(client));

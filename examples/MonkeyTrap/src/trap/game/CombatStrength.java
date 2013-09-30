@@ -38,27 +38,48 @@ import com.simsilica.es.EntityComponent;
 
 
 /**
- *  A destructable entity's health.
+ *  An entity's attack, defense, damage, and armor strength values.
  *
  *  @author    Paul Speed
  */
-public class HitPoints implements EntityComponent {
-    private int health;
+public class CombatStrength implements EntityComponent {
+    private int attack;
+    private int defense;
+    private int damage;
     
-    public HitPoints( int health ) { 
-        this.health = health;
+    public CombatStrength() {
+    }
+    
+    public CombatStrength( int damage ) {
+        this(0, 0, 1);
+    }
+    
+    public CombatStrength( int attack, int defense, int damage ) {
+        this.attack = attack;
+        this.defense = defense;
+        this.damage = damage;
     }
  
-    public HitPoints newAdjusted( int delta ) {
-        return new HitPoints(health + delta);
+    public CombatStrength newAdjusted( CombatStrength delta ) {
+        return new CombatStrength(attack + delta.attack, 
+                                  defense + delta.defense,
+                                  damage + delta.damage);
     }
     
-    public int getHealth() {
-        return health;
+    public int getAttack() {
+        return attack;
+    }
+
+    public int getDefense() {
+        return defense;
+    }
+    
+    public int getDamage() {
+        return damage;
     }
     
     @Override
     public String toString() {
-        return "HitPoints[" + health + "]";
+        return "CombatStrength[" + attack + ", " + defense + ", " + damage + "]";
     }
 }

@@ -52,6 +52,9 @@ public class MonkeyTrapConstants {
     public static final int OGRE_HITPOINTS = 15;
     public static final int CHEST_HITPOINTS = 5;
     public static final int BARREL_HITPOINTS = 1;
+ 
+    public static final CombatStrength OGRE_COMBAT = new CombatStrength(1, 1, 3);
+    public static final ArmorStrength OGRE_ARMOR = new ArmorStrength(1); 
         
     public static final Speed SPEED_MONKEY = new Speed(MONKEY_MOVE_SPEED, MONKEY_TURN_SPEED);
     public static final Speed SPEED_OGRE = new Speed(OGRE_MOVE_SPEED, OGRE_TURN_SPEED);

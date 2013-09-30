@@ -38,27 +38,30 @@ import com.simsilica.es.EntityComponent;
 
 
 /**
- *  A destructable entity's health.
+ *  An entity's general resistance to damage.
  *
  *  @author    Paul Speed
  */
-public class HitPoints implements EntityComponent {
-    private int health;
+public class ArmorStrength implements EntityComponent {
+    private int armor;
     
-    public HitPoints( int health ) { 
-        this.health = health;
+    public ArmorStrength() {
+    }
+    
+    public ArmorStrength( int armor ) {
+        this.armor = armor;
     }
  
-    public HitPoints newAdjusted( int delta ) {
-        return new HitPoints(health + delta);
+    public ArmorStrength newAdjusted( int delta ) {
+        return new ArmorStrength(armor + delta);
     }
     
-    public int getHealth() {
-        return health;
+    public int getStrength() {
+        return armor;
     }
     
     @Override
     public String toString() {
-        return "HitPoints[" + health + "]";
+        return "ArmorStrength[" + armor + "]";
     }
 }
