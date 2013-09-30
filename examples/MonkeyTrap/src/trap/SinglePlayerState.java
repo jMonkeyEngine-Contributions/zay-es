@@ -45,14 +45,22 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
+import com.simsilica.es.ComponentFilter;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
+import com.simsilica.es.EntitySet;
+import com.simsilica.es.Filters;
+import com.simsilica.es.Name;
 import com.simsilica.lemur.event.BaseAppState;
 import java.util.ArrayList;
 import java.util.List;
+import trap.game.ArmorStrength;
+import trap.game.CombatStrength;
 import trap.game.GameSystems;
 import trap.game.HitPoints;
+import trap.game.MaxHitPoints;
 import trap.game.MazeService;
+import trap.game.ModelType;
 import trap.game.MonkeyTrapConstants;
 
 
@@ -67,6 +75,10 @@ public class SinglePlayerState extends BaseAppState
     // Kept so we can keep its time up to date... actually
     // we will need to do this for multiplayer, too.
     private SinglePlayerClient client;
+
+    // There will be only one in single player but this way
+    // it will get refreshed automatically.
+    private EntitySet players;
 
     public SinglePlayerState() {
     }
@@ -89,10 +101,19 @@ public class SinglePlayerState extends BaseAppState
         gameStates.add(new CharacterAnimState());
         gameStates.add(new MazeState(maze));
         gameStates.add(new PlayerState(client));
- 
+        gameStates.add(new HudState());
+   
         //gameStates.add(new FlyCamAppState());
  
-  
+ 
+        // We only care about the monkeys...
+        ComponentFilter filter = Filters.fieldEquals(ModelType.class, 
+                                                     "type", 
+                                                     MonkeyTrapConstants.TYPE_MONKEY.getType());
+        players = ed.getEntities(filter, ModelType.class, Name.class, 
+                                         HitPoints.class, MaxHitPoints.class,
+                                         CombatStrength.class, ArmorStrength.class);
+        
         // Create a second entity just for testing stuff
         //EntityId test = ed.createEntity();
 
@@ -128,11 +149,16 @@ public class SinglePlayerState extends BaseAppState
         AppStateManager stateMgr = app.getStateManager();
         for( AppState state : gameStates ) {
             stateMgr.attach(state);   
-        }        
+        }
+                
+        // In single player we know we will be there already
+        getState(HudState.class).setPlayer(players.getEntity(client.getPlayer()));  
     }
 
     @Override
     protected void cleanup(Application app) {
+        players.release();
+        
         // Detach all the states we added... in reverse order
         AppStateManager stateMgr = app.getStateManager();
         for( int i = gameStates.size() -1; i >= 0; i-- ) {
@@ -226,6 +252,10 @@ public class SinglePlayerState extends BaseAppState
     public void update( float tpf ) {
  
         client.updateRenderTime();
+        
+        if( players.applyChanges() ) {
+            getState(HudState.class).updatePlayer();
+        }
         //updateMaze(tpf);
     }
 
