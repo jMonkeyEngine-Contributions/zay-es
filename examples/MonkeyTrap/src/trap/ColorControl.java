@@ -72,6 +72,10 @@ public class ColorControl extends AbstractControl {
     private float tween = 1;
     private float rate = 2; // change in half a second
 
+    public ColorControl() {
+        this(ColorRGBA.White, ColorRGBA.White);
+    }
+    
     public ColorControl( ColorRGBA baseDiffuse, ColorRGBA baseAmbient ) {
         this.baseDiffuse = baseDiffuse;
         this.baseAmbient = baseAmbient;

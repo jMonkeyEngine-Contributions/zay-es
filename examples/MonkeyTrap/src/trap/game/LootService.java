@@ -58,24 +58,30 @@ public class LootService implements Service {
                 MonkeyTrapConstants.TYPE_BANANA,
                 MonkeyTrapConstants.TYPE_POTION1,
                 MonkeyTrapConstants.TYPE_POTION2,
-                MonkeyTrapConstants.TYPE_POTION3
+                MonkeyTrapConstants.TYPE_POTION3,
+                MonkeyTrapConstants.TYPE_POTION4
             }, {
                 MonkeyTrapConstants.TYPE_POTION1,
                 MonkeyTrapConstants.TYPE_POTION2,
                 MonkeyTrapConstants.TYPE_POTION3,
+                MonkeyTrapConstants.TYPE_POTION4,
                 MonkeyTrapConstants.TYPE_POTION1,
                 MonkeyTrapConstants.TYPE_POTION2,
                 MonkeyTrapConstants.TYPE_POTION3,
+                MonkeyTrapConstants.TYPE_POTION4,
                 MonkeyTrapConstants.TYPE_POTION1,
                 MonkeyTrapConstants.TYPE_POTION2,
                 MonkeyTrapConstants.TYPE_POTION3,
+                MonkeyTrapConstants.TYPE_POTION4,
                 MonkeyTrapConstants.TYPE_RING1,
                 MonkeyTrapConstants.TYPE_RING2,
-                MonkeyTrapConstants.TYPE_RING3
+                MonkeyTrapConstants.TYPE_RING3,
+                MonkeyTrapConstants.TYPE_RING4
             }, {
                 MonkeyTrapConstants.TYPE_RING1,
                 MonkeyTrapConstants.TYPE_RING2,
-                MonkeyTrapConstants.TYPE_RING3
+                MonkeyTrapConstants.TYPE_RING3,
+                MonkeyTrapConstants.TYPE_RING4
             }};
             
  
