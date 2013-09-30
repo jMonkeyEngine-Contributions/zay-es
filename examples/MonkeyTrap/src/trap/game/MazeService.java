@@ -63,6 +63,7 @@ public class MazeService implements Service {
  
     private EntityData ed;
     private EntitySet objects;
+    private EntitySet solidObjects;
     private MazeIndex index; 
     
     public MazeService( int xSize, int ySize ) {
@@ -184,7 +185,10 @@ public class MazeService implements Service {
         // they are traversable.  Well, we'll grab them all and sort
         // out the "solidness" later.
         objects = ed.getEntities(Position.class, ModelType.class);
-        addObjects(objects);        
+        addObjects(objects);
+        
+        solidObjects = ed.getEntities(Position.class, ModelType.class, HitPoints.class);
+        addSolidObjects(solidObjects);        
     }
  
     protected void populateMaze(long seed) {
@@ -209,6 +213,11 @@ public class MazeService implements Service {
                                                               time, delay, adds );
         return collision;
     }
+ 
+    protected void setSolid( Entity e, Position pos, boolean isSolid ) {
+        Vector3f loc = pos != null ? pos.getLocation(): null;
+        index.setSolid(e.getId(), loc, isSolid);
+    } 
     
     protected void setPosition( Entity e, Position pos ) {
         boolean isSolid = ed.getComponent(e.getId(), HitPoints.class) != null;
@@ -272,6 +281,18 @@ System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + coll
         for( Entity e : set ) {
             setPosition(e, null);
         }
+    }
+    
+    protected void addSolidObjects( Set<Entity> set ) {
+        for( Entity e : set ) {
+            setSolid(e, e.get(Position.class), true);
+        }
+    }
+    
+    protected void removeSolidObjects( Set<Entity> set ) {
+        for( Entity e : set ) {
+            setSolid(e, e.get(Position.class), false);
+        }
     }  
 
     protected void refreshIndex() {
@@ -279,6 +300,10 @@ System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + coll
             removeObjects(objects.getRemovedEntities());
             addObjects(objects.getAddedEntities());
             updateObjects(objects.getChangedEntities());
+        }
+        if( solidObjects.applyChanges() ) {
+            removeSolidObjects(solidObjects.getRemovedEntities());
+            addSolidObjects(solidObjects.getAddedEntities());
         }
     }
 

@@ -91,6 +91,16 @@ public class CellEntities implements Iterable<EntityId> {
         return entities == null || entities.isEmpty();
     }
  
+    public void setSolid( EntityId e, boolean isSolid ) {
+        if( isSolid ) {
+            if( !solid.contains(e) ) {
+                solid.add(e);
+            }
+        } else {
+            solid.remove(e);
+        }
+    }
+ 
     public List<EntityId> getEntities() {
         List<EntityId> result = entities;
         if( result == null ) {

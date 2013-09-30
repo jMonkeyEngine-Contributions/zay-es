@@ -109,6 +109,22 @@ public class MazeIndex {
             index.remove(pos);
         }
     }
+ 
+    public void setSolid( EntityId e, Vector3f pos, boolean isSolid ) {
+        Vector3f old = lastPositions.get(e);
+        if( old == null || !old.equals(pos) ) {
+            // The index doesn't know about this one yet so we'll at least
+            // log a warning
+            log.warn("Changing solidity of unmanaged or misaligned entity:" + e 
+                        + " lastPos:" + old + "  pos:" + pos + "  solid:" + isSolid);
+        }
+        CellEntities cell = getCellEntities(pos, false);
+        if( cell == null ) {
+            log.warn("No cell for entity:" + e 
+                        + " lastPos:" + old + "  pos:" + pos + "  solid:" + isSolid);
+        }
+        cell.setSolid(e, isSolid);        
+    } 
     
     public CellEntities setPosition( EntityId e, Vector3f pos, boolean isSolid ) {
         Vector3f old = lastPositions.get(e);

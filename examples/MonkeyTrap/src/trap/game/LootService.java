@@ -128,19 +128,17 @@ public class LootService implements Service {
                 EntityFactories.createObject(MonkeyTrapConstants.TYPE_BANANA, death.getTime(), 
                                              pos.getLocation());
             }
-                        
-            // Also if it isn't an AI than remove its position and
-            // if it is an AI then remove it's brain
-            /*
-            The problem with doing this is that there is no time
-            associated with it... so it often is seen before the
-            actions that caused it.
+ 
+            // Remove the hitpoints completely from the object
+            // because it no longer has any.  This is also the signal
+            // that it is no longer solid.
+            ed.removeComponent(e.getId(), HitPoints.class);
+            
+            // And if it is an AI then remove its AI type, also.
             AiType ai = ed.getComponent(e.getId(), AiType.class);
-            if( ai == null ) {
-                ed.removeComponent(e.getId(), Position.class);
-            } else {
+            if( ai != null ) {
                 ed.removeComponent(e.getId(), AiType.class);
-            }*/            
+            }
         }
     }
 
