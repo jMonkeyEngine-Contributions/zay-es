@@ -34,9 +34,9 @@
 
 package trap;
 
+import com.google.common.base.Objects;
 import trap.game.TimeProvider;
 import com.jme3.animation.AnimChannel;
-import java.util.*;
 
 import com.jme3.animation.AnimControl;
 import com.jme3.audio.AudioNode;
@@ -44,6 +44,10 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Node;
 import com.jme3.scene.control.AbstractControl;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -130,7 +134,7 @@ public class CharacterAnimControl extends AbstractControl {
             if( now > current.endTime ) {
                 current = null;
                 play(defaultAnimation);    
-            } else if( now >= current.startTime && !Objects.equals(animation, current.animation) ) {
+            } else if( now >= current.startTime && !Objects.equal(animation, current.animation) ) {
                 play(current.animation);
             }
         }
