@@ -98,6 +98,7 @@ public class LootService implements Service {
                 BANANA, BANANA, BANANA,
                 POTION1, POTION2, POTION3, POTION4
             }, {
+                BANANA, BANANA, BANANA,
                 POTION1, POTION2, POTION3, POTION4,
                 POTION1, POTION2, POTION3, POTION4,
                 POTION1, POTION2, POTION3, POTION4,

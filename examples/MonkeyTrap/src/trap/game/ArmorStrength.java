@@ -57,7 +57,7 @@ public class ArmorStrength implements EntityComponent {
     }
 
     public ArmorStrength newRemoved( ArmorStrength delta ) {
-        return new ArmorStrength(armor + delta.armor);
+        return new ArmorStrength(armor - delta.armor);
     }
     
     public int getStrength() {

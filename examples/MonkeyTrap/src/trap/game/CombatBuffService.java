@@ -39,6 +39,7 @@ import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntitySet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -60,7 +61,9 @@ public class CombatBuffService implements Service {
     private EntitySet armorBuffs;
        
     private Map<EntityId, ActiveCombatBuff> activeCombatBuffs = new HashMap<EntityId, ActiveCombatBuff>();
+    private Set<Entity> delayedCombatBuffs = new HashSet<Entity>();
     private Map<EntityId, ActiveArmorBuff> activeArmorBuffs = new HashMap<EntityId, ActiveArmorBuff>();
+    private Set<Entity> delayedArmorBuffs = new HashSet<Entity>();
        
     public CombatBuffService() {
     }
@@ -71,7 +74,7 @@ public class CombatBuffService implements Service {
         armorBuffs = ed.getEntities(Buff.class, ArmorStrength.class);
         
         addCombatBuffs(combatBuffs, -1);
-        //addArmorBuffs(armorBuffs);
+        addArmorBuffs(armorBuffs, -1);
     }
     
     protected void removeCombatBuffs( Set<Entity> set, long gameTime ) {
@@ -92,13 +95,16 @@ public class CombatBuffService implements Service {
      
     protected void addCombatBuffs( Set<Entity> set, long gameTime ) {
         for( Entity e : set ) {
+            Buff b = e.get(Buff.class);                        
+            if( b.getStartTime() > gameTime ) {
+                delayedCombatBuffs.add(e);
+                continue;
+            }
+                           
             if( log.isDebugEnabled() ) {
                 log.debug("Add buff:" + e);
             }                
             
-            // We apply the buff right away regardless of
-            // game time.  Questionable decision but easier to code.
-            Buff b = e.get(Buff.class);               
             EntityId mob = b.getTarget();
             CombatStrength existing = ed.getComponent(mob, CombatStrength.class);
             CombatStrength change = e.get(CombatStrength.class);
@@ -129,13 +135,16 @@ public class CombatBuffService implements Service {
      
     protected void addArmorBuffs( Set<Entity> set, long gameTime ) {
         for( Entity e : set ) {
+            Buff b = e.get(Buff.class);               
+            if( b.getStartTime() > gameTime ) {
+                delayedArmorBuffs.add(e);
+                continue;
+            }
+            
             if( log.isDebugEnabled() ) {
                 log.debug( "Add buff:" + e );
             }
             
-            // We apply the buff right away regardless of
-            // game time.  Questionable decision but easier to code.
-            Buff b = e.get(Buff.class);               
             EntityId mob = b.getTarget();
             ArmorStrength existing = ed.getComponent(mob, ArmorStrength.class);
             ArmorStrength change = e.get(ArmorStrength.class);
@@ -149,14 +158,25 @@ public class CombatBuffService implements Service {
     } 
     
     public void update( long gameTime ) {
+        if( !delayedCombatBuffs.isEmpty() ) {
+            // Not entirely efficient but easy to code
+            Set<Entity> temp = new HashSet<Entity>(delayedCombatBuffs);
+            delayedCombatBuffs.clear();
+            addCombatBuffs(temp, gameTime);
+        }
+        
+        if( !delayedArmorBuffs.isEmpty() ) {
+            // Not entirely efficient but easy to code
+            Set<Entity> temp = new HashSet<Entity>(delayedArmorBuffs);
+            delayedArmorBuffs.clear();
+            addArmorBuffs(temp, gameTime);
+        }
+        
         if( combatBuffs.applyChanges() ) {
             removeCombatBuffs(combatBuffs.getRemovedEntities(), gameTime);
             addCombatBuffs(combatBuffs.getAddedEntities(), gameTime);
-            
-            // I don't support this right now.  Can't modify a buff
-            // once created... only remove it.  Just swap buffs.
-            //updateCombatBuffs(combatBuffs.getChangedEntities(), gameTime);
         }
+        
         if( armorBuffs.applyChanges() ) {
             removeArmorBuffs(armorBuffs.getRemovedEntities(), gameTime);
             addArmorBuffs(armorBuffs.getAddedEntities(), gameTime);

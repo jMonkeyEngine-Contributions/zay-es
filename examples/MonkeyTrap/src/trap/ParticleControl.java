@@ -70,7 +70,7 @@ public class ParticleControl extends AbstractControl {
             return;
         }
  
-        if( !started && time.getTime() > startTime ) {        
+        if( !started && time.getTime() >= startTime ) {        
             emitter.emitAllParticles();
             started = true;
 System.out.println( "Playing sound:" + sound + " at volume:" + sound.getVolume() );            
@@ -81,6 +81,9 @@ System.out.println( "Playing sound:" + sound + " at volume:" + sound.getVolume()
             emitter.killAllParticles();
             stopped = true;
             started = false;
+            
+            // And remove it... it's done
+            spatial.removeFromParent();
         }                       
     }
 

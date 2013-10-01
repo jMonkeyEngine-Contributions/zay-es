@@ -35,6 +35,7 @@ package trap;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
+import com.jme3.math.ColorRGBA;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
 import com.simsilica.es.Entity;
@@ -73,6 +74,10 @@ public class HudState extends BaseAppState {
     
     private Entity player;
     private boolean dirty;
+    
+    private int lastHP = 100;
+    private CombatStrength lastCombat;
+    private ArmorStrength lastArmor; 
 
     @Override
     protected void initialize( Application app ) {
@@ -109,6 +114,8 @@ public class HudState extends BaseAppState {
 
     public void setPlayer( Entity player ) {
         this.player = player;
+        lastCombat = player.get(CombatStrength.class);        
+        lastArmor = player.get(ArmorStrength.class);
         updatePlayer();
     }
     
@@ -147,10 +154,44 @@ public class HudState extends BaseAppState {
         int hp = player.get(HitPoints.class).getHealth() * 100;
         hp = hp / player.get(MaxHitPoints.class).getMaxHealth();
         health.setText(hp + "%");
-        
+        if( hp > lastHP ) {
+            // Play some bling
+            Node playerNode = (Node)getState(ModelState.class).getSpatial(player.getId());
+System.out.println( "Playing bling for node:" + playerNode );
+
+
+            // All of these effects should really be part of a
+            // general app state that watches all entities that might
+            // trigger these effects.
+            
+            Effects.playBling(playerNode, -1, ColorRGBA.Yellow, new ColorRGBA(0.2f, 0.2f, 0.1f, 0)); 
+        }
+        lastHP = hp;
+ 
+        int armorDelta = 0;
+        int attackDelta = 0;
+               
         // Update the buffs
-        CombatStrength cs = player.get(CombatStrength.class);
+        CombatStrength cs = player.get(CombatStrength.class);               
         ArmorStrength as = player.get(ArmorStrength.class);
+        
+        armorDelta += cs.getDefense() - lastCombat.getDefense();
+        attackDelta += cs.getAttack() - lastCombat.getAttack();
+        attackDelta += cs.getDamage() - lastCombat.getDamage();
+        armorDelta += as.getStrength() - lastArmor.getStrength();
+ 
+        if( armorDelta > 0 ) {
+            Node playerNode = (Node)getState(ModelState.class).getSpatial(player.getId());
+            Effects.playBling(playerNode, -1, ColorRGBA.Cyan, new ColorRGBA(0.1f, 0.2f, 0.2f, 0)); 
+        }
+        if( attackDelta > 0 ) {
+            Node playerNode = (Node)getState(ModelState.class).getSpatial(player.getId());
+            Effects.playBling(playerNode, -1, ColorRGBA.Red, new ColorRGBA(0.2f, 0.1f, 0.1f, 0)); 
+        }
+        
+        lastCombat = cs;
+        lastArmor = as;
+        
         int index = 0;
         index = addIcons(index, icons[0], cs.getAttack());
         index = addIcons(index, icons[1], cs.getDefense());

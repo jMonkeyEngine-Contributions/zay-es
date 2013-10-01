@@ -91,6 +91,8 @@ public class SinglePlayerState extends BaseAppState
         client = new SinglePlayerClient(systems);
         client.start();
  
+        Effects.initialize(client.getRenderTimeProvider(), app.getAssetManager());
+ 
         // Grab some service and client properties that we will need for
         // our client-side states.       
         Maze maze = systems.getService(MazeService.class).getMaze();        
