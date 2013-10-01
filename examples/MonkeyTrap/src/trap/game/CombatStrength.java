@@ -60,10 +60,16 @@ public class CombatStrength implements EntityComponent {
         this.damage = damage;
     }
  
-    public CombatStrength newAdjusted( CombatStrength delta ) {
+    public CombatStrength newAdded( CombatStrength delta ) {
         return new CombatStrength(attack + delta.attack, 
                                   defense + delta.defense,
                                   damage + delta.damage);
+    }
+
+    public CombatStrength newRemoved( CombatStrength delta ) {
+        return new CombatStrength(attack - delta.attack, 
+                                  defense - delta.defense,
+                                  damage - delta.damage);
     }
     
     public int getAttack() {

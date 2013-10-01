@@ -39,30 +39,34 @@ import com.simsilica.es.EntityId;
 
 
 /**
- *  Associated with entities that apply some effect to
+ *  Associated with entities that when acquired, applies some effect to
  *  another entity.
  *
  *  @author    Paul Speed
  */
-public class Buff implements EntityComponent { 
+public class ItemBuff implements EntityComponent {
     private EntityId target;
-    private long startTime;
+    private long decay;
     
-    public Buff( EntityId target, long startTime ) {
+    public ItemBuff( EntityId target, long decay ) {
         this.target = target;
-        this.startTime = startTime;
+        this.decay = decay;
     }
     
     public EntityId getTarget() {
         return target;
     }
     
-    public long getStartTime() {
-        return startTime;
+    /**
+     *  Returns how long the effect will last once applied.
+     *  -1 indicates "forever".
+     */
+    public long getDecay() {
+        return decay;
     }
     
     @Override
     public String toString() {
-        return "Buff[" + target + ", at:" + startTime + "]";
+        return "ItemBuff[" + target + ", for:" + decay + "]";
     }    
 }

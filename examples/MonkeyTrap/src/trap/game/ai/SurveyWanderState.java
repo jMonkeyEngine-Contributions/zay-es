@@ -117,7 +117,7 @@ public class SurveyWanderState implements State {
                     }
                 }
                 if( i == 4 ) {
-                    System.out.println( "No way out.   " + mob.getEntity().getId() );
+                    //System.out.println( "No way out.   " + mob.getEntity().getId() );
                     return;
                 }
             }

@@ -34,9 +34,13 @@
 
 package trap.game;
 
+import com.jme3.math.Vector3f;
 import com.simsilica.es.Entity;
+import com.simsilica.es.EntityComponent;
 import com.simsilica.es.EntityData;
+import com.simsilica.es.EntityId;
 import com.simsilica.es.EntitySet;
+import com.simsilica.es.Name;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import trap.game.ai.AiType;
@@ -51,37 +55,55 @@ public class LootService implements Service {
  
     static Logger log = LoggerFactory.getLogger(LootService.class); 
  
-    private static ModelType[][] lootLevels = new ModelType[][] {
+    private LootItem BANANA = new LootItem( "Banana", MonkeyTrapConstants.TYPE_BANANA,
+                                            -1, new HealthChange(1) );
+                                                           
+    private LootItem POTION1 = new LootItem( "Potion of Attack", 
+                                             MonkeyTrapConstants.TYPE_POTION1,
+                                             15000 * 1000000L, // 15 seconds
+                                             new CombatStrength(1, 0, 0) );  
+    private LootItem POTION2 = new LootItem( "Potion of Defense", 
+                                             MonkeyTrapConstants.TYPE_POTION2,
+                                             15000 * 1000000L, // 15 seconds
+                                             new CombatStrength(0, 1, 0) );  
+    private LootItem POTION3 = new LootItem( "Potion of Damage", 
+                                             MonkeyTrapConstants.TYPE_POTION3,
+                                             15000 * 1000000L, // 15 seconds
+                                             new CombatStrength(0, 0, 1) );  
+    private LootItem POTION4 = new LootItem( "Potion of Damage Reduction", 
+                                             MonkeyTrapConstants.TYPE_POTION4,
+                                             15000 * 1000000L, // 15 seconds
+                                             new ArmorStrength(1) );
+                                                            
+    private LootItem RING1 = new LootItem( "+1 Ring of Attack", 
+                                           MonkeyTrapConstants.TYPE_RING1,
+                                           -1,
+                                           new CombatStrength(1, 0, 0) );  
+    private LootItem RING2 = new LootItem( "+1 Ring of Defense", 
+                                           MonkeyTrapConstants.TYPE_RING2,
+                                           -1,
+                                           new CombatStrength(0, 1, 0) );  
+    private LootItem RING3 = new LootItem( "+1 Ring of Damage", 
+                                           MonkeyTrapConstants.TYPE_RING3,
+                                           -1,
+                                           new CombatStrength(0, 0, 1) );  
+    private LootItem RING4 = new LootItem( "+1 Ring of Armor", 
+                                           MonkeyTrapConstants.TYPE_RING4,
+                                           -1,
+                                           new ArmorStrength(1) );
+
+ 
+    private LootItem[][] lootLevels = new LootItem[][] {
             {
-                MonkeyTrapConstants.TYPE_BANANA,
-                MonkeyTrapConstants.TYPE_BANANA,
-                MonkeyTrapConstants.TYPE_BANANA,
-                MonkeyTrapConstants.TYPE_POTION1,
-                MonkeyTrapConstants.TYPE_POTION2,
-                MonkeyTrapConstants.TYPE_POTION3,
-                MonkeyTrapConstants.TYPE_POTION4
+                BANANA, BANANA, BANANA,
+                POTION1, POTION2, POTION3, POTION4
             }, {
-                MonkeyTrapConstants.TYPE_POTION1,
-                MonkeyTrapConstants.TYPE_POTION2,
-                MonkeyTrapConstants.TYPE_POTION3,
-                MonkeyTrapConstants.TYPE_POTION4,
-                MonkeyTrapConstants.TYPE_POTION1,
-                MonkeyTrapConstants.TYPE_POTION2,
-                MonkeyTrapConstants.TYPE_POTION3,
-                MonkeyTrapConstants.TYPE_POTION4,
-                MonkeyTrapConstants.TYPE_POTION1,
-                MonkeyTrapConstants.TYPE_POTION2,
-                MonkeyTrapConstants.TYPE_POTION3,
-                MonkeyTrapConstants.TYPE_POTION4,
-                MonkeyTrapConstants.TYPE_RING1,
-                MonkeyTrapConstants.TYPE_RING2,
-                MonkeyTrapConstants.TYPE_RING3,
-                MonkeyTrapConstants.TYPE_RING4
+                POTION1, POTION2, POTION3, POTION4,
+                POTION1, POTION2, POTION3, POTION4,
+                POTION1, POTION2, POTION3, POTION4,
+                RING1, RING2, RING3, RING4
             }, {
-                MonkeyTrapConstants.TYPE_RING1,
-                MonkeyTrapConstants.TYPE_RING2,
-                MonkeyTrapConstants.TYPE_RING3,
-                MonkeyTrapConstants.TYPE_RING4
+                RING1, RING2, RING3, RING4
             }};
             
  
@@ -96,8 +118,8 @@ public class LootService implements Service {
         dead = ed.getEntities(Dead.class);
     }
 
-    protected ModelType randomType( int level ) {
-        ModelType[] loot = lootLevels[level];
+    protected LootItem randomType( int level ) {
+        LootItem[] loot = lootLevels[level];
         int index = (int)(Math.random() * loot.length);
         return loot[index];
     }
@@ -111,7 +133,9 @@ public class LootService implements Service {
                 continue;
             }
             
-            System.out.println( "Dead:" + e );
+            if( log.isDebugEnabled() ) {
+                log.debug( "Dead:" + e );
+            }
             e.set(new Decay(death.getTime() + 2000 * 1000000L));
             
             // Now figure out what loot to generate
@@ -122,17 +146,14 @@ public class LootService implements Service {
             }
             
             if( type == MonkeyTrapConstants.TYPE_BARRELS ) {
-                EntityFactories.createObject(randomType(0), death.getTime(), 
-                                             pos.getLocation());
+                randomType(0).createObject(death.getTime(), pos.getLocation());
             } else if( type == MonkeyTrapConstants.TYPE_OGRE ) {            
-                EntityFactories.createObject(randomType(1), death.getTime(), 
-                                             pos.getLocation());
+                randomType(1).createObject(death.getTime(), pos.getLocation());
             } else if( type == MonkeyTrapConstants.TYPE_CHEST ) {
-                EntityFactories.createObject(randomType(2), death.getTime(), 
-                                             pos.getLocation());
+                randomType(2).createObject(death.getTime(), pos.getLocation());
             } else if( type == MonkeyTrapConstants.TYPE_MONKEY ) {
-                EntityFactories.createObject(MonkeyTrapConstants.TYPE_BANANA, death.getTime(), 
-                                             pos.getLocation());
+                // Really should be everything that the monkey was carrying
+                randomType(0).createObject(death.getTime(), pos.getLocation());
             }
  
             // Remove the hitpoints completely from the object
@@ -152,4 +173,30 @@ public class LootService implements Service {
         dead.release();
     }
     
+    private class LootItem {
+        String name;
+        ModelType type;
+        long decay;
+        EntityComponent[] buffs;
+        
+        public LootItem( String name, ModelType type, long decay, EntityComponent... buffs ) {
+            this.name = name;
+            this.type = type;
+            this.decay = decay;
+            this.buffs = buffs;
+        }
+        
+        public EntityId createObject( long time, Vector3f location ) {
+        
+            EntityId loot = EntityFactories.createObject(type, time, location, new Name(name));
+            
+            // Create the item buff entities for attachment
+            // Right now none of our buffs conflict so we can just put
+            // them all on one.  Not sure they will ever conflict in this
+            // case so it's probably safe.
+            EntityId itemBuffs = EntityFactories.createItemBuff(loot, decay, buffs);
+ 
+            return loot;       
+        }
+    }
 }

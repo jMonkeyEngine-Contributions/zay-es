@@ -246,20 +246,20 @@ public class MazeService implements Service {
                     }
                 
                     // Generate the collision
-                    // Give it a 2 second decay so that if anything doesn't
-                    // handle the collision it will eventually get removed.
+                    // Give it a 2 second decay so that if nothing
+                    // handles the collision it will eventually get removed.
                     EntityId collision = createCollision(e, collider, pos.getTime(), 2000 * 1000000L, pos);
                     
 System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + collider );                                
  
-                    if( e.get(ModelType.class) == MonkeyTrapConstants.TYPE_MONKEY 
+                    /*if( e.get(ModelType.class) == MonkeyTrapConstants.TYPE_MONKEY 
                         && collider.get(ModelType.class) != MonkeyTrapConstants.TYPE_BLING ) {                                
                         // For testing....
                         EntityFactories.createObject( MonkeyTrapConstants.TYPE_BLING, pos.getTime(),
                                                       pos.newTime(pos.getTime(), pos.getTime()), 
                                                       new Decay(pos.getTime() + 2000 * 1000000L));                         
                         EntityFactories.createBuff(pos.getTime(), e.getId(), new HealthChange(2)); 
-                    }                                                                                                                                                         
+                    }*/                                                                                                                                                         
                 }                
             }            
         } 

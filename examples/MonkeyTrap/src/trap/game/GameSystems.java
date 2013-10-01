@@ -66,6 +66,8 @@ public class GameSystems {
         services.add(new SpawnService(15));
         services.add(new AiService());        
         services.add(new MovementService());
+        services.add(new ItemPickupService());
+        services.add(new CombatBuffService());
         services.add(new CombatInitiativeService());
         services.add(new HealthService());
         services.add(new LootService());

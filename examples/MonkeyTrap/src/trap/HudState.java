@@ -80,15 +80,15 @@ public class HudState extends BaseAppState {
         playerPanel = new Container();
         playerPanel.setInsets(new Insets3f(5, 5, 5, 5));
  
-        topRow = playerPanel.addChild(new Container());
+        topRow = playerPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y, FillMode.NONE, FillMode.NONE)));
                
         playerName = topRow.addChild(new Label("Player"));
         playerName.setInsets(new Insets3f(0, 5, 0, 10));
         
-        Label healthIcon = topRow.addChild(new Label(""), 1);                
-        health = topRow.addChild(new Label("100%"), 2);         
+        Label healthIcon = topRow.addChild(new Label(""));                
+        health = topRow.addChild(new Label("100%"));         
          
-        combatStats = playerPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y, FillMode.EVEN, FillMode.NONE)));
+        combatStats = playerPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y, FillMode.NONE, FillMode.NONE)));
                 
         IconComponent icon = new IconComponent( "Interface/health-icon.png", 0.5f, 0, 0, 0.01f, false );
         healthIcon.setBackground(icon);

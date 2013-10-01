@@ -80,6 +80,18 @@ public class EntityFactories {
         }
         return e;                                                       
     }
+
+    public static EntityId createItemBuff( EntityId target, long decay,  
+                                           EntityComponent... adds ) {
+        EntityId e = ed.createEntity();
+        ed.setComponent(e, new ItemBuff(target, decay));
+        if( adds != null && adds.length > 0 ) {
+            ed.setComponents(e, adds);
+        } else {
+            throw new IllegalArgumentException( "ItemBuff entity created with no extra components." );
+        }
+        return e;                                                       
+    }
     
     public static EntityId createObject( long time, Vector3f loc, 
                                          EntityComponent... adds ) {

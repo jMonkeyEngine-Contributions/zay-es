@@ -96,7 +96,7 @@ public class CellEntities implements Iterable<EntityId> {
             if( !solid.contains(e) ) {
                 solid.add(e);
             }
-        } else {
+        } else if( solid != null ) {
             solid.remove(e);
         }
     }
