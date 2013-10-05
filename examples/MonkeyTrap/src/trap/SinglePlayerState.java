@@ -40,6 +40,8 @@ import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AppState;
 import com.jme3.app.state.AppStateManager;
+import com.jme3.audio.Environment;
+import com.jme3.audio.Listener;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
@@ -62,6 +64,7 @@ import trap.game.MaxHitPoints;
 import trap.game.MazeService;
 import trap.game.ModelType;
 import trap.game.MonkeyTrapConstants;
+import trap.game.TimeProvider;
 
 
 /**
@@ -80,12 +83,21 @@ public class SinglePlayerState extends BaseAppState
     // it will get refreshed automatically.
     private EntitySet players;
 
+    private Listener audioListener = new Listener(); 
+
     public SinglePlayerState() {
     }
 
     @Override
     protected void initialize(Application app) {
         GameSystems systems = new GameSystems();
+
+        // Move this to an audio manager state 
+        app.getAudioRenderer().setListener(audioListener);
+        
+        // Setup the audio environment... here for now              
+        app.getAudioRenderer().setEnvironment(Environment.Closet);
+        
  
         // Create the single player client and start it up               
         client = new SinglePlayerClient(systems);
@@ -98,11 +110,13 @@ public class SinglePlayerState extends BaseAppState
         Maze maze = systems.getService(MazeService.class).getMaze();        
         EntityData ed = client.getEntityData(); 
 
+        TimeProvider time = client.getRenderTimeProvider(); 
+
         gameStates.add(new EntityDataState(ed));
-        gameStates.add(new ModelState(client.getRenderTimeProvider(), new TrapModelFactory()));
+        gameStates.add(new ModelState(time, new TrapModelFactory(app.getAssetManager(), audioListener, time)));
         gameStates.add(new CharacterAnimState());
         gameStates.add(new MazeState(maze));
-        gameStates.add(new PlayerState(client));
+        gameStates.add(new PlayerState(client, audioListener));
         gameStates.add(new HudState());
    
         //gameStates.add(new FlyCamAppState());

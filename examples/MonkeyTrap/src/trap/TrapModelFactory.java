@@ -41,6 +41,7 @@ import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioNode;
+import com.jme3.audio.Listener;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.collision.Collidable;
 import com.jme3.collision.CollisionResults;
@@ -68,7 +69,17 @@ import trap.game.Position;
  */
 public class TrapModelFactory implements ModelFactory {
 
+    private AssetManager assets;
+    private Listener audioListener;
+    private TimeProvider time;
+    
     private ModelState state;
+    
+    public TrapModelFactory( AssetManager assets, Listener audioListener, TimeProvider time ) {
+        this.assets = assets;
+        this.audioListener = audioListener;
+        this.time = time;
+    }
 
     public void setState(ModelState state) {
         this.state = state;
@@ -84,7 +95,7 @@ public class TrapModelFactory implements ModelFactory {
                 };
         shadowBox.move(0,yExtent,0);
             
-        Material m = new Material(state.getApplication().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
+        Material m = new Material(assets, "Common/MatDefs/Misc/Unshaded.j3md");
         m.setFloat("AlphaDiscardThreshold", 1.1f);  // Don't render it at all
         shadowBox.setMaterial(m);        
         shadowBox.setShadowMode( ShadowMode.Cast );
@@ -144,7 +155,7 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
     }
     
     protected Node createRing( String name, ColorRGBA gemColor, ColorRGBA metalDiffuse, ColorRGBA metalAmbient ) {
-        AssetManager assets = state.getApplication().getAssetManager(); 
+    
         Node wrapper = new Node("Ring:" + name);
  
         Node rings = (Node)assets.loadModel( "Models/rings/rings.j3o" );
@@ -190,7 +201,6 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
     
     protected Node createPotion( String name, ColorRGBA potionColor ) {
 
-        AssetManager assets = state.getApplication().getAssetManager(); 
         Node wrapper = new Node("Potion:" + name);
  
         Node potions = (Node)assets.loadModel( "Models/potions_0/potions_0.j3o" );
@@ -232,11 +242,7 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
     public Spatial createModel(Entity e) {
 
         ModelType type = e.get(ModelType.class);
- 
-        TimeProvider time = state.getState(PlayerState.class).getClient().getRenderTimeProvider();
- 
-        AssetManager assets = state.getApplication().getAssetManager(); 
-               
+                
         if( MonkeyTrapConstants.TYPE_MONKEY.equals(type) ) {        
             Node monkey = (Node)assets.loadModel( "Models/Jaime/Jaime.j3o" );
             AnimControl anim = monkey.getControl(AnimControl.class);
@@ -257,14 +263,14 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             cac.addMapping("Idle", "Idle", 1);
             cac.addMapping("Walk", "Walk", 1.55f * (float)MonkeyTrapConstants.MONKEY_MOVE_SPEED);
             AudioNode walkSound = new AudioNode(assets, "Sounds/monkey-feet.ogg", false);
-            walkSound.addControl(new AudioControl(state.getState(PlayerState.class).getAudioListener()));
+            walkSound.addControl(new AudioControl(audioListener));
             walkSound.setVolume(0.75f);
             walkSound.setLooping(true);
             walkSound.setRefDistance(4);
             cac.addMapping("Walk", walkSound);
             
             AudioNode punchSound = new AudioNode(assets, "Sounds/monkey-punch.ogg", false);
-            punchSound.addControl(new AudioControl(state.getState(PlayerState.class).getAudioListener()));
+            punchSound.addControl(new AudioControl(audioListener));
             //walkSound.setVolume(0.75f);
             //punchSound.setLooping(true);
             punchSound.setRefDistance(4);
@@ -279,7 +285,7 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             
             return monkey;
         } else if( MonkeyTrapConstants.TYPE_OGRE.equals(type) ) {
-            Spatial ogre = state.getApplication().getAssetManager().loadModel( "Models/Sinbad/Sinbad.mesh.j3o" );
+            Spatial ogre = assets.loadModel( "Models/Sinbad/Sinbad.mesh.j3o" );
             
             // Normalize the ogre to be 1.8 meters tall
             BoundingBox bounds = (BoundingBox)ogre.getWorldBound();                 
@@ -313,7 +319,7 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             cac.addMapping("Walk", "RunTop", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
             cac.addMapping("Walk", "RunBase", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
             AudioNode walkSound = new AudioNode(assets, "Sounds/ogre-feet.ogg", false);
-            walkSound.addControl(new AudioControl(state.getState(PlayerState.class).getAudioListener()));
+            walkSound.addControl(new AudioControl(audioListener));
             //walkSound.setVolume(0.75f);
             walkSound.setLooping(true);
             walkSound.setRefDistance(10);
@@ -331,7 +337,7 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
         } else if( MonkeyTrapConstants.TYPE_BARRELS.equals(type) ) {
             Node wrapper = new Node("Barrels");
             
-            Spatial barrel = state.getApplication().getAssetManager().loadModel( "Models/mini_wood_barrel/mini_wood_barrel.j3o" );
+            Spatial barrel = assets.loadModel( "Models/mini_wood_barrel/mini_wood_barrel.j3o" );
             // Scale the barrel to be 1.2 meters tall
             BoundingBox bounds = (BoundingBox)barrel.getWorldBound();                       
             barrel.setLocalScale( 1.2f / (bounds.getYExtent() * 2) );
@@ -376,7 +382,7 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
         } else if( MonkeyTrapConstants.TYPE_CHEST.equals(type) ) {
             Node wrapper = new Node("Chest");
             
-            Spatial chest = state.getApplication().getAssetManager().loadModel( "Models/Chest/Chest.j3o" );
+            Spatial chest = assets.loadModel( "Models/Chest/Chest.j3o" );
             BoundingBox bounds = (BoundingBox)chest.getWorldBound();
             chest.setLocalScale( 0.8f / (bounds.getYExtent() * 2) );
             bounds = (BoundingBox)chest.getWorldBound();                        
@@ -400,7 +406,7 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
         } else if( MonkeyTrapConstants.TYPE_BANANA.equals(type) ) {
             Node wrapper = new Node("Banana");
             
-            Spatial banana = state.getApplication().getAssetManager().loadModel( "Models/Banana/Banana.j3o" );
+            Spatial banana = assets.loadModel( "Models/Banana/Banana.j3o" );
             BoundingBox bounds = (BoundingBox)banana.getWorldBound();
             banana.setLocalScale( 0.5f / (bounds.getYExtent() * 2) );
             bounds = (BoundingBox)banana.getWorldBound();                        
@@ -427,49 +433,11 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
             ColorRGBA diffuse = new ColorRGBA(0.85f, 0.75f, 0.25f, 1);           
             ColorRGBA ambient = new ColorRGBA(0.4f, 0.3f, 0.15f, 1);           
             return createRing("Ouroboros", ColorRGBA.Black, diffuse, ambient); 
-            /*Node wrapper = new Node("Ring1");
- 
-            Node rings = (Node)assets.loadModel( "Models/rings/rings.j3o" );
-            
-            Spatial ring = rings.getChild( "Ouroboros" );
-            ring.removeFromParent();
-            ring.setLocalScale(1);
-            ring.setLocalTranslation(0, 0, 0);            
-            
-            
-            BoundingBox bounds = (BoundingBox)ring.getWorldBound();
-            ring.setLocalScale( 0.6f / (bounds.getYExtent() * 2) );
-            bounds = (BoundingBox)ring.getWorldBound();                        
-            ring.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
-            ring.move(0, 0.75f, 0);
-            
-            wrapper.attachChild(createShadowBox(bounds.getXExtent() * 1.5f, 
-                                                bounds.getYExtent(), 
-                                                bounds.getZExtent() * 1.5f));
-            wrapper.addControl(new FloatControl());
- 
-            wrapper.attachChild(ring);
-
-            ColorRGBA diffuse = new ColorRGBA(0.85f, 0.75f, 0.25f, 1);           
-            ColorRGBA ambient = new ColorRGBA(0.4f, 0.3f, 0.15f, 1);           
-            setupMaterials(wrapper, diffuse, ambient);
-                       
-            return wrapper;*/            
         } else if( MonkeyTrapConstants.TYPE_RING2.equals(type) ) {
         
             ColorRGBA diffuse = new ColorRGBA(1f, 1f, 1f, 1);           
             ColorRGBA ambient = new ColorRGBA(0.5f, 0.5f, 0.5f, 1);           
             return createRing("RubyRing", ColorRGBA.Cyan, diffuse, ambient);
-             
-            /*Node wrapper = new Node("Ring2");
- 
-            Node rings = (Node)assets.loadModel( "Models/rings/rings.j3o" );
-            
-            Spatial ring = rings.getChild( "RubyRing" );
-            ring.removeFromParent();
-            ring.setLocalScale(1);
-            ring.setLocalTranslation(0, 0, 0);            
-              */
             /*
                 DiamondRing
                 EmeraldRing
@@ -482,113 +450,27 @@ System.out.println( "  useMatColors: " + m.getParam("UseMaterialColors") );
                 SilverBand
                 SilverRing
             */           
-            
-            /*BoundingBox bounds = (BoundingBox)ring.getWorldBound();
-            ring.setLocalScale( 0.6f / (bounds.getYExtent() * 2) );
-            bounds = (BoundingBox)ring.getWorldBound();                        
-            ring.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
-            ring.move(0, 0.75f, 0);
-            
-            wrapper.attachChild(createShadowBox(bounds.getXExtent() * 1.5f, 
-                                                bounds.getYExtent(), 
-                                                bounds.getZExtent() * 1.5f));
-            wrapper.addControl(new FloatControl());
- 
-            wrapper.attachChild(ring);
-
-            ColorRGBA diffuse = new ColorRGBA(0.75f, 0.75f, 0.25f, 1);           
-            ColorRGBA ambient = new ColorRGBA(0.5f, 0.5f, 0.15f, 1);           
-            //setupMaterials(wrapper, diffuse, ambient);
-                       
-            return wrapper;*/            
         } else if( MonkeyTrapConstants.TYPE_RING3.equals(type) ) {
         
             ColorRGBA diffuse = new ColorRGBA(1f, 1f, 1f, 1);           
             ColorRGBA ambient = new ColorRGBA(0.5f, 0.5f, 0.5f, 1);           
             return createRing("RubyRing", ColorRGBA.Red, diffuse, ambient);
-        } else if( MonkeyTrapConstants.TYPE_RING4.equals(type) ) {
+        } else if( MonkeyTrapConstants.TYPE_RING4.equals(type) ) {        
         
             ColorRGBA diffuse = new ColorRGBA(1f, 1f, 1f, 1);           
             ColorRGBA ambient = new ColorRGBA(0.5f, 0.5f, 0.5f, 1);           
             return createRing("EmeraldRing", ColorRGBA.Cyan, diffuse, ambient);
-             
-            /*Node wrapper = new Node("Ring3");
- 
-            Node rings = (Node)assets.loadModel( "Models/rings/rings.j3o" );
-            
-            Spatial ring = rings.getChild( "EmeraldRing" );
-            ring.removeFromParent();
-            ring.setLocalScale(1);
-            ring.setLocalTranslation(0, 0, 0);            
- 
-            BoundingBox bounds = (BoundingBox)ring.getWorldBound();
-            ring.setLocalScale( 0.6f / (bounds.getYExtent() * 2) );
-            bounds = (BoundingBox)ring.getWorldBound();                        
-            ring.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
-            ring.move(0, 0.75f, 0);
-            
-            wrapper.attachChild(createShadowBox(bounds.getXExtent() * 1.5f, 
-                                                bounds.getYExtent(), 
-                                                bounds.getZExtent() * 1.5f));
-            wrapper.addControl(new FloatControl());
- 
-            wrapper.attachChild(ring);
-
-            ColorRGBA diffuse = new ColorRGBA(0.75f, 0.75f, 0.25f, 1);           
-            ColorRGBA ambient = new ColorRGBA(0.5f, 0.5f, 0.15f, 1);           
-            //setupMaterials(wrapper, diffuse, ambient);
-                       
-            return wrapper;*/            
         } else if( MonkeyTrapConstants.TYPE_POTION1.equals(type) ) {
-        
-            //ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
-            //ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);           
+                
             return createPotion("HealthBomb", ColorRGBA.Red);
-            /*
-            Node wrapper = new Node("Potion1");
- 
-            Node potions = (Node)assets.loadModel( "Models/potions_0/potions_0.j3o" );
-            
-            Spatial bottle = potions.getChild( "HealthBomb" );
-            bottle.removeFromParent();
-            bottle.setLocalScale(1);
-            bottle.setLocalTranslation(0, 0, 0);            
- 
-            BoundingBox bounds = (BoundingBox)bottle.getWorldBound();
-            bottle.setLocalScale( 0.6f / (bounds.getYExtent() * 2) );
-            bounds = (BoundingBox)bottle.getWorldBound();                        
-            bottle.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
-            bottle.move(0, 0.75f, 0);
-            
-            bottle.rotate(FastMath.QUARTER_PI, 0, 0);
-            
-            wrapper.attachChild(createShadowBox(bounds.getXExtent() * 1.5f, 
-                                                bounds.getYExtent(), 
-                                                bounds.getZExtent() * 1.5f));
-            wrapper.addControl(new FloatControl());
- 
-            wrapper.attachChild(bottle);
-
-            ColorRGBA diffuse = new ColorRGBA(0.75f, 0.75f, 0.25f, 1);           
-            ColorRGBA ambient = new ColorRGBA(0.5f, 0.5f, 0.15f, 1);
-            fixMaterials(wrapper);           
-            //setupMaterials(wrapper, diffuse, ambient);
-                       
-            return wrapper;*/            
         } else if( MonkeyTrapConstants.TYPE_POTION2.equals(type) ) {
         
-            //ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
-            //ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);           
             return createPotion("HealthFlask", ColorRGBA.Cyan);            
         } else if( MonkeyTrapConstants.TYPE_POTION3.equals(type) ) {
         
-            //ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
-            //ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);           
             return createPotion("HealthJar", ColorRGBA.Red);            
         } else if( MonkeyTrapConstants.TYPE_POTION4.equals(type) ) {
         
-            //ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
-            //ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);           
             return createPotion("HealthJar", ColorRGBA.Cyan);            
         } else if( MonkeyTrapConstants.TYPE_BLING.equals(type) ) {        
 System.out.println( "Creating bling..." );        

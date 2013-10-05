@@ -79,8 +79,9 @@ public class PlayerState extends BaseAppState
  
     private Listener audioListener = new Listener();
  
-    public PlayerState( GameClient client ) {
+    public PlayerState( GameClient client, Listener audioListener ) {
         this.client = client;
+        this.audioListener = audioListener;
     }
 
     public GameClient getClient() {
@@ -94,11 +95,6 @@ public class PlayerState extends BaseAppState
     @Override
     protected void initialize( Application app ) {
  
-        app.getAudioRenderer().setListener(audioListener);
-        
-        // Setup the audio environment... here for now              
-        app.getAudioRenderer().setEnvironment(Environment.Closet);
-        
          
         this.ed = client.getEntityData();
         this.player = client.getPlayer();
