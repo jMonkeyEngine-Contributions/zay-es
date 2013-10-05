@@ -262,7 +262,12 @@ public class MazeState extends BaseAppState {
             remix();
         }
         
-        for( Spatial s : getState(ModelState.class).spatials() ) {
+        ModelState models = getState(ModelState.class);
+        if( models == null ) {
+            return;
+        }
+         
+        for( Spatial s : models.spatials() ) {
             ColorControl cc = s.getControl(ColorControl.class);
             if( cc == null ) {
                 continue;

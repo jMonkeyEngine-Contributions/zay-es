@@ -119,7 +119,7 @@ public class Maze
         return type != 0;
     }
     
-    int[][] getCells() {
+    public int[][] getCells() {
         return cells;
     }
     
