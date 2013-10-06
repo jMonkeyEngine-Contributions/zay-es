@@ -98,6 +98,28 @@ public class CharacterAnimControl extends AbstractControl {
     public void setAnimation( String name, long startTime, long endTime ) {
         this.current = new AnimationTime(name, startTime, endTime);
     }
+
+    public void reset() {
+    
+        boolean isDefault = true;
+        // See if the default animation is the one currently playing
+        List<Mapping> mappings = getMappings(defaultAnimation, false);
+        for( int i = 0; i < mappings.size(); i++ ) {
+            Mapping m = mappings.get(i);
+            AnimChannel channel = anim.getChannel(i);
+            if( channel == null ) {
+                isDefault = false;
+                break;
+            }
+            if( !m.animation.equals(channel.getAnimationName()) ) {
+                isDefault = false;
+                break;
+            }
+        }
+        if( !isDefault ) {
+            play(defaultAnimation);
+        }            
+    }
     
     protected void play( String name ) {
         List<Mapping> mappings = getMappings(name, false);

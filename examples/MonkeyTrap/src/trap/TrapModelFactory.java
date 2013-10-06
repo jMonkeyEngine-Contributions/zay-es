@@ -295,166 +295,14 @@ System.out.println( "Creating bling..." );
  
     public Spatial createModel( ModelType type ) {
                    
-        if( MonkeyTrapConstants.TYPE_MONKEY.equals(type) ) {        
-            Node monkey = (Node)assets.loadModel( "Models/Jaime/Jaime.j3o" );
-            AnimControl anim = monkey.getControl(AnimControl.class);
-            AnimChannel channel = anim.createChannel();
-            channel.setAnim("Idle");
- 
-            // The monkey's shadow box is strangley off center so we
-            // adjust it... it's also wide because of the splayed arms
-            // and we can fix that too
-            BoundingBox bounds = (BoundingBox)monkey.getWorldBound();
-            monkey.attachChild(createShadowBox(bounds.getXExtent() * 0.7f, 
-                                                bounds.getYExtent(), 
-                                                bounds.getZExtent()));
-                                                                                                
-            monkey.addControl(new InterpolationControl(time));
-            
-            CharacterAnimControl cac = new CharacterAnimControl(time, anim);
-            cac.addMapping("Idle", "Idle", 1);
-            cac.addMapping("Walk", "Walk", 1.55f * (float)MonkeyTrapConstants.MONKEY_MOVE_SPEED);
-            AudioNode walkSound = new AudioNode(assets, "Sounds/monkey-feet.ogg", false);
-            walkSound.addControl(new AudioControl(audioListener));
-            walkSound.setVolume(0.75f);
-            walkSound.setLooping(true);
-            walkSound.setRefDistance(4);
-            cac.addMapping("Walk", walkSound);
-            
-            AudioNode punchSound = new AudioNode(assets, "Sounds/monkey-punch.ogg", false);
-            punchSound.addControl(new AudioControl(audioListener));
-            //walkSound.setVolume(0.75f);
-            //punchSound.setLooping(true);
-            punchSound.setRefDistance(4);
-            cac.addMapping("Attack", "Punches", 2);
-            cac.addMapping("Attack", punchSound, 0.1f); 
-            monkey.addControl(cac);
- 
-            ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
-            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
-            monkey.addControl(new ColorControl(diffuse, ambient));                                  
-            //setupMaterials(monkey, diffuse, ambient);
-            
-            return monkey;
+        if( MonkeyTrapConstants.TYPE_MONKEY.equals(type) ) {
+            return createMonkey();        
         } else if( MonkeyTrapConstants.TYPE_OGRE.equals(type) ) {
-            Spatial ogre = assets.loadModel( "Models/Sinbad/Sinbad.mesh.j3o" );
-            
-            // Normalize the ogre to be 1.8 meters tall
-            BoundingBox bounds = (BoundingBox)ogre.getWorldBound();                 
-            ogre.setLocalScale( 1.8f / (bounds.getYExtent() * 2) );
-            bounds = (BoundingBox)ogre.getWorldBound();
-            ogre.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
- 
-            AnimControl anim = ogre.getControl(AnimControl.class);
-            AnimChannel channel = anim.createChannel();
-            channel.setAnim("IdleTop");
-            channel = anim.createChannel();
-            channel.setAnim("IdleBase");
-            
-            // Wrap it in a node to keep its local translation adjustment
-            Node wrapper = new Node("Ogre");
-            wrapper.attachChild(ogre);
- 
-            // Because Sinbad is made up of lots of objects and the 
-            // zExtent is fairly thin, his shadow looks strange so we
-            // will tweak it.
-            wrapper.attachChild(createShadowBox(bounds.getXExtent(), 
-                                                bounds.getYExtent(), 
-                                                bounds.getZExtent() * 1.5f));
-            
-            //wrapper.setShadowMode( ShadowMode.Cast );
-            wrapper.addControl(new InterpolationControl(time));
-                        
-            CharacterAnimControl cac = new CharacterAnimControl(time, anim);
-            cac.addMapping("Idle", "IdleTop", 1);
-            cac.addMapping("Idle", "IdleBase", 1);
-            cac.addMapping("Walk", "RunTop", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
-            cac.addMapping("Walk", "RunBase", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
-            AudioNode walkSound = new AudioNode(assets, "Sounds/ogre-feet.ogg", false);
-            walkSound.addControl(new AudioControl(audioListener));
-            //walkSound.setVolume(0.75f);
-            walkSound.setLooping(true);
-            walkSound.setRefDistance(10);
-            cac.addMapping("Walk", walkSound); 
-            wrapper.addControl(cac);
-
-            ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
-            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
-            wrapper.addControl(new ColorControl(diffuse, ambient));                                  
-            //setupMaterials(wrapper, diffuse, ambient);
-
-            wrapper.setQueueBucket(Bucket.Transparent);
-            wrapper.setUserData("layer", 10);
-            return wrapper;         
+            return createOgre();
         } else if( MonkeyTrapConstants.TYPE_BARRELS.equals(type) ) {
-            Node wrapper = new Node("Barrels");
-            
-            Spatial barrel = assets.loadModel( "Models/mini_wood_barrel/mini_wood_barrel.j3o" );
-            // Scale the barrel to be 1.2 meters tall
-            BoundingBox bounds = (BoundingBox)barrel.getWorldBound();                       
-            barrel.setLocalScale( 1.2f / (bounds.getYExtent() * 2) );
-            bounds = (BoundingBox)barrel.getWorldBound();                        
-            barrel.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
- 
-            float startAngle = (float)(Math.random() * FastMath.TWO_PI);
-            for( int i = 0; i < 3; i++ ) {
-                Spatial s;
-                if( i < 2 ) {
-                    s = barrel.clone();
-                } else {
-                    s = barrel;
-                }
- 
-                float dir = startAngle + i * FastMath.TWO_PI/3;
-                float dist = 0.5f; //(float)(Math.random() * 0.4 + 0.3);
-                // ^^ there isn't really enough room to randomize that way.
-                // it would be better to lay them out initiallly and then
-                // randomly move them out based on what's left in the bounding
-                // shape.
-                
-                s.move( FastMath.cos(dir) * dist, 0, FastMath.sin(dir) * dist );
-                s.rotate( 0, (float)(Math.random() * FastMath.TWO_PI), 0 );
-                             
-                // Wrap it in a node to keep its local translation adjustment
-                wrapper.attachChild(s);
-            }            
- 
-            // one shadow for all the barrels
-            bounds = (BoundingBox)wrapper.getWorldBound();                                  
-//            wrapper.attachChild(createShadowBox(bounds.getXExtent(), 
-//                                                bounds.getYExtent(), 
-//                                                bounds.getZExtent()));
-                                                
-            ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
-            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
-            wrapper.addControl(new ColorControl(diffuse, ambient));                                  
-            //setupMaterials(wrapper, diffuse, ambient);
-            
-            return wrapper;            
+            return createBarrels();
         } else if( MonkeyTrapConstants.TYPE_CHEST.equals(type) ) {
-            Node wrapper = new Node("Chest");
-            
-            Spatial chest = assets.loadModel( "Models/Chest/Chest.j3o" );
-            BoundingBox bounds = (BoundingBox)chest.getWorldBound();
-            chest.setLocalScale( 0.8f / (bounds.getYExtent() * 2) );
-            bounds = (BoundingBox)chest.getWorldBound();                        
-            chest.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
- 
-            // +/- 45 degrees for interest
-            float angle = (float)(Math.random() * FastMath.HALF_PI - FastMath.QUARTER_PI);           
-            chest.rotate( 0, angle, 0 );            
-            wrapper.attachChild(createShadowBox(bounds.getXExtent() * 1.5f, 
-                                                bounds.getYExtent(), 
-                                                bounds.getZExtent() * 1.5f));
- 
-            wrapper.attachChild(chest);
-                       
-            ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
-            ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
-            wrapper.addControl(new ColorControl(diffuse, ambient));                                  
-            //setupMaterials(wrapper, diffuse, ambient);
-            
-            return wrapper;            
+            return createChest();
         } else if( MonkeyTrapConstants.TYPE_BANANA.equals(type) ) {
             Node wrapper = new Node("Banana");
             
@@ -527,5 +375,166 @@ System.out.println( "Creating bling..." );
         } else {
             throw new RuntimeException("Could not create model for:" + type);
         }
+    }
+
+    public Spatial createMonkey() {
+        Node monkey = (Node)assets.loadModel( "Models/Jaime/Jaime.j3o" );
+
+        AnimControl anim = monkey.getControl(AnimControl.class);
+        AnimChannel channel = anim.createChannel();
+        channel.setAnim("Idle");
+ 
+        // The monkey's shadow box is strangley off center so we
+        // adjust it... it's also wide because of the splayed arms
+        // and we can fix that too
+        BoundingBox bounds = (BoundingBox)monkey.getWorldBound();
+        monkey.attachChild(createShadowBox(bounds.getXExtent() * 0.7f, 
+                                            bounds.getYExtent(), 
+                                            bounds.getZExtent()));
+                                                                                            
+        monkey.addControl(new InterpolationControl(time));
+        
+        CharacterAnimControl cac = new CharacterAnimControl(time, anim);
+        cac.addMapping("Idle", "Idle", 1);
+        cac.addMapping("Walk", "Walk", 1.55f * (float)MonkeyTrapConstants.MONKEY_MOVE_SPEED);
+        AudioNode walkSound = new AudioNode(assets, "Sounds/monkey-feet.ogg", false);
+        walkSound.addControl(new AudioControl(audioListener));
+        walkSound.setVolume(0.75f);
+        walkSound.setLooping(true);
+        walkSound.setRefDistance(4);
+        cac.addMapping("Walk", walkSound);
+        
+        AudioNode punchSound = new AudioNode(assets, "Sounds/monkey-punch.ogg", false);
+        punchSound.addControl(new AudioControl(audioListener));
+        punchSound.setRefDistance(4);
+        cac.addMapping("Attack", "Punches", 2);
+        cac.addMapping("Attack", punchSound, 0.1f); 
+        monkey.addControl(cac);
+ 
+        ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
+        ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
+        monkey.addControl(new ColorControl(diffuse, ambient));                                  
+        
+        return monkey;
+    }        
+
+    public Spatial createOgre() {    
+        Spatial ogre = assets.loadModel( "Models/Sinbad/Sinbad.mesh.j3o" );
+            
+        // Normalize the ogre to be 1.8 meters tall
+        BoundingBox bounds = (BoundingBox)ogre.getWorldBound();                 
+        ogre.setLocalScale( 1.8f / (bounds.getYExtent() * 2) );
+        bounds = (BoundingBox)ogre.getWorldBound();
+        ogre.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
+ 
+        AnimControl anim = ogre.getControl(AnimControl.class);
+        AnimChannel channel = anim.createChannel();
+        channel.setAnim("IdleTop");
+        channel = anim.createChannel();
+        channel.setAnim("IdleBase");
+        
+        // Wrap it in a node to keep its local translation adjustment
+        Node wrapper = new Node("Ogre");
+        wrapper.attachChild(ogre);
+ 
+        // Because Sinbad is made up of lots of objects and the 
+        // zExtent is fairly thin, his shadow looks strange so we
+        // will tweak it.
+        wrapper.attachChild(createShadowBox(bounds.getXExtent(), 
+                                            bounds.getYExtent(), 
+                                            bounds.getZExtent() * 1.5f));
+        
+        wrapper.addControl(new InterpolationControl(time));
+                    
+        CharacterAnimControl cac = new CharacterAnimControl(time, anim);
+        cac.addMapping("Idle", "IdleTop", 1);
+        cac.addMapping("Idle", "IdleBase", 1);
+        cac.addMapping("Walk", "RunTop", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
+        cac.addMapping("Walk", "RunBase", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
+        AudioNode walkSound = new AudioNode(assets, "Sounds/ogre-feet.ogg", false);
+        walkSound.addControl(new AudioControl(audioListener));
+        walkSound.setLooping(true);
+        walkSound.setRefDistance(10);
+        cac.addMapping("Walk", walkSound); 
+        wrapper.addControl(cac);
+
+        ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
+        ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
+        wrapper.addControl(new ColorControl(diffuse, ambient));                                  
+
+        wrapper.setQueueBucket(Bucket.Transparent);
+        wrapper.setUserData("layer", 10);
+        return wrapper;
+    }
+    
+    public Spatial createBarrels() {
+        Node wrapper = new Node("Barrels");
+        
+        Spatial barrel = assets.loadModel( "Models/mini_wood_barrel/mini_wood_barrel.j3o" );
+        // Scale the barrel to be 1.2 meters tall
+        BoundingBox bounds = (BoundingBox)barrel.getWorldBound();                       
+        barrel.setLocalScale( 1.2f / (bounds.getYExtent() * 2) );
+        bounds = (BoundingBox)barrel.getWorldBound();                        
+        barrel.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
+ 
+        float startAngle = (float)(Math.random() * FastMath.TWO_PI);
+        for( int i = 0; i < 3; i++ ) {
+            Spatial s;
+            if( i < 2 ) {
+                s = barrel.clone();
+            } else {
+                s = barrel;
+            }
+ 
+            float dir = startAngle + i * FastMath.TWO_PI/3;
+            float dist = 0.5f; //(float)(Math.random() * 0.4 + 0.3);
+            // ^^ there isn't really enough room to randomize that way.
+            // it would be better to lay them out initiallly and then
+            // randomly move them out based on what's left in the bounding
+            // shape.
+            
+            s.move( FastMath.cos(dir) * dist, 0, FastMath.sin(dir) * dist );
+            s.rotate( 0, (float)(Math.random() * FastMath.TWO_PI), 0 );
+                         
+            // Wrap it in a node to keep its local translation adjustment
+            wrapper.attachChild(s);
+        }            
+ 
+        // one shadow for all the barrels
+        bounds = (BoundingBox)wrapper.getWorldBound();                                  
+        wrapper.attachChild(createShadowBox(bounds.getXExtent(), 
+                                            bounds.getYExtent(), 
+                                            bounds.getZExtent()));
+                                            
+        ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
+        ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
+        wrapper.addControl(new ColorControl(diffuse, ambient));                                  
+        
+        return wrapper;                
+    }
+    
+    public Spatial createChest() {
+        Node wrapper = new Node("Chest");
+            
+        Spatial chest = assets.loadModel( "Models/Chest/Chest.j3o" );
+        BoundingBox bounds = (BoundingBox)chest.getWorldBound();
+        chest.setLocalScale( 0.8f / (bounds.getYExtent() * 2) );
+        bounds = (BoundingBox)chest.getWorldBound();                        
+        chest.setLocalTranslation(0, bounds.getYExtent() - bounds.getCenter().y, 0);
+ 
+        // +/- 45 degrees for interest
+        float angle = (float)(Math.random() * FastMath.HALF_PI - FastMath.QUARTER_PI);           
+        chest.rotate( 0, angle, 0 );            
+        wrapper.attachChild(createShadowBox(bounds.getXExtent() * 1.5f, 
+                                            bounds.getYExtent(), 
+                                            bounds.getZExtent() * 1.5f));
+ 
+        wrapper.attachChild(chest);
+                       
+        ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
+        ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
+        wrapper.addControl(new ColorControl(diffuse, ambient));                                  
+            
+        return wrapper;            
     }
 }
