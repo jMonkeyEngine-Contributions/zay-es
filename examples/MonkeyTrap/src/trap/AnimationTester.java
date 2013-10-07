@@ -103,6 +103,7 @@ public class AnimationTester extends SimpleApplication {
         // Initialize the Lemur helper instance
         GuiGlobals.initialize(this);
         AnimationFactories.initialize(assetManager);
+        Effects.initialize(timeProvider, assetManager);
 
         // Move this to an audio manager state 
         getAudioRenderer().setListener(audioListener);
@@ -265,7 +266,7 @@ double time = 0;
         loc.set(interpNode.getLocalTranslation());
         loc.addLocal(audioDelta);
         audioListener.setLocation(loc);
- 
+  
         if( test != null ) {
             if( test.execute(tpf) == TaskStatus.Done ) {
                 test = null;
@@ -273,7 +274,21 @@ double time = 0;
                 // And reset both to idle state just in case
                 monkey.getControl(CharacterAnimControl.class).reset();
                 ogre.getControl(CharacterAnimControl.class).reset();
+                time = 0;                
             }
+        } else {
+            if( monkey.getParent() == null ) {
+                time += tpf;
+                if( time > 2 ) {
+                    rootNode.attachChild(monkey);
+                }                    
+            }
+            if( ogre.getParent() == null ) {
+                time += tpf;
+                if( time > 2 ) {
+                    rootNode.attachChild(ogre);
+                }                    
+            }        
         }       
     }
 
@@ -347,6 +362,15 @@ double time = 0;
         }          
         return null;
     }
+
+    protected Task createDeath( Spatial actor ) {
+        if( actor == monkey ) {
+            return AnimationFactories.createMonkeyDeath(actor);
+        } else if( actor == ogre ) {
+            return AnimationFactories.createOgreDeath(actor);
+        }
+        return null;
+    }
     
     private class AttackCommand implements Command<Button> {
         
@@ -360,27 +384,6 @@ double time = 0;
             System.out.println( actor + " attack" );
  
             test = createAttack(actor);
-            /*           
-            // Start needs to be provided because the actor may
-            // be in between "gigs" when we query it's position.
-            // In the real game this actually may not ever matter...
-            // but if everything is always done relative then I worry
-            // it never self-corrects.  Though I guess regular movement
-            // will fix it.
-            Vector3f start = new Vector3f();
-            if( actor == monkey ) {
-                start.x = xMain * 2;
-                start.z = yMain * 2;
-            } else {
-                start.x = (xMain+1) * 2;
-                start.z = yMain * 2;
-            }
- 
-            if( actor == monkey ) {              
-                test = AnimationFactories.createMonkeyAttack(actor, start);
-            } else if( actor == ogre ) {
-                test = AnimationFactories.createOgreAttack(actor, start);
-            }          */
         }
     }
 
@@ -396,21 +399,6 @@ double time = 0;
             System.out.println( actor + " dodge" );
             
             test = createDefend(actor);
-            /*            
-            Vector3f start = new Vector3f();
-            if( actor == monkey ) {
-                start.x = xMain * 2;
-                start.z = yMain * 2;
-            } else {
-                start.x = (xMain+1) * 2;
-                start.z = yMain * 2;
-            }
-               
-            if( actor == monkey ) {              
-                test = AnimationFactories.createMonkeyDefend(actor, start);
-            } else if( actor == ogre ) {
-                test = AnimationFactories.createOgreDefend(actor, start);
-            } */         
         }
     }
 
@@ -441,6 +429,7 @@ double time = 0;
         
         public void execute( Button source ) {            
             System.out.println( actor + " death" );            
+            test = createDeath(actor);
         }
     }
     

@@ -36,6 +36,7 @@ package trap;
 
 import com.jme3.animation.AnimControl;
 import com.jme3.asset.AssetManager;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
@@ -207,6 +208,49 @@ public class AnimationFactories {
                         call(sounds, "play", ""),
                         duration(0.2, animate(anim, "IdleTop", 0, 0, 0.2),
                                        animate(anim, "IdleBase", 1, 0, 0.2))
+                        );
+    
+        return result;
+    }
+    
+    public static Task createMonkeyDeath( Spatial monkey ) {
+ 
+        AnimControl anim = monkey.getControl(AnimControl.class);
+        SoundControl sounds = monkey.getControl(SoundControl.class);
+ 
+        //Node test = Effects.playBling( (Node)monkey, -1, ColorRGBA.Red, ColorRGBA.Green );
+
+        // Need a node to put the explosion on since we will
+        // remove the monkey during the process
+        Node explosion = new Node("Explosion");
+        explosion.setLocalTranslation(monkey.getLocalTranslation());
+        monkey.getParent().attachChild(explosion);                      
+        
+        Task result = sequence(
+                        duration(0.3, animate(anim, "Idle", 0, 0, 0.3)),
+                        call(Effects.class, "playGib", explosion, -1, "Textures/monkey-gib.png"),
+                        call(monkey, "removeFromParent")
+                        );
+    
+        return result;
+    }
+    
+    public static Task createOgreDeath( Spatial ogre ) {
+ 
+        AnimControl anim = ((Node)ogre).getChild(0).getControl(AnimControl.class);
+        SoundControl sounds = ogre.getControl(SoundControl.class);
+
+        // Need a node to put the explosion on since we will
+        // remove the monkey during the process
+        Node explosion = new Node("Explosion");
+        explosion.setLocalTranslation(ogre.getLocalTranslation());
+        ogre.getParent().attachChild(explosion);                      
+        
+        Task result = sequence(
+                        duration(0.3, animate(anim, "IdleTop", 0, 0, 0.3),
+                                       animate(anim, "IdleBase", 1, 0, 0.3)),
+                        call(Effects.class, "playGib", explosion, -1, "Textures/ogre-gib.png"),
+                        call(ogre, "removeFromParent")
                         );
     
         return result;

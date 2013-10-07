@@ -56,11 +56,15 @@ public class ParticleControl extends AbstractControl {
     private boolean stopped;
     private AudioNode sound;
  
+    public ParticleControl( ParticleEmitter emitter, long startTime, TimeProvider time ) {
+        this(emitter, null, startTime, time);
+    }
+    
     public ParticleControl( ParticleEmitter emitter, AudioNode sound, long startTime, TimeProvider time ) {
         this.emitter = emitter;
         this.sound = sound;
-        this.startTime = startTime;
-        this.endTime = startTime + 1000 * 1000000L;
+        this.startTime = startTime >= 0 ? startTime : time.getTime();
+        this.endTime = this.startTime + 1000 * 1000000L;
         this.time = time;
     } 
     
@@ -73,8 +77,9 @@ public class ParticleControl extends AbstractControl {
         if( !started && time.getTime() >= startTime ) {        
             emitter.emitAllParticles();
             started = true;
-System.out.println( "Playing sound:" + sound + " at volume:" + sound.getVolume() );            
-            sound.play();
+            if( sound != null ) {
+                sound.play();
+            }
         }
         
         if( started && time.getTime() > endTime ) {
