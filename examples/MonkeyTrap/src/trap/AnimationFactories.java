@@ -64,13 +64,43 @@ public class AnimationFactories {
         target.addLocal(start);
 
         AnimControl anim = monkey.getControl(AnimControl.class);
+        SoundControl sounds = monkey.getControl(SoundControl.class);
         
         Task result = sequence(
+                        call(sounds, "play", "Walk"),
                         duration(0.25, move(monkey, start, target),
-                                    animate(anim, "Walk", 0, 0, 1.55)),
+                                       animate(anim, "Walk", 0, 0, 1.55)),
+                        call(sounds, "play", "Attack"),
                         duration(0.5, animate(anim, "Punches", 0, 0, 1)),
+                        call(sounds, "play", "Walk"),
                         duration(0.25, move(monkey, target, start),
-                                    invert(animate(anim, "Walk", 0, 0, 1.55)))
+                                       invert(animate(anim, "Walk", 0, 0, 1.55))),
+                        call(sounds, "play", ""),
+                        duration(0.1, animate(anim, "Idle", 0, 0, 0.1))
+                        );
+    
+        return result;
+    }
+
+    public static Task createMonkeyMiss( Spatial monkey, Vector3f start ) {
+ 
+        Vector3f target = monkey.getLocalRotation().mult(Vector3f.UNIT_Z);
+        target.addLocal(start);
+
+        AnimControl anim = monkey.getControl(AnimControl.class);
+        SoundControl sounds = monkey.getControl(SoundControl.class);
+        
+        Task result = sequence(
+                        call(sounds, "play", "Walk"),
+                        duration(0.25, move(monkey, start, target),
+                                       animate(anim, "Walk", 0, 0, 1.55)),
+                        call(sounds, "play", "Miss"),
+                        duration(0.5, animate(anim, "Punches", 0, 0, 1)),
+                        call(sounds, "play", "Walk"),
+                        duration(0.25, move(monkey, target, start),
+                                       invert(animate(anim, "Walk", 0, 0, 1.55))),
+                        call(sounds, "play", ""),
+                        duration(0.1, animate(anim, "Idle", 0, 0, 0.1))
                         );
     
         return result;
@@ -82,16 +112,51 @@ public class AnimationFactories {
         target.addLocal(start);
 
         AnimControl anim = ((Node)ogre).getChild(0).getControl(AnimControl.class);
+        SoundControl sounds = ogre.getControl(SoundControl.class);
         
         Task result = sequence(
+                        call(sounds, "play", "Walk"),
                         duration(0.25, move(ogre, start, target),
-                                    animate(anim, "RunTop", 0, 0, 0.2),
-                                    animate(anim, "RunBase", 1, 0, 0.2)),
+                                       animate(anim, "RunTop", 0, 0, 0.2),
+                                       animate(anim, "RunBase", 1, 0, 0.2)),
+                        call(sounds, "play", "Attack"),
                         duration(0.5, animate(anim, "SliceHorizontal", 0, 0, 0.5),
-                                    animate(anim, "IdleBase", 1, 0, 1)),
+                                      animate(anim, "IdleBase", 1, 0, 1)),
+                        call(sounds, "play", "Walk"),
                         duration(0.25, move(ogre, target, start),
-                                    invert(animate(anim, "RunTop", 0, 0, 0.2),
-                                           animate(anim, "RunBase", 1, 0, 0.2)))
+                                       invert(animate(anim, "RunTop", 0, 0, 0.2),
+                                              animate(anim, "RunBase", 1, 0, 0.2))),
+                        call(sounds, "play", ""),
+                        duration(0.1, animate(anim, "IdleTop", 0, 0, 0.3),
+                                      animate(anim, "IdleBase", 1, 0, 0.3))
+                        );
+    
+        return result;
+    }
+
+    public static Task createOgreMiss( Spatial ogre, Vector3f start ) {
+ 
+        Vector3f target = ogre.getLocalRotation().mult(Vector3f.UNIT_Z);
+        target.addLocal(start);
+
+        AnimControl anim = ((Node)ogre).getChild(0).getControl(AnimControl.class);
+        SoundControl sounds = ogre.getControl(SoundControl.class);
+        
+        Task result = sequence(
+                        call(sounds, "play", "Walk"),
+                        duration(0.25, move(ogre, start, target),
+                                       animate(anim, "RunTop", 0, 0, 0.2),
+                                       animate(anim, "RunBase", 1, 0, 0.2)),
+                        call(sounds, "play", "Miss"),
+                        duration(0.5, animate(anim, "SliceHorizontal", 0, 0, 0.5),
+                                      animate(anim, "IdleBase", 1, 0, 1)),
+                        call(sounds, "play", "Walk"),
+                        duration(0.25, move(ogre, target, start),
+                                       invert(animate(anim, "RunTop", 0, 0, 0.2),
+                                              animate(anim, "RunBase", 1, 0, 0.2))),
+                        call(sounds, "play", ""),
+                        duration(0.1, animate(anim, "IdleTop", 0, 0, 0.3),
+                                      animate(anim, "IdleBase", 1, 0, 0.3))
                         );
     
         return result;

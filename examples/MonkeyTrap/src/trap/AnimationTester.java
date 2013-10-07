@@ -37,6 +37,7 @@ package trap;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.StatsAppState;
 import com.jme3.app.state.ScreenshotAppState;
+import com.jme3.audio.Environment;
 import com.jme3.audio.Listener;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
@@ -102,6 +103,13 @@ public class AnimationTester extends SimpleApplication {
         // Initialize the Lemur helper instance
         GuiGlobals.initialize(this);
         AnimationFactories.initialize(assetManager);
+
+        // Move this to an audio manager state 
+        getAudioRenderer().setListener(audioListener);
+        
+        // Setup the audio environment... here for now              
+        getAudioRenderer().setEnvironment(Environment.Closet);
+        
 
         // Setup default key mappings
         PlayerFunctions.initializeDefaultMappings(GuiGlobals.getInstance().getInputMapper());
@@ -297,6 +305,30 @@ double time = 0;
         }
         return null;          
     }
+
+    protected Task createMiss( Spatial actor ) {
+        // Start needs to be provided because the actor may
+        // be in between "gigs" when we query it's position.
+        // In the real game this actually may not ever matter...
+        // but if everything is always done relative then I worry
+        // it never self-corrects.  Though I guess regular movement
+        // will fix it.
+        Vector3f start = new Vector3f();
+        if( actor == monkey ) {
+            start.x = xMain * 2;
+            start.z = yMain * 2;
+        } else {
+            start.x = (xMain+1) * 2;
+            start.z = yMain * 2;
+        }
+ 
+        if( actor == monkey ) {              
+            return AnimationFactories.createMonkeyMiss(actor, start);
+        } else if( actor == ogre ) {
+            return AnimationFactories.createOgreMiss(actor, start);
+        }
+        return null;          
+    }
     
     protected Task createDefend( Spatial actor ) {
         Vector3f start = new Vector3f();
@@ -393,7 +425,7 @@ double time = 0;
         public void execute( Button source ) {
             System.out.println( actor + " attack" );
             
-            Task task1 = createAttack(actor);
+            Task task1 = createMiss(actor);
             Task task2 = createDefend(actor == ogre ? monkey : ogre);
             test = Tasks.compose(task1, task2);
         }

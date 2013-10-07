@@ -231,6 +231,8 @@ public class Tasks {
             }
             
             this.obj = obj;
+            this.parameters = parameters;
+            
             Class type = obj instanceof Class ? (Class)obj : obj.getClass();
             if( parameters == null || parameters.length == 0 ) {
                 try {

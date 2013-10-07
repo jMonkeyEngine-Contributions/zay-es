@@ -411,6 +411,14 @@ System.out.println( "Creating bling..." );
         cac.addMapping("Attack", punchSound, 0.1f); 
         monkey.addControl(cac);
  
+        SoundControl sounds = new SoundControl(audioListener);
+        sounds.addSound("Attack", new AudioNode(assets, "Sounds/monkey-punch.ogg", false));
+        walkSound = new AudioNode(assets, "Sounds/monkey-feet.ogg", false);
+        walkSound.setVolume(0.75f);
+        walkSound.setLooping(true);
+        sounds.addSound("Walk", walkSound);
+        monkey.addControl(sounds);
+ 
         ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
         ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
         monkey.addControl(new ColorControl(diffuse, ambient));                                  
@@ -457,6 +465,13 @@ System.out.println( "Creating bling..." );
         walkSound.setRefDistance(10);
         cac.addMapping("Walk", walkSound); 
         wrapper.addControl(cac);
+
+        SoundControl sounds = new SoundControl(audioListener);
+        sounds.addSound("Attack", new AudioNode(assets, "Sounds/monkey-punch.ogg", false));
+        walkSound = new AudioNode(assets, "Sounds/ogre-feet.ogg", false);
+        walkSound.setLooping(true);
+        sounds.addSound("Walk", walkSound);
+        wrapper.addControl(sounds);
 
         ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
         ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
