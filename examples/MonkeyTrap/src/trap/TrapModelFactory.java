@@ -467,7 +467,7 @@ System.out.println( "Creating bling..." );
         wrapper.addControl(cac);
 
         SoundControl sounds = new SoundControl(audioListener);
-        sounds.addSound("Attack", new AudioNode(assets, "Sounds/monkey-punch.ogg", false));
+        sounds.addSound("Attack", new AudioNode(assets, "Sounds/ogre-punch.ogg", false));
         walkSound = new AudioNode(assets, "Sounds/ogre-feet.ogg", false);
         walkSound.setLooping(true);
         sounds.addSound("Walk", walkSound);

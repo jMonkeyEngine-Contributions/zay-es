@@ -66,7 +66,8 @@ public class SoundControl extends AbstractControl {
     private float duration;
     private float time;
     private float baseVolume;
-    private boolean stopped;  
+    private float delay;
+    private boolean stopped;     
 
     public SoundControl( Listener listener ) {
         this.listener = listener;
@@ -81,7 +82,11 @@ public class SoundControl extends AbstractControl {
     }
  
     public void play( String sound ) {
-        playSound(sounds.get(sound));
+        play(sound, 0);
+    }
+    
+    public void play( String sound, double delay ) {
+        playSound(sounds.get(sound), (float)delay);
     }
  
     public void play() {
@@ -96,11 +101,11 @@ public class SoundControl extends AbstractControl {
         }
     }
 
-    protected void playSound( AudioNode audio ) {
+    protected void playSound( AudioNode audio, float delay ) {
         if( current != null && current.equals(audio) ) {
             // So the sound is the same but maybe we should
             // still let it through.
-            if( current.isLooping() || time < duration ) {
+            if( current.isLooping() || (time-this.delay) < duration ) {
                 // Still playing from last time
                 return;
             } 
@@ -119,6 +124,7 @@ public class SoundControl extends AbstractControl {
             baseVolume = current.getVolume();
             time = 0;
             stopped = false;
+            this.delay = delay;
         }
     }
 
@@ -139,12 +145,14 @@ public class SoundControl extends AbstractControl {
         
         time += tpf;
         
+        float effectiveTime = time - delay;
+        
         float distSq = getListenerDistSq();
         boolean audible = distSq < cutOffSq;        
-        if( !stopped && audible && current.getStatus() == Status.Stopped ) {
-            if( current.isLooping() || time < duration ) {
+        if( !stopped && audible && current.getStatus() == Status.Stopped && effectiveTime >= 0 ) {
+            if( current.isLooping() || effectiveTime < duration ) {
                 // Need to play it... but have to do it at the right time
-                float seek = time % duration;
+                float seek = effectiveTime % duration;
                 current.setTimeOffset(seek);
                 current.play();
             }

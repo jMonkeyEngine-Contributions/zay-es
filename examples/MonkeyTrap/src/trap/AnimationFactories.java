@@ -70,7 +70,7 @@ public class AnimationFactories {
                         call(sounds, "play", "Walk"),
                         duration(0.25, move(monkey, start, target),
                                        animate(anim, "Walk", 0, 0, 1.55)),
-                        call(sounds, "play", "Attack"),
+                        call(sounds, "play", "Attack", 0.2),
                         duration(0.5, animate(anim, "Punches", 0, 0, 1)),
                         call(sounds, "play", "Walk"),
                         duration(0.25, move(monkey, target, start),
@@ -119,8 +119,8 @@ public class AnimationFactories {
                         duration(0.25, move(ogre, start, target),
                                        animate(anim, "RunTop", 0, 0, 0.2),
                                        animate(anim, "RunBase", 1, 0, 0.2)),
-                        call(sounds, "play", "Attack"),
-                        duration(0.5, animate(anim, "SliceHorizontal", 0, 0, 0.5),
+                        call(sounds, "play", "Attack", 0.2),
+                        duration(0.5, animate(anim, "SliceVertical", 0, 0, 0.5),
                                       animate(anim, "IdleBase", 1, 0, 1)),
                         call(sounds, "play", "Walk"),
                         duration(0.25, move(ogre, target, start),
@@ -169,13 +169,16 @@ public class AnimationFactories {
         target.addLocal(start);
         
         AnimControl anim = monkey.getControl(AnimControl.class);
+        SoundControl sounds = monkey.getControl(SoundControl.class);
         
         Task result = sequence(
                         duration(0.3, animate(anim, "Idle", 0, 0, 0.3)),
+                        call(sounds, "play", "Walk"),
                         duration(0.25, move(monkey, start, target),
                                     invert(animate(anim, "Walk", 0, 0, 1.55 * 0.5))),
                         duration(0.25, move(monkey, target, start),
                                     animate(anim, "Walk", 0, 0, 1.55 * 0.5)),
+                        call(sounds, "play", ""),
                         duration(0.2, animate(anim, "Idle", 0, 0, 0.2))
                         );
     
@@ -189,16 +192,19 @@ public class AnimationFactories {
         target.addLocal(start);
 
         AnimControl anim = ((Node)ogre).getChild(0).getControl(AnimControl.class);
+        SoundControl sounds = ogre.getControl(SoundControl.class);
         
         Task result = sequence(
                         duration(0.3, animate(anim, "IdleTop", 0, 0, 0.3),
                                        animate(anim, "IdleBase", 1, 0, 0.3)),
+                        call(sounds, "play", "Walk"),
                         duration(0.25, move(ogre, start, target),
                                     invert(animate(anim, "RunTop", 0, 0, 0.2 * 0.5),
                                            animate(anim, "RunBase", 1, 0, 0.2 * 0.5))),
                         duration(0.25, move(ogre, target, start),
                                     animate(anim, "RunTop", 0, 0, 0.2 * 0.5),
                                     animate(anim, "RunBase", 1, 0, 0.2 * 0.5)),
+                        call(sounds, "play", ""),
                         duration(0.2, animate(anim, "IdleTop", 0, 0, 0.2),
                                        animate(anim, "IdleBase", 1, 0, 0.2))
                         );
