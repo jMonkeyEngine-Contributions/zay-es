@@ -272,8 +272,8 @@ double time = 0;
                 test = null;
                 
                 // And reset both to idle state just in case
-                monkey.getControl(CharacterAnimAndSoundControl.class).reset();
-                ogre.getControl(CharacterAnimAndSoundControl.class).reset();
+                monkey.getControl(CharAnimControl.class).reset();
+                ogre.getControl(CharAnimControl.class).reset();
                 time = 0;                
             }
         } else {
@@ -383,6 +383,9 @@ double time = 0;
         public void execute( Button source ) {
             System.out.println( actor + " attack" );
  
+            if( actor.getParent() == null ) {
+                return;
+            }        
             test = createAttack(actor);
         }
     }
@@ -398,6 +401,9 @@ double time = 0;
         public void execute( Button source ) {            
             System.out.println( actor + " dodge" );
             
+            if( actor.getParent() == null ) {
+                return;
+            }        
             test = createDefend(actor);
         }
     }
@@ -413,6 +419,12 @@ double time = 0;
         public void execute( Button source ) {
             System.out.println( actor + " attack" );
             
+            if( monkey.getParent() == null ) {
+                return;
+            }        
+            if( ogre.getParent() == null ) {
+                return;
+            }        
             Task task1 = createMiss(actor);
             Task task2 = createDefend(actor == ogre ? monkey : ogre);
             test = Tasks.compose(task1, task2);
@@ -429,6 +441,9 @@ double time = 0;
         
         public void execute( Button source ) {            
             System.out.println( actor + " death" );            
+            if( actor.getParent() == null ) {
+                return;
+            }        
             test = createDeath(actor);
         }
     }

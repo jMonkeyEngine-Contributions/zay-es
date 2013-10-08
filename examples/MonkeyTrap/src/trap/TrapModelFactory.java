@@ -393,6 +393,11 @@ System.out.println( "Creating bling..." );
                                             bounds.getZExtent()));
                                                                                             
         monkey.addControl(new InterpolationControl(time));
+ 
+        CharAnimControl charAnim = new CharAnimControl(anim);
+        charAnim.addMapping("Idle", "Idle", 1);
+        charAnim.addMapping("Walk", "Walk", 1.55f * (float)MonkeyTrapConstants.MONKEY_MOVE_SPEED);
+        monkey.addControl(charAnim);        
         
         CharacterAnimAndSoundControl cac = new CharacterAnimAndSoundControl(time, anim);
         cac.addMapping("Idle", "Idle", 1);
@@ -453,6 +458,13 @@ System.out.println( "Creating bling..." );
                                             bounds.getZExtent() * 1.5f));
         
         wrapper.addControl(new InterpolationControl(time));
+
+        CharAnimControl charAnim = new CharAnimControl(anim);
+        charAnim.addMapping("Idle", "IdleTop", 1);
+        charAnim.addMapping("Idle", "IdleBase", 1);
+        charAnim.addMapping("Walk", "RunTop", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
+        charAnim.addMapping("Walk", "RunBase", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
+        wrapper.addControl(charAnim);        
                     
         CharacterAnimAndSoundControl cac = new CharacterAnimAndSoundControl(time, anim);
         cac.addMapping("Idle", "IdleTop", 1);
