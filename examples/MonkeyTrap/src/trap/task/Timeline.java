@@ -51,10 +51,38 @@ public class Timeline implements Task {
     private List<ScheduledTask> schedule = new ArrayList<ScheduledTask>();
     
     private int nextRun = 0;
+    private Double duration;
     private double time;
     private SafeArrayList<ScheduledTask> running = new SafeArrayList<ScheduledTask>(ScheduledTask.class);  
 
     public Timeline() {
+    }
+ 
+    public double getDuration() {
+        if( duration == null ) {
+            // Recalculate the duration
+            double d = 0;
+            for( ScheduledTask t : schedule ) {
+                double td = t.task.getDuration();
+                if( td >= 0 ) {
+                    d = Math.max(d, t.time + td);
+                } else {
+                    // We cannot determine duration
+                    d = -1; 
+                    break;
+                }                
+            }
+            duration = d;            
+        }
+        return duration;
+    }
+    
+    public double getTimeRemaining() {
+        double d = getDuration();
+        if( d < 0 ) {
+            return -1;
+        }
+        return Math.max(0, d - time);
     }
  
     /**
@@ -120,6 +148,7 @@ public class Timeline implements Task {
         for( ScheduledTask event : running.getArray() ) {
             event.task.pausing();
         }
+        duration = null;
     }
  
     /**
@@ -138,7 +167,9 @@ public class Timeline implements Task {
         
         // And reset everything to 0 state
         running.clear();
+        duration = null;
         nextRun = 0;
+        time = 0;
     }
  
     @Override

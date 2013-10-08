@@ -394,7 +394,7 @@ System.out.println( "Creating bling..." );
                                                                                             
         monkey.addControl(new InterpolationControl(time));
         
-        CharacterAnimControl cac = new CharacterAnimControl(time, anim);
+        CharacterAnimAndSoundControl cac = new CharacterAnimAndSoundControl(time, anim);
         cac.addMapping("Idle", "Idle", 1);
         cac.addMapping("Walk", "Walk", 1.55f * (float)MonkeyTrapConstants.MONKEY_MOVE_SPEED);
         AudioNode walkSound = new AudioNode(assets, "Sounds/monkey-feet.ogg", false);
@@ -454,7 +454,7 @@ System.out.println( "Creating bling..." );
         
         wrapper.addControl(new InterpolationControl(time));
                     
-        CharacterAnimControl cac = new CharacterAnimControl(time, anim);
+        CharacterAnimAndSoundControl cac = new CharacterAnimAndSoundControl(time, anim);
         cac.addMapping("Idle", "IdleTop", 1);
         cac.addMapping("Idle", "IdleBase", 1);
         cac.addMapping("Walk", "RunTop", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);

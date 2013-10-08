@@ -272,8 +272,8 @@ double time = 0;
                 test = null;
                 
                 // And reset both to idle state just in case
-                monkey.getControl(CharacterAnimControl.class).reset();
-                ogre.getControl(CharacterAnimControl.class).reset();
+                monkey.getControl(CharacterAnimAndSoundControl.class).reset();
+                ogre.getControl(CharacterAnimAndSoundControl.class).reset();
                 time = 0;                
             }
         } else {

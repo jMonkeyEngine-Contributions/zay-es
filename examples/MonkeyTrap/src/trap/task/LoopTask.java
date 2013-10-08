@@ -36,46 +36,68 @@ package trap.task;
 
 
 /**
- *  A general executable task that periodically performs
- *  some operation.
+ *  A variable-duration task that delegates to another task
+ *  that it will loop over.  
  *
  *  @author    Paul Speed
  */
-public interface Task {
+public class LoopTask implements Task {
 
-    /**
-     *  Executes a frame of this task.
-     */
-    public TaskStatus execute( double tpf );
+    private Task delegate;
+    private double time;
+    private double duration;
     
-    /**
-     *  Returns the duration of this task if known.  Returns
-     *  0 for instant tasks and -1 for tasks where the duration
-     *  is continuous or unknown.
-     */
-    public double getDuration();
+    public LoopTask( Task delegate, double duration ) {
+        this.delegate = delegate;
+        this.duration = duration;
+    }
+
+    protected double executePart( double tpf ) {
     
-    /**
-     *  Returns the time remaining for this task if known.
-     *  Returns 0 if the task has been completed or -1 if the
-     *  duration of the task is unknown or the task is otherwise
-     *  "continuous", ie: unending.
-     */
-    public double getTimeRemaining();
-    
-    /**
-     *  Called when the task is pausing.  This indicates to the
-     *  task that execute() will not be called for a while but that
-     *  when it is, execution should resume where it left off.
-     */
-    public void pausing();
-    
-    /**
-     *  Called when the task is stopping.  This indicates to the
-     *  task that execute() will not be called for a while but that
-     *  when it is, execution should start over from the beginning.
-     */
-    public void stopping();
+        double d = delegate.getTimeRemaining();
+        TaskStatus result = delegate.execute(tpf);
+        
+        double actual = Math.min(tpf, d);
+        time += actual;
+        
+        if( result == TaskStatus.Done && time < duration ) {
+            // Reset for next time
+            delegate.stopping();
+        } else if( time >= duration && result != TaskStatus.Done ) {
+            // We are done and need to tell the delegate to
+            // at least pause
+            delegate.pausing();
+            
+            // Let the caller know we used everything, basically.
+            return tpf;
+        }
+        return actual;
+    }
+
+    public TaskStatus execute( double tpf ) {
+        if( time >= duration ) {
+            return TaskStatus.Done;
+        }
+        while( tpf > 0 ) {
+            tpf -= executePart(tpf);
+        }
+        return time < duration ? TaskStatus.Continue : TaskStatus.Done;        
+    }
+
+    public double getDuration() {
+        return duration;
+    }
+
+    public double getTimeRemaining() {
+        return Math.max(0, time - duration); 
+    }
+
+    public void pausing() {
+        delegate.pausing();
+    }
+
+    public void stopping() {
+        delegate.stopping();
+        time = 0;
+    }
 }
-
-

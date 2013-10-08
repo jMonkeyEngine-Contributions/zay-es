@@ -117,21 +117,60 @@ public class Tasks {
     
         private Task[] tasks;
         private int current;
+        private double time;
+        private Double duration;
         
         public SequenceTask( Task[] tasks ) {
             this.tasks = tasks;
         }
 
+        public double getDuration() {
+            if( duration == null ) {
+                // Calculate the duration
+                double d = 0;
+                for( Task t : tasks ) {
+                    double td = t.getDuration();
+                    if( td < 0 ) {
+                        // Then the duration is unknown
+                        d = -1;
+                        break;
+                    }
+                    d += td;
+                }
+                duration = d;
+            }
+            return duration;    
+        }
+        
+        public double getTimeRemaining() {
+            double d = getDuration();
+            if( d < 0 ) {
+                return -1;
+            }
+            return Math.max(0, d - time);
+        }
+
         public TaskStatus execute( double tpf ) {            
             TaskStatus result = TaskStatus.Done;
+ 
+            time += tpf;
             
             // Execute each delegate task until we get to
             // one that isn't done... that's the new
             // current and the new status.
             for( ; current < tasks.length; current++ ) {
+                double d = tasks[current].getTimeRemaining(); 
                 result = tasks[current].execute(tpf);
                 if( result != TaskStatus.Done ) {
                     break;
+                } else {
+                    // Chip away at the tpf for the next execution
+                    if( d > 0 ) {
+                        tpf -= d;
+                    }
+                }
+                if( tpf <= 0 ) {
+                    return TaskStatus.Continue;
                 }
             }
             return result;
@@ -142,6 +181,9 @@ public class Tasks {
             if( current < tasks.length ) {
                 tasks[current].pausing();
             }
+            
+            // Let duration recalculate when we restart
+            duration = null;
         }
 
         public void stopping() {
@@ -150,8 +192,12 @@ public class Tasks {
                 tasks[current].stopping();
             }
             
+            // Let duration recalculate when we restart
+            duration = null;
+            
             // And reset
             current = 0;
+            time = 0;
         }
         
         @Override
@@ -164,16 +210,45 @@ public class Tasks {
     
         private Task[] tasks;
         private Task[] pending;
+        private double time;
+        private Double duration;
         
         public ComposeTask( Task[] tasks ) {
             this.tasks = tasks;
             this.pending = tasks.clone();
         }
         
+        public double getDuration() {
+            if( duration == null ) {
+                // Calculate the duration
+                double d = 0;
+                for( Task t : tasks ) {
+                    double td = t.getDuration();
+                    if( td < 0 ) {
+                        // Then the duration is unknown
+                        d = -1;
+                        break;
+                    }
+                    d = Math.max(d, td);
+                }
+                duration = d;
+            }
+            return duration;    
+        }
+        
+        public double getTimeRemaining() {
+            double d = getDuration();
+            if( d < 0 ) {
+                return -1;
+            }
+            return Math.max(0, d - time);
+        }
+        
         public TaskStatus execute( double tpf ) {
         
             TaskStatus result = TaskStatus.Done;
-            
+ 
+            time += tpf;           
             for( int i = 0; i < pending.length; i++ ) {
                 Task t = pending[i];
                 if( t == null )
@@ -195,6 +270,9 @@ public class Tasks {
                 }
                 t.pausing();
             }
+            
+            // Let duration recalculate when we restart
+            duration = null;
         }
 
         public void stopping() {
@@ -205,8 +283,12 @@ public class Tasks {
                 t.stopping();
             }
             
+            // Let duration recalculate when we restart
+            duration = null;
+            
             // And reset the pending array
             pending = tasks.clone();
+            time = 0;
         }
         
         @Override
@@ -278,6 +360,14 @@ public class Tasks {
             }       
             return TaskStatus.Done;
         }
+        
+        public double getDuration() {
+            return 0;
+        }
+        
+        public double getTimeRemaining() {
+            return 0;
+        }
 
         public void pausing() {
             // nothing to do
@@ -291,218 +381,3 @@ public class Tasks {
 } 
 
 
-/*
-public class AnimationTasks
-{
-    public static AnimationTask call( Object obj, String methodName )
-    {
-        return new CallTask( obj, methodName );
-    }
-
-    public static AnimationTask call( Object obj, String methodName, Object... parameters )
-    {
-        return new CallWithParametersTask( obj, methodName, parameters );
-    }
-    
-    private static class CallTask implements AnimationTask
-    {
-        private Object obj;
-        private Method method;
-        private boolean ended;
-        
-        public CallTask( Object obj, String methodName )        
-        {
-            this.obj = obj;
-            try
-                {
-                method = obj.getClass().getMethod(methodName);
-                }
-            catch( NoSuchMethodException e )
-                {
-                throw new RuntimeException( "Error looking up method:" + methodName + " on object type:" + obj.getClass(), e );
-                }
-        }
-        
-        public boolean animate( double seconds )
-        {            
-            end();
-            return false;
-        }
-        
-        public void end()
-        {
-            if( ended )
-                return;
-            ended = true;
-            try
-                {
-                method.invoke( obj );
-                }
-            catch( IllegalAccessException e )
-                {
-                throw new RuntimeException( "Error invoking:" + method + " on:" + obj, e );
-                }
-            catch( InvocationTargetException e )
-                {
-                throw new RuntimeException( "Error invoking:" + method + " on:" + obj, e );
-                }
-        }
-    }
-
-    private static class CallWithParametersTask implements AnimationTask
-    {
-        private Object obj;
-        private Method method;
-        private Object[] parameters;
-        
-        public CallWithParametersTask( Object obj, String methodName, Object[] parameters )        
-        {
-            this.obj = obj;
-            this.parameters = parameters;
-            
-            for( Method m : obj.getClass().getMethods() )
-                {
-                if( !m.getName().equals(methodName) )
-                    continue;
-                       
-                method = m;
-                // For now, a simple exact match, no fancy lookups
-                if( method.getParameterTypes().length != parameters.length )
-                    throw new RuntimeException( "Parameter count mismatch for:" + methodName + " expected:" + parameters.length + " found:" + method.getParameterTypes().length );
-                }
-            
-            if( method == null )
-                throw new RuntimeException( "Error looking up method:" + methodName + " on object type:" + obj.getClass() );
-        }
-        
-        public boolean animate( double seconds )
-        {
-            end();
-            return false;
-        }
-        
-        public void end()
-        {
-            try
-                {
-                method.invoke( obj, parameters );
-                }
-            catch( IllegalAccessException e )
-                {
-                throw new RuntimeException( "Error invoking:" + method + " on:" + obj, e );
-                }
-            catch( InvocationTargetException e )
-                {
-                throw new RuntimeException( "Error invoking:" + method + " on:" + obj, e );
-                }
-        }
-    }
-
-    private static class DelayTask implements AnimationTask
-    {
-        private double duration;
-        private double time;
-    
-        public DelayTask( double duration )
-        {
-            this.duration = duration;
-        }
- 
-        public boolean animate( double seconds )
-        {
-            time += seconds;
-            return time < duration;        
-        }
-    
-        public void end()
-        {
-        }
-    }
-
-    private static class PlaySoundTask implements AnimationTask
-    {
-        private Sound sound;
-        private boolean started = false;
- 
-        public PlaySoundTask( Sound sound )
-        {
-            this.sound = sound;
-        }
-    
-        public boolean animate(double seconds)
-        {
-            if( !started )
-                {
-                started = true;
-                sound.play();
-                }
-            return sound.isPlaying();
-        }
-        
-        public void end()
-        {
-            if( started )
-                sound.stop();
-        }
-    }
-
-    private static class StopSoundTask implements AnimationTask
-    {
-        private Sound sound;
- 
-        public StopSoundTask( Sound sound )
-        {
-            this.sound = sound;
-        }
-    
-        public boolean animate(double seconds)
-        {
-System.out.println( "Calling stop on:" + sound );        
-            sound.stop();
-            return false;
-        }
-        
-        public void end()
-        {
-            sound.stop();
-        }
-    }
- 
-    private static class ComposeTask implements AnimationTask
-    {
-        private AnimationTask[] tasks;
-        
-        public ComposeTask( AnimationTask[] tasks )
-        {
-            this.tasks = tasks;
-        }
-        
-        public boolean animate(double seconds)
-        {
-            boolean keepGoing = false;
-            
-            for( int i = 0; i < tasks.length; i++ )
-                {
-                AnimationTask t = tasks[i];
-                if( t == null )
-                    continue;
-                if( t.animate(seconds) )
-                    keepGoing = true;
-                else
-                    tasks[i] = null;
-                }
-            return keepGoing;
-        }
-        
-        public void end()
-        {
-            for( int i = 0; i < tasks.length; i++ )
-                {
-                AnimationTask t = tasks[i];
-                if( t == null )
-                    continue;
-                t.end();
-                }
-        }
-    }   
-}*/

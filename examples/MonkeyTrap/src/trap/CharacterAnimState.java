@@ -91,7 +91,7 @@ public class CharacterAnimState extends BaseAppState {
     protected void updateModelSpatial( Entity e, Spatial s ) {
         // Cheat for a second
         InterpolationControl ic = s.getControl(InterpolationControl.class);
-        CharacterAnimControl cac = s.getControl(CharacterAnimControl.class); 
+        CharacterAnimAndSoundControl cac = s.getControl(CharacterAnimAndSoundControl.class); 
         if( ic == null || cac == null )
             return;
  

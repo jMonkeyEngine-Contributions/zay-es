@@ -58,7 +58,7 @@ import java.util.Map;
  *
  *  @author    Paul Speed
  */
-public class CharacterAnimControl extends AbstractControl {
+public class CharacterAnimAndSoundControl extends AbstractControl {
  
     private TimeProvider time;
     private AnimControl anim;
@@ -69,7 +69,7 @@ public class CharacterAnimControl extends AbstractControl {
     private AnimationTime current;
     private SoundMapping currentSound;
  
-    public CharacterAnimControl( TimeProvider time, AnimControl anim ) {
+    public CharacterAnimAndSoundControl( TimeProvider time, AnimControl anim ) {
         this.time = time;
         this.anim = anim;
     }

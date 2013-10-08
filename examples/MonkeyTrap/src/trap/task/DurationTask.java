@@ -74,6 +74,10 @@ public class DurationTask implements Task {
         return duration;
     }
 
+    public double getTimeRemaining() {
+        return Math.max(0, duration - time);
+    }
+
     public TaskStatus execute( double tpf ) {
         time += tpf;        
         double t = Math.min(1, time/duration);
