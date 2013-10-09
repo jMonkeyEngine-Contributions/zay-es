@@ -58,7 +58,7 @@ public class AnimationFactories {
     public static void initialize( AssetManager assets ) {
         AnimationFactories.assets = assets;
     }
-    
+
     public static Task createMonkeyAttack( Spatial monkey, Vector3f start ) {
  
         Vector3f target = monkey.getLocalRotation().mult(Vector3f.UNIT_Z);

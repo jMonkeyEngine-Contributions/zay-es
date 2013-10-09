@@ -122,6 +122,7 @@ public class CharacterAnimAndSoundControl extends AbstractControl {
     }
     
     protected void play( String name ) {
+System.out.println( "CAC.play(" + name + ")" );    
         List<Mapping> mappings = getMappings(name, false);
         if( mappings == null ) {
             throw new IllegalArgumentException( "No such animation:" + name );

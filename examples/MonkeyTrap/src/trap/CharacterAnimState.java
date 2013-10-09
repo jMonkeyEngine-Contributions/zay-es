@@ -91,8 +91,12 @@ public class CharacterAnimState extends BaseAppState {
     protected void updateModelSpatial( Entity e, Spatial s ) {
         // Cheat for a second
         InterpolationControl ic = s.getControl(InterpolationControl.class);
-        CharacterAnimAndSoundControl cac = s.getControl(CharacterAnimAndSoundControl.class); 
-        if( ic == null || cac == null )
+        
+        //CharacterAnimAndSoundControl cac = s.getControl(CharacterAnimAndSoundControl.class); 
+        //if( ic == null || cac == null )
+        //    return;
+        TaskControl tasks = s.getControl(TaskControl.class); 
+        if( ic == null || tasks == null )
             return;
  
         Activity act = e.get(Activity.class);
@@ -101,15 +105,18 @@ public class CharacterAnimState extends BaseAppState {
         switch( act.getType() ) {
             case Activity.WALKING:
             case Activity.TURNING:            
-                cac.setAnimation("Walk", act.getStartTime(), act.getEndTime());
+                //cac.setAnimation("Walk", act.getStartTime(), act.getEndTime());
+                tasks.playTask("Walk", act.getStartTime(), act.getEndTime()); 
                 break;
             case Activity.WAITING:
-                cac.setAnimation("Idle", act.getStartTime(), act.getEndTime());
+                //cac.setAnimation("Idle", act.getStartTime(), act.getEndTime());
+                tasks.playTask("Idle", act.getStartTime(), act.getEndTime()); 
                 break;
             
             // for the moment
             case Activity.FIGHTING:
-                cac.setAnimation("Attack", act.getStartTime(), act.getEndTime());
+                //cac.setAnimation("Attack", act.getStartTime(), act.getEndTime());
+                tasks.playTask("Attack", act.getStartTime(), act.getEndTime()); 
                 break;
         }            
     }

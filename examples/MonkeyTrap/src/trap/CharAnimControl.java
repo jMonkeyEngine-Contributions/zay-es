@@ -115,6 +115,7 @@ public class CharAnimControl extends AbstractControl {
      *  animation is not mapped.
      */
     public void play( String animation ) {
+System.out.println( "play(" + animation + ")" );    
         if( Objects.equal(this.animation, animation) ) {
             return;
         }

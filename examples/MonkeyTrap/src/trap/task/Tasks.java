@@ -187,9 +187,12 @@ public class Tasks {
         }
 
         public void stopping() {
-            // Let the current task know
-            if( current < tasks.length ) {
-                tasks[current].stopping();
+            // Let all tasks run so far know
+            for( int i = 0; i < tasks.length; i++ ) {
+                if( i > current ) {
+                    break;
+                }
+                tasks[i].stopping();
             }
             
             // Let duration recalculate when we restart
@@ -276,10 +279,9 @@ public class Tasks {
         }
 
         public void stopping() {
-            for( Task t : pending ) {
-                if( t == null ) {
-                    continue;
-                }
+        
+            // Let all tasks know we are stopping
+            for( Task t : tasks ) {
                 t.stopping();
             }
             

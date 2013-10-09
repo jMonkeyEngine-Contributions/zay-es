@@ -61,6 +61,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.simsilica.es.Entity;
 import trap.game.Position;
+import trap.task.Tasks;
 
 
 /**
@@ -398,11 +399,13 @@ System.out.println( "Creating bling..." );
         charAnim.addMapping("Idle", "Idle", 1);
         charAnim.addMapping("Walk", "Walk", 1.55f * (float)MonkeyTrapConstants.MONKEY_MOVE_SPEED);
         monkey.addControl(charAnim);        
+ 
+        AudioNode walkSound;
         
-        CharacterAnimAndSoundControl cac = new CharacterAnimAndSoundControl(time, anim);
+        /*CharacterAnimAndSoundControl cac = new CharacterAnimAndSoundControl(time, anim);
         cac.addMapping("Idle", "Idle", 1);
         cac.addMapping("Walk", "Walk", 1.55f * (float)MonkeyTrapConstants.MONKEY_MOVE_SPEED);
-        AudioNode walkSound = new AudioNode(assets, "Sounds/monkey-feet.ogg", false);
+        walkSound = new AudioNode(assets, "Sounds/monkey-feet.ogg", false);
         walkSound.addControl(new AudioControl(audioListener));
         walkSound.setVolume(0.75f);
         walkSound.setLooping(true);
@@ -414,7 +417,7 @@ System.out.println( "Creating bling..." );
         punchSound.setRefDistance(4);
         cac.addMapping("Attack", "Punches", 2);
         cac.addMapping("Attack", punchSound, 0.1f); 
-        monkey.addControl(cac);
+        monkey.addControl(cac);*/
  
         SoundControl sounds = new SoundControl(audioListener);
         sounds.addSound("Attack", new AudioNode(assets, "Sounds/monkey-punch.ogg", false));
@@ -425,6 +428,13 @@ System.out.println( "Creating bling..." );
         sounds.addSound("Death", new AudioNode(assets, "Sounds/gib.ogg", false));
         
         monkey.addControl(sounds);
+ 
+        TaskControl tasks = new TaskControl(time);
+        tasks.setMapping("Idle", Tasks.sequence(Tasks.call(charAnim, "play", "Idle"),
+                                               Tasks.call(sounds, "play", "Idle")));
+        tasks.setMapping("Walk", Tasks.sequence(Tasks.call(charAnim, "play", "Walk"),
+                                               Tasks.call(sounds, "play", "Walk")));
+        monkey.addControl(tasks);
  
         ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
         ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
@@ -468,7 +478,7 @@ System.out.println( "Creating bling..." );
         charAnim.addMapping("Walk", "RunBase", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
         wrapper.addControl(charAnim);        
                     
-        CharacterAnimAndSoundControl cac = new CharacterAnimAndSoundControl(time, anim);
+        /*CharacterAnimAndSoundControl cac = new CharacterAnimAndSoundControl(time, anim);
         cac.addMapping("Idle", "IdleTop", 1);
         cac.addMapping("Idle", "IdleBase", 1);
         cac.addMapping("Walk", "RunTop", 0.2f * (float)MonkeyTrapConstants.OGRE_MOVE_SPEED);
@@ -478,15 +488,21 @@ System.out.println( "Creating bling..." );
         walkSound.setLooping(true);
         walkSound.setRefDistance(10);
         cac.addMapping("Walk", walkSound); 
-        wrapper.addControl(cac);
+        wrapper.addControl(cac);*/
 
         SoundControl sounds = new SoundControl(audioListener);
         sounds.addSound("Attack", new AudioNode(assets, "Sounds/ogre-punch.ogg", false));
-        walkSound = new AudioNode(assets, "Sounds/ogre-feet.ogg", false);
+        AudioNode walkSound = new AudioNode(assets, "Sounds/ogre-feet.ogg", false);
         walkSound.setLooping(true);
         sounds.addSound("Walk", walkSound);
         sounds.addSound("Death", new AudioNode(assets, "Sounds/gib.ogg", false));
         wrapper.addControl(sounds);
+
+        TaskControl tasks = new TaskControl(time);
+        tasks.setMapping("Idle", Tasks.call(charAnim, "play", "Idle"));
+        tasks.setMapping("Walk", Tasks.compose( Tasks.call(charAnim, "play", "Walk"),
+                                                Tasks.call(sounds, "play", "Walk")));
+//        wrapper.addControl(tasks);
 
         ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
         ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
