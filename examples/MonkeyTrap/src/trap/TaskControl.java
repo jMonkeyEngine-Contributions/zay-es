@@ -64,7 +64,7 @@ public class TaskControl extends AbstractControl {
     private TaskTime current;
     private TaskTime next;
  
-    private long frameSmoothing = 1000000000L / 60;
+    private long frameSmoothing = 1000000000L / 10;  // 1/10th of a second.
     
     private String runningTask; 
     private Task running;
@@ -99,9 +99,9 @@ public class TaskControl extends AbstractControl {
         // the end time of the current TaskTime ahead to match the start
         // of this one.
         if( current != null ) {
-            // Marry up task windows less than "frameSmoothing" which 
-            // is set to the length of a 60 hz frame.
+            // Marry up task windows less than "frameSmoothing" 
             long delta = startTime - current.endTime;
+//System.out.println( "Delta:" + (delta /1000000.0) );            
             if( delta > 0 && delta < frameSmoothing ) {
                 current.endTime = startTime;
             }

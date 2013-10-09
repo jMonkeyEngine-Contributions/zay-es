@@ -499,10 +499,11 @@ System.out.println( "Creating bling..." );
         wrapper.addControl(sounds);
 
         TaskControl tasks = new TaskControl(time);
-        tasks.setMapping("Idle", Tasks.call(charAnim, "play", "Idle"));
+        tasks.setMapping("Idle", Tasks.sequence(Tasks.call(charAnim, "play", "Idle"),
+                                               Tasks.call(sounds, "play", "Idle")));
         tasks.setMapping("Walk", Tasks.compose( Tasks.call(charAnim, "play", "Walk"),
                                                 Tasks.call(sounds, "play", "Walk")));
-//        wrapper.addControl(tasks);
+        wrapper.addControl(tasks);
 
         ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
         ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
