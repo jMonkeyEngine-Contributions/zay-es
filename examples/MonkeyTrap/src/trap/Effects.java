@@ -154,15 +154,135 @@ System.out.println( "play spurt" );
         emitter.setMaterial(mat);
         emitter.move(0, 1, 0);
         
-        AudioNode sound = new AudioNode(assets, "Sounds/gib.ogg", false);
+//        AudioNode sound = new AudioNode(assets, "Sounds/gib.ogg", false);
         //sound.setVolume(0.25f);
         //sound.setPositional(false);
  
         //if( startTime < 0 ) {
         //    startTime = time.getTime();
         //}           
-        emitter.addControl(new ParticleControl(emitter, sound, startTime, time));
+        emitter.addControl(new ParticleControl(emitter, startTime, time));
         return emitter;
+    }
+      
+    protected static ParticleEmitter createShockwaveEmitter( long startTime ) {
+        ParticleEmitter emitter = new ParticleEmitter("Shockwave", Type.Triangle, 1);
+        
+        emitter.setFaceNormal(Vector3f.UNIT_Y);
+        emitter.setStartColor(new ColorRGBA(.48f, 0.48f, 0.48f, 0.8f));
+        emitter.setEndColor(new ColorRGBA(0.48f, 0.48f, 0.48f, 0f));
+
+        emitter.setStartSize(0f);
+        emitter.setEndSize(1.6f);
+
+        emitter.setParticlesPerSec(0);
+        emitter.setGravity(0, 0, 0);
+        emitter.setLowLife(0.5f);
+        emitter.setHighLife(0.5f);
+        emitter.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 0, 0));
+        emitter.getParticleInfluencer().setVelocityVariation(0f);
+        emitter.setImagesX(1);
+        emitter.setImagesY(1);
+        Material mat = new Material(assets, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setTexture("Texture", assets.loadTexture("Textures/shockwave.png"));
+        emitter.setMaterial(mat);
+        emitter.move(0, 0.75f, 0);
+        
+        emitter.addControl(new ParticleControl(emitter, startTime, time));
+        return emitter;
+    }
+
+    protected static ParticleEmitter createSmokeTrailEmitter( long startTime ) {
+        ParticleEmitter emitter = new ParticleEmitter("Smoke Trail", Type.Triangle, 25);
+        
+        emitter.setStartColor(new ColorRGBA(0.9f, 0.8f, 0.7f, 1.0f));
+        emitter.setEndColor(new ColorRGBA(1f, 0.8f, 0.7f, 0f));
+        emitter.setStartSize(.1f);
+        emitter.setEndSize(0.5f);
+        emitter.setFacingVelocity(true);
+        emitter.setParticlesPerSec(0);
+        emitter.setGravity(0, 0.5f, 0);
+        emitter.setLowLife(.4f);
+        emitter.setHighLife(.5f);
+        emitter.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 3, 0));
+        emitter.getParticleInfluencer().setVelocityVariation(1);
+        emitter.setImagesX(1);
+        emitter.setImagesY(3);
+        Material mat = new Material(assets, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setTexture("Texture", assets.loadTexture("Textures/smoketrail.png"));
+        emitter.setMaterial(mat);
+        
+        emitter.move(0, 1, 0);        
+        emitter.addControl(new ParticleControl(emitter, startTime, time));
+        return emitter;
+    }
+
+    protected static ParticleEmitter createSmokeEmitter( long startTime ) {
+        ParticleEmitter emitter = new ParticleEmitter("Smoke", Type.Triangle, 25);
+        
+        emitter.setSelectRandomImage(true);
+        emitter.setStartColor(new ColorRGBA(0.25f, 0.2f, 0.15f, 0.75f));
+        emitter.setEndColor(new ColorRGBA(0.5f, 0.45f, 0.43f, 0f));
+        emitter.setStartSize(0.5f);
+        emitter.setEndSize(1.0f);
+        emitter.setShape(new EmitterSphereShape(Vector3f.ZERO, 1f));
+        emitter.setParticlesPerSec(0);
+        emitter.setGravity(0, -1.5f, 0);
+        emitter.setLowLife(.4f);
+        emitter.setHighLife(.85f);
+        emitter.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 2, 0));
+        emitter.getParticleInfluencer().setVelocityVariation(0.85f);
+        emitter.setImagesX(16);
+        emitter.setImagesY(1);
+        Material mat = new Material(assets, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setTexture("Texture", assets.loadTexture("Textures/Smoke.png"));
+        mat.setBoolean("PointSprite", true);
+        emitter.setMaterial(mat);
+        
+        emitter.move(0, 1, 0);        
+        emitter.addControl(new ParticleControl(emitter, startTime, time));
+        return emitter;
+    }
+
+    protected static ParticleEmitter createDebrisEmitter( long startTime, String debris ) {
+        ParticleEmitter emitter = new ParticleEmitter("Debris", Type.Triangle, 25);
+        
+        emitter.setSelectRandomImage(true);
+        emitter.setRandomAngle(true);
+        emitter.setRotateSpeed(FastMath.TWO_PI * 4);
+        emitter.setStartColor(new ColorRGBA(1f, 1f, 1f, 1));
+        emitter.setEndColor(new ColorRGBA(1f, 1f, 1f, 0.5f));
+        emitter.setStartSize(0.12f);
+        emitter.setEndSize(0.12f);
+        emitter.setParticlesPerSec(0);
+        emitter.setGravity(0, 5f, 0);
+        emitter.setLowLife(1.4f);
+        emitter.setHighLife(1.5f);
+        emitter.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 3, 0));
+        emitter.getParticleInfluencer().setVelocityVariation(0.6f);
+        emitter.setImagesX(3);
+        emitter.setImagesY(3);
+        Material mat = new Material(assets, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setTexture("Texture", assets.loadTexture(debris));
+        mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+        emitter.setMaterial(mat);
+        emitter.move(0, 1, 0);
+        
+//        AudioNode sound = new AudioNode(assets, "Sounds/boom.ogg", false);
+        emitter.addControl(new ParticleControl(emitter, startTime, time));
+        return emitter;
+    } 
+ 
+    public static Node playExplosion( Node target, long startTime, String debris ) {
+        Node wrapper = new Node("Explosion");
+        
+        wrapper.attachChild(createDebrisEmitter(startTime, debris));
+        wrapper.attachChild(createShockwaveEmitter(startTime));
+        wrapper.attachChild(createSmokeTrailEmitter(startTime));
+        wrapper.attachChild(createSmokeEmitter(startTime));
+        
+        target.attachChild(wrapper);
+        return wrapper;
     } 
  
     public static Node playGib( Node target, long startTime, String debris ) {

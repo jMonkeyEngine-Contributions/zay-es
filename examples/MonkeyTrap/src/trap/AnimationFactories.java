@@ -216,7 +216,6 @@ public class AnimationFactories {
     public static Task createMonkeyDeath( Spatial monkey ) {
  
         AnimControl anim = monkey.getControl(AnimControl.class);
-        SoundControl sounds = monkey.getControl(SoundControl.class);
  
         //Node test = Effects.playBling( (Node)monkey, -1, ColorRGBA.Red, ColorRGBA.Green );
 
@@ -224,11 +223,14 @@ public class AnimationFactories {
         // remove the monkey during the process
         Node explosion = new Node("Explosion");
         explosion.setLocalTranslation(monkey.getLocalTranslation());
+        SoundControl sounds = monkey.getControl(SoundControl.class).clone();
+        explosion.addControl(sounds);
         monkey.getParent().attachChild(explosion);                      
         
         Task result = sequence(
                         duration(0.3, animate(anim, "Idle", 0, 0, 0.3)),
                         call(Effects.class, "playGib", explosion, -1, "Textures/monkey-gib.png"),
+                        call(sounds, "play", "Death"),
                         call(monkey, "removeFromParent")
                         );
     
@@ -238,11 +240,12 @@ public class AnimationFactories {
     public static Task createOgreDeath( Spatial ogre ) {
  
         AnimControl anim = ((Node)ogre).getChild(0).getControl(AnimControl.class);
-        SoundControl sounds = ogre.getControl(SoundControl.class);
 
         // Need a node to put the explosion on since we will
         // remove the monkey during the process
         Node explosion = new Node("Explosion");
+        SoundControl sounds = ogre.getControl(SoundControl.class).clone();
+        explosion.addControl(sounds);
         explosion.setLocalTranslation(ogre.getLocalTranslation());
         ogre.getParent().attachChild(explosion);                      
         
@@ -250,9 +253,48 @@ public class AnimationFactories {
                         duration(0.3, animate(anim, "IdleTop", 0, 0, 0.3),
                                        animate(anim, "IdleBase", 1, 0, 0.3)),
                         call(Effects.class, "playGib", explosion, -1, "Textures/ogre-gib.png"),
+                        call(sounds, "play", "Death"),
                         call(ogre, "removeFromParent")
                         );
     
         return result;
+    }
+    
+    public static Task createBarrelDeath( Spatial target ) {
+    
+        // Need a node to put the explosion on since we will
+        // remove the monkey during the process
+        Node explosion = new Node("Explosion");
+        SoundControl sounds = target.getControl(SoundControl.class).clone();
+        explosion.addControl(sounds);
+        explosion.setLocalTranslation(target.getLocalTranslation());
+        target.getParent().attachChild(explosion);
+        
+        Task result = sequence(
+                        call(Effects.class, "playExplosion", explosion, -1, "Textures/barrel-debris.png"),
+                        call(sounds, "play", "Death"),
+                        call(target, "removeFromParent")
+                        );
+        
+        return result;                      
+    }
+    
+    public static Task createChestDeath( Spatial target ) {
+    
+        // Need a node to put the explosion on since we will
+        // remove the monkey during the process
+        Node explosion = new Node("Explosion");
+        SoundControl sounds = target.getControl(SoundControl.class).clone();
+        explosion.addControl(sounds);
+        explosion.setLocalTranslation(target.getLocalTranslation());
+        target.getParent().attachChild(explosion);
+        
+        Task result = sequence(
+                        call(Effects.class, "playExplosion", explosion, -1, "Textures/chest-debris.png"),
+                        call(sounds, "play", "Death"),
+                        call(target, "removeFromParent")
+                        );
+        
+        return result;                      
     }
 }

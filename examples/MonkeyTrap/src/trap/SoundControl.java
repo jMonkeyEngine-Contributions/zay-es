@@ -55,7 +55,8 @@ import java.util.Map;
  *
  *  @author    Paul Speed
  */
-public class SoundControl extends AbstractControl {
+public class SoundControl extends AbstractControl 
+                          implements Cloneable {
 
     private Map<String, AudioNode> sounds = new HashMap<String, AudioNode>();
     private Listener listener;
@@ -71,6 +72,16 @@ public class SoundControl extends AbstractControl {
 
     public SoundControl( Listener listener ) {
         this.listener = listener;
+    }
+ 
+    public SoundControl clone() {
+        try { 
+            SoundControl clone = (SoundControl)super.clone();
+            clone.spatial = null;
+            return clone;
+        } catch( CloneNotSupportedException e ) {
+            throw new RuntimeException( "Clone not supported", e );
+        }
     }
     
     public void setSpatial( Spatial s ) {

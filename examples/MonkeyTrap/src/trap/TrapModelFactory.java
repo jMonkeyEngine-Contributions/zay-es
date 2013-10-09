@@ -422,6 +422,8 @@ System.out.println( "Creating bling..." );
         walkSound.setVolume(0.75f);
         walkSound.setLooping(true);
         sounds.addSound("Walk", walkSound);
+        sounds.addSound("Death", new AudioNode(assets, "Sounds/gib.ogg", false));
+        
         monkey.addControl(sounds);
  
         ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
@@ -483,6 +485,7 @@ System.out.println( "Creating bling..." );
         walkSound = new AudioNode(assets, "Sounds/ogre-feet.ogg", false);
         walkSound.setLooping(true);
         sounds.addSound("Walk", walkSound);
+        sounds.addSound("Death", new AudioNode(assets, "Sounds/gib.ogg", false));
         wrapper.addControl(sounds);
 
         ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
@@ -536,6 +539,10 @@ System.out.println( "Creating bling..." );
         ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
         ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
         wrapper.addControl(new ColorControl(diffuse, ambient));                                  
+
+        SoundControl sounds = new SoundControl(audioListener);
+        sounds.addSound("Death", new AudioNode(assets, "Sounds/boom.ogg", false));
+        wrapper.addControl(sounds);
         
         return wrapper;                
     }
@@ -562,6 +569,10 @@ System.out.println( "Creating bling..." );
         ColorRGBA ambient = new ColorRGBA(0.75f, 0.75f, 0.75f, 1);
         wrapper.addControl(new ColorControl(diffuse, ambient));                                  
             
+        SoundControl sounds = new SoundControl(audioListener);
+        sounds.addSound("Death", new AudioNode(assets, "Sounds/boom.ogg", false));
+        wrapper.addControl(sounds);
+        
         return wrapper;            
     }
 }

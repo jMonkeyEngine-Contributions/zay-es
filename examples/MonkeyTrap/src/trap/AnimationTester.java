@@ -85,6 +85,10 @@ public class AnimationTester extends SimpleApplication {
         
     private Spatial monkey;
     private Spatial ogre;
+    private Spatial barrels1;
+    private Spatial chest1;
+    private Spatial barrels2;
+    private Spatial chest2;
 
     public static void main(String[] args) {
         AnimationTester app = new AnimationTester();
@@ -188,6 +192,22 @@ System.out.println( "Creating actors..." );
         ogre.setLocalTranslation((xMain + 1)* 2, 0, yMain * 2);   
         ogre.setLocalRotation(new Quaternion().fromAngles(0, -FastMath.HALF_PI, 0));
         rootNode.attachChild(ogre);
+ 
+        barrels1 = factory.createBarrels();
+        barrels1.setLocalTranslation((xMain-1) * 2, 0, (yMain-1)*2);
+        rootNode.attachChild(barrels1);
+
+        chest1 = factory.createChest();
+        chest1.setLocalTranslation((xMain-1) * 2, 0, (yMain+1)*2);
+        rootNode.attachChild(chest1);
+
+        barrels2 = factory.createBarrels();
+        barrels2.setLocalTranslation((xMain+1) * 2, 0, (yMain+1)*2);
+        rootNode.attachChild(barrels2);
+
+        chest2 = factory.createChest();
+        chest2.setLocalTranslation((xMain+1) * 2, 0, (yMain-1)*2);
+        rootNode.attachChild(chest2);
         
 System.out.println( "Creating menu..." ); 
         createMenus();   
@@ -206,6 +226,11 @@ System.out.println( "Creating menu..." );
         ogreControls.setLocalScale(0.6f);        
         guiNode.attachChild(ogreControls);
         
+        Container deathMenu = createDeathMenu();
+        pref = monkeyControls.getPreferredSize();
+        deathMenu.setLocalTranslation(10, cam.getHeight() - (pref.y * 0.6f) - 20, 0);
+        deathMenu.setLocalScale(0.6f);        
+        guiNode.attachChild(deathMenu);
     }
     
     protected Container createMenu( String name, Spatial actor ) {
@@ -241,6 +266,44 @@ System.out.println( "Creating menu..." );
         death.setShadowOffset(new Vector3f(2, -2, 0.1f));                                            
         death.setShadowColor(ColorRGBA.Black);
         death.addClickCommands(new DeathCommand(actor));
+ 
+        return menu;     
+    }
+
+    protected Container createDeathMenu() {
+       
+        Container menu = new Container(new SpringGridLayout(), 
+                                                 new ElementId(DungeonStyles.MENU_ID), 
+                                                 "dungeon");       
+        Label title = menu.addChild(new Label("Destroy", 
+                                              new ElementId(DungeonStyles.MENU_TITLE_ID), 
+                                              "dungeon"));
+        title.setBackground(null);   
+        title.setColor(ColorRGBA.Black);
+        title.setShadowColor(ColorRGBA.White);
+        title.setShadowOffset(new Vector3f(2, -2, 0.1f));                                            
+        title.setFontSize(40);
+         
+        Button destroy;
+        destroy = menu.addChild(new Button("Barrels 1", "dungeon"));
+        destroy.setShadowOffset(new Vector3f(2, -2, 0.1f));                                            
+        destroy.setShadowColor(ColorRGBA.Black);
+        destroy.addClickCommands(new DeathCommand(barrels1));
+
+        destroy = menu.addChild(new Button("Barrels 2", "dungeon"));
+        destroy.setShadowOffset(new Vector3f(2, -2, 0.1f));                                            
+        destroy.setShadowColor(ColorRGBA.Black);
+        destroy.addClickCommands(new DeathCommand(barrels2));
+
+        destroy = menu.addChild(new Button("Chest 1", "dungeon"));
+        destroy.setShadowOffset(new Vector3f(2, -2, 0.1f));                                            
+        destroy.setShadowColor(ColorRGBA.Black);
+        destroy.addClickCommands(new DeathCommand(chest1));
+
+        destroy = menu.addChild(new Button("Chest 2", "dungeon"));
+        destroy.setShadowOffset(new Vector3f(2, -2, 0.1f));                                            
+        destroy.setShadowColor(ColorRGBA.Black);
+        destroy.addClickCommands(new DeathCommand(chest2));
  
         return menu;     
     }
@@ -289,6 +352,30 @@ double time = 0;
                     rootNode.attachChild(ogre);
                 }                    
             }        
+            if( barrels1.getParent() == null ) {
+                time += tpf;
+                if( time > 2 ) {
+                    rootNode.attachChild(barrels1);
+                }                    
+            }
+            if( chest1.getParent() == null ) {
+                time += tpf;
+                if( time > 2 ) {
+                    rootNode.attachChild(chest1);
+                }                    
+            }
+            if( barrels2.getParent() == null ) {
+                time += tpf;
+                if( time > 2 ) {
+                    rootNode.attachChild(barrels2);
+                }                    
+            }
+            if( chest2.getParent() == null ) {
+                time += tpf;
+                if( time > 2 ) {
+                    rootNode.attachChild(chest2);
+                }                    
+            }
         }       
     }
 
@@ -368,6 +455,10 @@ double time = 0;
             return AnimationFactories.createMonkeyDeath(actor);
         } else if( actor == ogre ) {
             return AnimationFactories.createOgreDeath(actor);
+        } else if( actor == barrels1 || actor == barrels2 ) {
+            return AnimationFactories.createBarrelDeath(actor);
+        } else if( actor == chest1 || actor == chest2 ) {
+            return AnimationFactories.createChestDeath(actor);
         }
         return null;
     }
