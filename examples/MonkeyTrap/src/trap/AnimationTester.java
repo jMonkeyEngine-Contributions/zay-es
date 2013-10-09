@@ -57,6 +57,8 @@ import com.simsilica.lemur.component.SpringGridLayout;
 import com.simsilica.lemur.input.InputMapper;
 import com.simsilica.lemur.style.ElementId;
 import com.simsilica.lemur.style.Styles;
+import trap.anim.SpatialTaskFactories;
+import trap.anim.SpatialTaskFactory;
 import trap.filter.PostProcessingState;
 import trap.game.Maze;
 import trap.game.SensorArea;
@@ -442,25 +444,38 @@ double time = 0;
             start.z = yMain * 2;
         }
                
+        SpatialTaskFactory factory;
         if( actor == monkey ) {              
-            return AnimationFactories.createMonkeyDefend(actor, start);
+            factory = SpatialTaskFactories.callMethod(AnimationFactories.class, "createMonkeyDefend");       
+            //return AnimationFactories.createMonkeyDefend(actor, start);
         } else if( actor == ogre ) {
-            return AnimationFactories.createOgreDefend(actor, start);
+            factory = SpatialTaskFactories.callMethod(AnimationFactories.class, "createOgreDefend");       
+            //return AnimationFactories.createOgreDefend(actor, start);
+        } else {
+            return null;
         }          
-        return null;
+        return factory.createTask(actor, start); 
     }
 
     protected Task createDeath( Spatial actor ) {
+        SpatialTaskFactory factory;
+        
         if( actor == monkey ) {
-            return AnimationFactories.createMonkeyDeath(actor);
+            factory = SpatialTaskFactories.callMethod(AnimationFactories.class, "createMonkeyDeath");       
+            //return factory.createTask(actor, null); //AnimationFactories.createMonkeyDeath(actor);
         } else if( actor == ogre ) {
-            return AnimationFactories.createOgreDeath(actor);
+            factory = SpatialTaskFactories.callMethod(AnimationFactories.class, "createOgreDeath");       
+            //return AnimationFactories.createOgreDeath(actor);
         } else if( actor == barrels1 || actor == barrels2 ) {
-            return AnimationFactories.createBarrelDeath(actor);
+            factory = SpatialTaskFactories.callMethod(AnimationFactories.class, "createBarrelDeath");       
+            //return AnimationFactories.createBarrelDeath(actor);
         } else if( actor == chest1 || actor == chest2 ) {
-            return AnimationFactories.createChestDeath(actor);
+            factory = SpatialTaskFactories.callMethod(AnimationFactories.class, "createChestDeath");       
+            //return AnimationFactories.createChestDeath(actor);
+        } else {
+            return null;
         }
-        return null;
+        return factory.createTask(actor, null); 
     }
     
     private class AttackCommand implements Command<Button> {
