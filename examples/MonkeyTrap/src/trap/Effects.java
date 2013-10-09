@@ -66,36 +66,11 @@ public class Effects {
     
     public static Node playSpurt( Node target, long startTime ) {
  
-System.out.println( "play spurt" );    
         Node wrapper = new Node("Spurt");
 
         ParticleEmitter emitter = createSpurtEmitter(startTime);
-        /*emitter.setSelectRandomImage(true);
-        emitter.setStartColor(ColorRGBA.Red);
-        emitter.setEndColor(new ColorRGBA(0.1f, 0, 0, 0));
-        emitter.setStartSize(0.05f);
-        emitter.setEndSize(0.1f);
-        emitter.setShape(new EmitterSphereShape(Vector3f.ZERO, 0.1f));
-        emitter.setParticlesPerSec(0);
-        emitter.setGravity(0, -1, 0);
-        emitter.setLowLife(0.4f);
-        emitter.setHighLife(0.75f);
-        emitter.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 2, 0));
-        emitter.getParticleInfluencer().setVelocityVariation(1f);
-        emitter.setImagesX(16);
-        emitter.setImagesY(1);
-            
-        Material mat = new Material(assets, "Common/MatDefs/Misc/Particle.j3md");
-        mat.setTexture("Texture", assets.loadTexture("Textures/Smoke.png"));
-        mat.setBoolean("PointSprite", true);
-        emitter.setMaterial(mat);
-        emitter.setLocalTranslation(0, 1f, 0);*/
-            
         wrapper.attachChild(emitter);
                     
-        /*AudioNode sound = new AudioNode(assets, "Sounds/spurt.ogg", false);
-        wrapper.addControl(new ParticleControl(emitter, sound, startTime, time));*/
- 
         target.attachChild(wrapper);           
         return wrapper;            
     
@@ -125,8 +100,7 @@ System.out.println( "play spurt" );
         emitter.setMaterial(mat);
         emitter.setLocalTranslation(0, 1f, 0);
             
-        AudioNode sound = new AudioNode(assets, "Sounds/spurt.ogg", false);
-        emitter.addControl(new ParticleControl(emitter, sound, startTime, time));
+        emitter.addControl(new ParticleControl(emitter, startTime, time));
         return emitter;
     }
  
@@ -152,15 +126,8 @@ System.out.println( "play spurt" );
         mat.setTexture("Texture", assets.loadTexture(debris));
         mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
         emitter.setMaterial(mat);
-        emitter.move(0, 1, 0);
         
-//        AudioNode sound = new AudioNode(assets, "Sounds/gib.ogg", false);
-        //sound.setVolume(0.25f);
-        //sound.setPositional(false);
- 
-        //if( startTime < 0 ) {
-        //    startTime = time.getTime();
-        //}           
+        emitter.move(0, 1, 0);
         emitter.addControl(new ParticleControl(emitter, startTime, time));
         return emitter;
     }
@@ -186,8 +153,8 @@ System.out.println( "play spurt" );
         Material mat = new Material(assets, "Common/MatDefs/Misc/Particle.j3md");
         mat.setTexture("Texture", assets.loadTexture("Textures/shockwave.png"));
         emitter.setMaterial(mat);
-        emitter.move(0, 0.75f, 0);
         
+        emitter.move(0, 0.75f, 0);        
         emitter.addControl(new ParticleControl(emitter, startTime, time));
         return emitter;
     }
@@ -266,9 +233,8 @@ System.out.println( "play spurt" );
         mat.setTexture("Texture", assets.loadTexture(debris));
         mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
         emitter.setMaterial(mat);
-        emitter.move(0, 1, 0);
         
-//        AudioNode sound = new AudioNode(assets, "Sounds/boom.ogg", false);
+        emitter.move(0, 1, 0);        
         emitter.addControl(new ParticleControl(emitter, startTime, time));
         return emitter;
     } 
