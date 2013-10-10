@@ -115,6 +115,7 @@ public class SinglePlayerState extends BaseAppState
         gameStates.add(new EntityDataState(ed));
         gameStates.add(new ModelState(time, new TrapModelFactory(app.getAssetManager(), audioListener, time)));
         gameStates.add(new CharacterAnimState());
+        gameStates.add(new DeathState(time));
         gameStates.add(new MazeState(maze));
         gameStates.add(new PlayerState(client, audioListener));
         gameStates.add(new HudState());

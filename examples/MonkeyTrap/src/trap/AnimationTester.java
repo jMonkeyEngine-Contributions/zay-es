@@ -467,7 +467,7 @@ double time = 0;
             factory = SpatialTaskFactories.callMethod(AnimationFactories.class, "createOgreDeath");       
             //return AnimationFactories.createOgreDeath(actor);
         } else if( actor == barrels1 || actor == barrels2 ) {
-            factory = SpatialTaskFactories.callMethod(AnimationFactories.class, "createBarrelDeath");       
+            factory = SpatialTaskFactories.callMethod(AnimationFactories.class, "createBarrelsDeath");       
             //return AnimationFactories.createBarrelDeath(actor);
         } else if( actor == chest1 || actor == chest2 ) {
             factory = SpatialTaskFactories.callMethod(AnimationFactories.class, "createChestDeath");       

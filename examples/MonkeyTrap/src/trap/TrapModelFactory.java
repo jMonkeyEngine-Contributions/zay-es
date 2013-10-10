@@ -434,6 +434,8 @@ System.out.println( "Creating bling..." );
                                                Tasks.call(sounds, "play", "Idle")));
         tasks.setMapping("Walk", Tasks.sequence(Tasks.call(charAnim, "play", "Walk"),
                                                Tasks.call(sounds, "play", "Walk")));
+        tasks.setMapping("Attack", AnimationFactories.class, "createMonkeyAttack");
+        tasks.setMapping("Death", AnimationFactories.class, "createMonkeyDeath");
         monkey.addControl(tasks);
  
         ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
@@ -503,6 +505,8 @@ System.out.println( "Creating bling..." );
                                                Tasks.call(sounds, "play", "Idle")));
         tasks.setMapping("Walk", Tasks.compose( Tasks.call(charAnim, "play", "Walk"),
                                                 Tasks.call(sounds, "play", "Walk")));
+        tasks.setMapping("Attack", AnimationFactories.class, "createOgreAttack");
+        tasks.setMapping("Death", AnimationFactories.class, "createOgreDeath");
         wrapper.addControl(tasks);
 
         ColorRGBA diffuse = new ColorRGBA(1, 1, 1, 1);           
@@ -560,6 +564,10 @@ System.out.println( "Creating bling..." );
         SoundControl sounds = new SoundControl(audioListener);
         sounds.addSound("Death", new AudioNode(assets, "Sounds/boom.ogg", false));
         wrapper.addControl(sounds);
+
+        TaskControl tasks = new TaskControl(time);
+        tasks.setMapping("Death", AnimationFactories.class, "createBarrelsDeath");
+        wrapper.addControl(tasks);
         
         return wrapper;                
     }
@@ -589,6 +597,10 @@ System.out.println( "Creating bling..." );
         SoundControl sounds = new SoundControl(audioListener);
         sounds.addSound("Death", new AudioNode(assets, "Sounds/boom.ogg", false));
         wrapper.addControl(sounds);
+        
+        TaskControl tasks = new TaskControl(time);
+        tasks.setMapping("Death", AnimationFactories.class, "createChestDeath");
+        wrapper.addControl(tasks);
         
         return wrapper;            
     }

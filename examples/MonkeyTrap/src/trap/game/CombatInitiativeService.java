@@ -70,8 +70,13 @@ public class CombatInitiativeService implements Service {
             for( Entity e : meleeAttackers ) {
                 MeleeTarget target = e.get(MeleeTarget.class);
 
-System.out.println( "Creating health change for time:" + target.getTime() ); 
-                EntityFactories.createBuff(target.getTime(), target.getTarget(), new HealthChange(-1)); 
+System.out.println( "Creating health change for time:" + target.getTime() );
+                
+                // Add a bit of a delay to the attack time since the damage really
+                // happens .75 seconds in when the punches start
+                long time = target.getTime() + 800 * 1000000L; 
+ 
+                EntityFactories.createBuff(time, target.getTarget(), new HealthChange(-1)); 
                 ed.removeComponent(e.getId(), MeleeTarget.class);                
             }
         }

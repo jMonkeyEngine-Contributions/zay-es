@@ -121,7 +121,12 @@ public class AnimInterpolators {
             double relative = interp % chan.getAnimMaxTime();
             chan.setTime((float)relative);           
         }
-        
+ 
+        @Override
+        public String toString() {
+            return "Animate[animation=" + animation + ", channel=" + channel
+                        + ", start=" + start + ", end=" + end + ", target=" + target + "]";
+        }       
     }
     
     private static abstract class LerpVector3f implements Interpolator {
@@ -135,6 +140,14 @@ public class AnimInterpolators {
             this.end = end;
             this.last = new Vector3f();
         }       
+
+        protected Vector3f getStart() {
+            return start;
+        }
+        
+        protected Vector3f getEnd() {
+            return end;
+        }
 
         protected abstract Vector3f loadStart();
         protected abstract void apply( Vector3f value );       
@@ -165,6 +178,12 @@ public class AnimInterpolators {
         
         protected void apply( Vector3f value ) {
             target.setLocalTranslation(value);
+        }
+               
+        @Override
+        public String toString() {
+            return "MoveSpatial[spatial=" + target + ", start=" + getStart() 
+                                + ", end=" + getEnd() + "]";
         }       
     }
 
@@ -184,6 +203,12 @@ public class AnimInterpolators {
         protected void apply( Vector3f value ) {
             target.setLocalScale(value);
         }       
+               
+        @Override
+        public String toString() {
+            return "ScaleSpatial[spatial=" + target + ", start=" + getStart() 
+                                + ", end=" + getEnd() + "]";
+        }       
     }
 
     private static class MoveCamera extends LerpVector3f {
@@ -202,6 +227,12 @@ public class AnimInterpolators {
         protected void apply( Vector3f value ) {
             target.setLocation(value);
         }       
+               
+        @Override
+        public String toString() {
+            return "MoveCamera[camera=" + target + ", start=" + getStart() 
+                                + ", end=" + getEnd() + "]";
+        }       
     }
  
     
@@ -216,6 +247,14 @@ public class AnimInterpolators {
             this.end = end;
             this.last = new Quaternion();
         }       
+
+        protected Quaternion getStart() {
+            return start;
+        }
+        
+        protected Quaternion getEnd() {
+            return end;
+        }
 
         protected abstract Quaternion loadStart();
         protected abstract void apply( Quaternion value );       
@@ -246,6 +285,12 @@ public class AnimInterpolators {
         protected void apply( Quaternion value ) {
             target.setLocalRotation(value);    
         }       
+               
+        @Override
+        public String toString() {
+            return "RotateSpatial[spatial=" + target + ", start=" + getStart() 
+                                + ", end=" + getEnd() + "]";
+        }       
     }    
 
     private static class RotateCamera extends Slerp {
@@ -263,6 +308,12 @@ public class AnimInterpolators {
         
         protected void apply( Quaternion value ) {
             target.setRotation(value);    
+        }       
+               
+        @Override
+        public String toString() {
+            return "RotateCamera[camera=" + target + ", start=" + getStart() 
+                                + ", end=" + getEnd() + "]";
         }       
     }    
  
@@ -292,6 +343,12 @@ public class AnimInterpolators {
             
             target.set(last);
         }
+               
+        @Override
+        public String toString() {
+            return "MixColor[target=" + target + ", start=" + start 
+                                + ", end=" + end + "]";
+        }       
     }
 }
 

@@ -171,7 +171,7 @@ System.out.println( "------------ MOVE -----------------" );
                 System.out.println( "ATTACK!!! at:" + moveTime );
                 
                 // Just for testing
-                long actTimeNanos = 500 * 1000000L;
+                long actTimeNanos =  1000 * 1000000L;
                 Activity fight = new Activity(Activity.FIGHTING, moveTime, moveTime + actTimeNanos);  
                 ed.setComponent(player, fight);                
  

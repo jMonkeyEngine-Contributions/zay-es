@@ -61,6 +61,7 @@ public class AnimationFactories {
 
     public static Task createMonkeyAttack( Spatial monkey, Vector3f start ) {
  
+        start = start.clone();
         Vector3f target = monkey.getLocalRotation().mult(Vector3f.UNIT_Z);
         target.addLocal(start);
 
@@ -85,6 +86,7 @@ public class AnimationFactories {
 
     public static Task createMonkeyMiss( Spatial monkey, Vector3f start ) {
  
+        start = start.clone();
         Vector3f target = monkey.getLocalRotation().mult(Vector3f.UNIT_Z);
         target.addLocal(start);
 
@@ -109,6 +111,7 @@ public class AnimationFactories {
 
     public static Task createOgreAttack( Spatial ogre, Vector3f start ) {
  
+        start = start.clone();
         Vector3f target = ogre.getLocalRotation().mult(Vector3f.UNIT_Z);
         target.addLocal(start);
 
@@ -137,6 +140,7 @@ public class AnimationFactories {
 
     public static Task createOgreMiss( Spatial ogre, Vector3f start ) {
  
+        start = start.clone();
         Vector3f target = ogre.getLocalRotation().mult(Vector3f.UNIT_Z);
         target.addLocal(start);
 
@@ -165,6 +169,7 @@ public class AnimationFactories {
     
     public static Task createMonkeyDefend( Spatial monkey, Vector3f start ) {
  
+        start = start.clone();
         Vector3f target = monkey.getLocalRotation().mult(Vector3f.UNIT_Z);
         target.multLocal(-0.5f);
         target.addLocal(start);
@@ -188,6 +193,7 @@ public class AnimationFactories {
     
     public static Task createOgreDefend( Spatial ogre, Vector3f start ) {
  
+        start = start.clone();
         Vector3f target = ogre.getLocalRotation().mult(Vector3f.UNIT_Z);
         target.multLocal(-0.5f);
         target.addLocal(start);
@@ -260,8 +266,9 @@ public class AnimationFactories {
         return result;
     }
     
-    public static Task createBarrelDeath( Spatial target ) {
-    
+    public static Task createBarrelsDeath( Spatial target ) {
+ 
+System.out.println( "createBarrelsDatah()" );    
         // Need a node to put the explosion on since we will
         // remove the monkey during the process
         Node explosion = new Node("Explosion");
@@ -281,6 +288,7 @@ public class AnimationFactories {
     
     public static Task createChestDeath( Spatial target ) {
     
+System.out.println( "createChestDeath()" );    
         // Need a node to put the explosion on since we will
         // remove the monkey during the process
         Node explosion = new Node("Explosion");

@@ -99,6 +99,9 @@ public class SpatialTaskFactories {
                 this.method = m;
                 break;
             } 
+            if( method == null ) {
+                throw new RuntimeException("Method not found:" + methodName);
+            }
         } 
     
         public Task createTask( Spatial spatial, Vector3f target ) {

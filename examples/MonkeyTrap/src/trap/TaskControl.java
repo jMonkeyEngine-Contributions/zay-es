@@ -81,7 +81,7 @@ public class TaskControl extends AbstractControl {
         mappings.put(name, factory);
     }
     
-    public void addMapping( String name, Object delegate, String methodName ) {
+    public void setMapping( String name, Object delegate, String methodName ) {
         setMapping(name, SpatialTaskFactories.callMethod(delegate, methodName));
     }
 
@@ -134,6 +134,12 @@ public class TaskControl extends AbstractControl {
         // If we had tasks running before then we need to
         // tell them to top.    
         if( running != null ) {
+ 
+System.out.println( "Stopping running task:" + running );            
+            // Hopefully push them through to their end
+            // by forcing a 2 second fast-forward
+            running.execute(2);
+        
             running.stopping();
             running = null;
         }

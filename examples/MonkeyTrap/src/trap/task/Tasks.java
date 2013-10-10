@@ -38,6 +38,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -46,6 +48,8 @@ import java.util.List;
  *  @author    Paul Speed
  */
 public class Tasks {
+
+    static Logger log = LoggerFactory.getLogger(Tasks.class);
 
     /**
      *  Creates a task that will stretch one or more interpolators over
@@ -155,13 +159,23 @@ public class Tasks {
  
             time += tpf;
             
+            if( log.isTraceEnabled() ) {
+                log.trace("sequence.execute(" + tpf + ")");
+            }            
             // Execute each delegate task until we get to
             // one that isn't done... that's the new
             // current and the new status.
             for( ; current < tasks.length; current++ ) {
-                double d = tasks[current].getTimeRemaining(); 
+                double d = tasks[current].getTimeRemaining();
+                if( log.isTraceEnabled() ) {
+                    log.trace("executing:" + tasks[current] + " time remaining:" + d );
+                }
+                                 
                 result = tasks[current].execute(tpf);
-                if( result != TaskStatus.Done ) {
+                if( log.isTraceEnabled() ) {
+                    log.trace("result:" + result );
+                }                
+                if( result != TaskStatus.Done ) {                
                     break;
                 } else {
                     // Chip away at the tpf for the next execution
@@ -378,7 +392,13 @@ public class Tasks {
         public void stopping() {
             // reset
             called = false;
-        }        
+        }
+                
+        @Override
+        public String toString() {
+            return "CallTask[object=" + obj + ", method=" + method 
+                             + ", parms=" + (parameters == null ? "null" : Arrays.asList(parameters).toString()) + "]";
+        }
     }    
 } 
 
