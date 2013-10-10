@@ -161,14 +161,14 @@ public class SinglePlayerClient implements GameClient
 
             long moveTime = activity != null ? activity.getEndTime() : time;
             moveTime = Math.max(moveTime, time);
-System.out.println( "------------ MOVE -----------------" ); 
+//System.out.println( "------------ MOVE -----------------" ); 
             // Else see if there is something to attack.
             // Note: in multiplayer this check would be done on the server
             //       and not the client, so would still have access to the
             //       maze service.
             if( mazeService.isOccupied(dir, x, y) ) {
                 // Attack instead of move
-                System.out.println( "ATTACK!!! at:" + moveTime );
+                //System.out.println( "ATTACK!!! at:" + moveTime );
                 
                 // Just for testing
                 long actTimeNanos =  1000 * 1000000L;
