@@ -44,6 +44,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *  Translates general character animation names into model specific 
@@ -56,6 +58,8 @@ import java.util.Map;
  *  @author    Paul Speed
  */
 public class CharAnimControl extends AbstractControl {
+
+    static Logger log = LoggerFactory.getLogger(CharAnimControl.class);
 
     private AnimControl anim;
     private Map<String, List<Mapping>> mappings = new HashMap<String, List<Mapping>>();    
@@ -73,17 +77,17 @@ public class CharAnimControl extends AbstractControl {
  
     protected boolean isDefaultAnimationRunning() {
         // See if the default animation is the one currently playing
-        List<Mapping> mappings = getMappings(defaultAnimation, false);
-        if( mappings ==  null ) {
+        List<Mapping> list = getMappings(defaultAnimation, false);
+        if( list ==  null ) {
             return false;  // no real way to tell
         }
         
-        if( mappings.size() < anim.getNumChannels() ) {
+        if( list.size() < anim.getNumChannels() ) {
             return false;
         }
          
-        for( int i = 0; i < mappings.size(); i++ ) {
-            Mapping m = mappings.get(i);
+        for( int i = 0; i < list.size(); i++ ) {
+            Mapping m = list.get(i);
             AnimChannel channel = anim.getChannel(i);
             if( channel == null ) {
                 return false;
@@ -115,7 +119,8 @@ public class CharAnimControl extends AbstractControl {
      *  animation is not mapped.
      */
     public void play( String animation ) {
-System.out.println( "play(" + animation + ")" );    
+        log.debug("play(" + animation + ")" );
+            
         if( Objects.equal(this.animation, animation) ) {
             return;
         }

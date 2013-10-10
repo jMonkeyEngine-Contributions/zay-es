@@ -116,7 +116,7 @@ public class CharacterAnimState extends BaseAppState {
             // for the moment
             case Activity.FIGHTING:
                 //cac.setAnimation("Attack", act.getStartTime(), act.getEndTime());
-                tasks.playTask("Attack", act.getStartTime(), act.getEndTime()); 
+                tasks.playTask("Attack", act.getStartTime(), act.getEndTime(), true); 
                 break;
         }            
     }

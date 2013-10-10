@@ -41,6 +41,8 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.scene.control.AbstractControl;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import trap.anim.SpatialTaskFactories;
 import trap.anim.SpatialTaskFactory;
 import trap.game.TimeProvider;
@@ -57,6 +59,8 @@ import trap.task.TaskStatus;
  */
 public class TaskControl extends AbstractControl {
 
+    static Logger log = LoggerFactory.getLogger(TaskControl.class);
+    
     private TimeProvider time;
     private Map<String, SpatialTaskFactory> mappings = new HashMap<String, SpatialTaskFactory>();
 
@@ -86,7 +90,11 @@ public class TaskControl extends AbstractControl {
     }
 
     public void playTask( String name, long startTime, long endTime ) {
-        this.next = new TaskTime(name, startTime, endTime);
+        playTask(name, startTime, endTime, false);
+    }
+    
+    public void playTask( String name, long startTime, long endTime, boolean resetOnRepeat ) {
+        this.next = new TaskTime(name, startTime, endTime, resetOnRepeat);
         
         // The "old" character animation control had kind of a "bug"
         // where the new animation was always set and overrode the currently
@@ -101,7 +109,9 @@ public class TaskControl extends AbstractControl {
         if( current != null ) {
             // Marry up task windows less than "frameSmoothing" 
             long delta = startTime - current.endTime;
-//System.out.println( "Delta:" + (delta /1000000.0) );            
+            if( log.isTraceEnabled() ) {
+                log.trace("new task delta:" + delta);
+            }
             if( delta > 0 && delta < frameSmoothing ) {
                 current.endTime = startTime;
             }
@@ -113,7 +123,7 @@ public class TaskControl extends AbstractControl {
             return;
         }
         
-        if( setRunningTask(tt.taskName) ) {
+        if( setRunningTask(tt.taskName, tt.resetOnRepeat) ) {
             this.current = tt;
         } else {
             // We didn't actually change tasks so 
@@ -123,9 +133,9 @@ public class TaskControl extends AbstractControl {
         } 
     }
     
-    protected boolean setRunningTask( String name ) {
+    protected boolean setRunningTask( String name, boolean resetOnRepeat ) {
  
-        if( Objects.equal(name, runningTask) ) {
+        if( !resetOnRepeat && Objects.equal(name, runningTask) ) {
             return false;
         }
         
@@ -135,7 +145,6 @@ public class TaskControl extends AbstractControl {
         // tell them to top.    
         if( running != null ) {
  
-System.out.println( "Stopping running task:" + running );            
             // Hopefully push them through to their end
             // by forcing a 2 second fast-forward
             running.execute(2);
@@ -146,7 +155,7 @@ System.out.println( "Stopping running task:" + running );
         this.runningTask = name;
         SpatialTaskFactory factory = mappings.get(runningTask);
         if( factory == null ) {
-            return setRunningTask(defaultTask);
+            return setRunningTask(defaultTask, false);
         }
         
         Vector3f loc = spatial.getLocalTranslation();
@@ -167,7 +176,7 @@ System.out.println( "Stopping running task:" + running );
         }
         if( current != null && now > current.endTime ) {
             current = null;
-            setRunningTask(defaultTask);
+            setRunningTask(defaultTask, false);
         }
         
         // If there is a running task then keep it up to date
@@ -190,16 +199,18 @@ System.out.println( "Stopping running task:" + running );
         String taskName;
         long startTime;
         long endTime;
+        boolean resetOnRepeat;
         
-        public TaskTime( String taskName, long startTime, long endTime ) {
+        public TaskTime( String taskName, long startTime, long endTime, boolean resetOnRepeat ) {
             this.taskName = taskName;
             this.startTime = startTime;
             this.endTime = endTime;
+            this.resetOnRepeat = resetOnRepeat; 
         }
         
         @Override
         public String toString() {
-            return "TaskTime[" + taskName + ", " + startTime + ", " + endTime + "]";
+            return "TaskTime[" + taskName + ", " + startTime + ", " + endTime + ", " + resetOnRepeat + "]";
         }
     }
 }
