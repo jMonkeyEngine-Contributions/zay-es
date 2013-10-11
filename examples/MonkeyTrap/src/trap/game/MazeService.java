@@ -195,16 +195,8 @@ public class MazeService implements Service {
         Random random = new Random(seed);
         ObjectDropper dropper = new ObjectDropper(random);
         int count = maze.visit(dropper);
-        System.out.println( "Visited " + count + " cells" );      
+        log.info("Visited " + count + " cells when dropping items.");      
     }
- 
-    /*public List<EntityId> getEntities( int x, int y ) {
-        CellEntities cell = index.getCellEntities(new Vector3f(x*2, 0, y*2), false);
-        if( cell == null ) {
-            return Collections.emptyList();
-        }
-        return cell.getEntities();
-    }*/
  
     protected EntityId createCollision( Entity mover, Entity collider, 
                                         long time, long delay, EntityComponent... adds ) {
@@ -248,18 +240,10 @@ public class MazeService implements Service {
                     // Generate the collision
                     // Give it a 2 second decay so that if nothing
                     // handles the collision it will eventually get removed.
-                    EntityId collision = createCollision(e, collider, pos.getTime(), 2000 * 1000000L, pos);
-                    
-System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + collider );                                
- 
-                    /*if( e.get(ModelType.class) == MonkeyTrapConstants.TYPE_MONKEY 
-                        && collider.get(ModelType.class) != MonkeyTrapConstants.TYPE_BLING ) {                                
-                        // For testing....
-                        EntityFactories.createObject( MonkeyTrapConstants.TYPE_BLING, pos.getTime(),
-                                                      pos.newTime(pos.getTime(), pos.getTime()), 
-                                                      new Decay(pos.getTime() + 2000 * 1000000L));                         
-                        EntityFactories.createBuff(pos.getTime(), e.getId(), new HealthChange(2)); 
-                    }*/                                                                                                                                                         
+                    EntityId collision = createCollision(e, collider, pos.getTime(), 2000 * 1000000L, pos);    
+                    if( log.isTraceEnabled() ) {
+                        log.trace("Collision:" + collision + "  entity:" + e + "  hit:" + collider);
+                    }
                 }                
             }            
         } 
@@ -330,7 +314,7 @@ System.out.println( "Collision:" + collision + "  entity:" + e + "  hit:" + coll
             if( drop < chanceToDrop ) {
             
                 // Create the drop
-                System.out.println( "Drop at:" + x + ", " + y );
+                log.debug("Item drop at:" + x + ", " + y);
  
                 double type = random.nextDouble();
                 if( type < 0.2 ) {

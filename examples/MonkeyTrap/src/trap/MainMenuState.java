@@ -35,12 +35,8 @@
 package trap;
 
 import com.jme3.app.Application;
-import com.jme3.app.SimpleApplication;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioNode;
-import com.jme3.audio.AudioSource.Status;
-import com.jme3.font.BitmapFont;
-import com.jme3.font.BitmapText;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
@@ -49,13 +45,14 @@ import com.simsilica.lemur.Button;
 import com.simsilica.lemur.Command;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.FillMode;
-import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.Label;
 import com.simsilica.lemur.TextField;
 import com.simsilica.lemur.component.IconComponent;
 import com.simsilica.lemur.component.SpringGridLayout;
 import com.simsilica.lemur.event.BaseAppState;
 import com.simsilica.lemur.style.ElementId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -66,10 +63,16 @@ import com.simsilica.lemur.style.ElementId;
  */
 public class MainMenuState extends BaseAppState {
 
+    static Logger log = LoggerFactory.getLogger(MainMenuState.class);
+    
     private Container menu;
 
     private Container network;
     private boolean networkPanelOpen = false;
+
+    private TextField userField;
+    private TextField hostField;
+    private TextField portField;
 
     private AudioNode startSound;
     private AudioNode exitSound;
@@ -124,11 +127,11 @@ public class MainMenuState extends BaseAppState {
         network = new Container(new SpringGridLayout(Axis.Y, Axis.X, FillMode.EVEN, FillMode.LAST), 
                                 new ElementId(DungeonStyles.SUBMENU_ID), "dungeon");
         network.addChild(new Label("Player:", new ElementId(DungeonStyles.EDIT_LABEL_ID), "dungeon"));
-        network.addChild(new TextField("Random" + Math.round(Math.random() * 100), "dungeon"), 1);
+        userField = network.addChild(new TextField("Random" + Math.round(Math.random() * 100), "dungeon"), 1);
         network.addChild(new Label("Host:", new ElementId(DungeonStyles.EDIT_LABEL_ID), "dungeon"));
-        network.addChild(new TextField("", "dungeon"), 1);
+        hostField = network.addChild(new TextField("", "dungeon"), 1);
         network.addChild(new Label("Port:", new ElementId(DungeonStyles.EDIT_LABEL_ID), "dungeon"));
-        network.addChild(new TextField("4284", "dungeon"), 1);       
+        portField = network.addChild(new TextField("4284", "dungeon"), 1);       
 
         network.addChild(new Label("")); // just a spacer to create a new row
         Button startMulti = network.addChild(new Button("Connect", "dungeon"),1);
@@ -201,11 +204,22 @@ public class MainMenuState extends BaseAppState {
     
     private class StartMulti implements Command<Button> {
         public void execute( Button source ) {
-            errorSound.playInstance();
-            
-            //startSound.playInstance();
-            //getStateManager().attach(new SinglePlayerState());
-            //setEnabled(false);
+            try {
+                String player = userField.getText();
+                String host = hostField.getText();
+                int port = Integer.parseInt(portField.getText()); 
+                ConnectionState cs = new ConnectionState(host, port, player);
+                startSound.playInstance();
+                getStateManager().attach(cs);
+                setEnabled(false);
+            } catch( Exception e ) {
+                log.error("Connection Error", e);
+                
+                // Play the error sound and pop-up an error window
+                errorSound.playInstance();
+                ErrorState error = new ErrorState("Connection Error", e.getMessage(), "dungeon");
+                getStateManager().attach(error);                
+            }
         }
     }
 

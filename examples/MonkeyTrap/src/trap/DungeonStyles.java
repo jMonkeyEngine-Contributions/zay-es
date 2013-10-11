@@ -40,6 +40,7 @@ import com.simsilica.lemur.Button;
 import com.simsilica.lemur.HAlignment;
 import com.simsilica.lemur.Insets3f;
 import com.simsilica.lemur.TextField;
+import com.simsilica.lemur.component.QuadBackgroundComponent;
 import com.simsilica.lemur.component.TbtQuadBackgroundComponent;
 import com.simsilica.lemur.core.GuiComponent;
 import com.simsilica.lemur.style.Attributes;
@@ -124,5 +125,27 @@ public class DungeonStyles {
         editField.set("fontSize", 24f);
         editField.set("background", stoneDown.clone());
         
+        
+        // Setup styles for the error dialog
+        Attributes popup = styles.getSelector(ErrorState.POPUP_ID.getId(), "dungeon");
+        popup.set("background", stoneBevel.clone());
+        
+
+        GuiComponent smallStoneBevel = TbtQuadBackgroundComponent.create( "Interface/stone-512.jpg",
+                                                                          0.5f,
+                                                                          10, 10, 502, 502,
+                                                                          1f, false );
+        Attributes errorTitle = styles.getSelector(ErrorState.TITLE_ID.getId(), "dungeon");
+        //errorTitle.set("insets", new Insets3f(5, 5, 5, 5));
+        errorTitle.set("shadowOffset", new Vector3f(1, -1, 0.1f)); 
+        errorTitle.set("shadowColor", ColorRGBA.Black);  
+        errorTitle.set("background", smallStoneBevel.clone()); //new QuadBackgroundComponent(new ColorRGBA(0, 0, 0.1f, 0.5f)));
+                 
+        Attributes errorMessage = styles.getSelector(ErrorState.MESSAGE_ID.getId(), "dungeon");
+        errorMessage.set("insets", new Insets3f(5, 5, 5, 5));
+        //errorMessage.set("background", stoneDown.clone());
+        errorMessage.set("shadowOffset", new Vector3f(1, -1, 0.1f)); 
+        errorMessage.set("shadowColor", ColorRGBA.Black);  
+        errorMessage.set("background", new QuadBackgroundComponent(new ColorRGBA(0.1f, 0, 0, 0.5f)));         
     }
 }
