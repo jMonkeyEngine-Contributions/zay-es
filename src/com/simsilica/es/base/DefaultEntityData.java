@@ -87,6 +87,10 @@ public class DefaultEntityData implements ObservableEntityData
     {
         this.stringIndex = stringIndex;
     }
+
+    protected void registerComponentHandler( Class type, ComponentHandler handler ) {
+        handlers.put(type, handler);
+    }
  
     @Override
     public void addEntityComponentListener( EntityComponentListener l )
