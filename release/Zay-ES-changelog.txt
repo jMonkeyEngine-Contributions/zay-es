@@ -1,5 +1,5 @@
 
-Zay-ES Core r
+Zay-ES Core r1200
 -------------------
 * Removed the direct DefaultEntityData reference from DefaultEntity
 * Removed the direct reference to DefaultEntityData from DefaultEntitySet.
