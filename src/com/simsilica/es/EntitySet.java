@@ -35,9 +35,6 @@
 package com.simsilica.es;
 
 import java.util.*;
-import java.util.concurrent.*;
-
-import org.apache.log4j.Logger;
 
 
 

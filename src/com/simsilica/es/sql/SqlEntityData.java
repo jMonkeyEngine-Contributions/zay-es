@@ -39,10 +39,9 @@ import com.simsilica.es.PersistentComponent;
 import com.simsilica.es.base.DefaultEntityData;
 import java.io.File;
 import java.sql.*;
-import java.util.*;
-import java.util.concurrent.*;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -54,7 +53,7 @@ import org.apache.log4j.Logger;
  */
 public class SqlEntityData extends DefaultEntityData
 {
-    static Logger log = Logger.getLogger(SqlEntityData.class);
+    static Logger log = LoggerFactory.getLogger(SqlEntityData.class);
     
     private String dbPath;
     private ThreadLocal<SqlSession> cachedSession = new ThreadLocal<SqlSession>();

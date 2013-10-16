@@ -43,7 +43,8 @@ import com.simsilica.es.filter.OrFilter;
 import com.simsilica.es.ComponentFilter;
 import java.sql.*;
 import java.util.*;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -54,7 +55,7 @@ import org.apache.log4j.Logger;
  */
 public class ComponentTable<T>
 {
-    static Logger log = Logger.getLogger(ComponentTable.class);
+    static Logger log = LoggerFactory.getLogger(ComponentTable.class);
     
     private boolean cached = true;
     private Class<T> type;

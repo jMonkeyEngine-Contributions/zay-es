@@ -37,7 +37,8 @@ package com.simsilica.es.base;
 import com.simsilica.es.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -51,7 +52,7 @@ import org.apache.log4j.Logger;
 public class DefaultEntitySet extends AbstractSet<Entity> 
                               implements EntitySet
 {
-    static Logger log = Logger.getLogger(EntitySet.class);
+    static Logger log = LoggerFactory.getLogger(EntitySet.class);
 
     /**
      *  Constant used during transaction processing to mark

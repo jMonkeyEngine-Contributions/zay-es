@@ -37,7 +37,8 @@ package com.simsilica.es.sql;
 import java.sql.*;
 import java.util.*;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -50,7 +51,7 @@ import org.apache.log4j.Logger;
  */
 public class StringTable 
 {
-    static Logger log = Logger.getLogger(StringTable.class);
+    static Logger log = LoggerFactory.getLogger(StringTable.class);
  
     private String tableName = "STRINGS";   
     private boolean cached = true;
