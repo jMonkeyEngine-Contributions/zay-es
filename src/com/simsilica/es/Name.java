@@ -34,7 +34,6 @@
 
 package com.simsilica.es;
 
-import com.jme3.network.serializing.Serializable;
 
 /**
  *  Represents the name of an entity.
@@ -42,7 +41,6 @@ import com.jme3.network.serializing.Serializable;
  *  @version   $Revision$
  *  @author    Paul Speed
  */
-@Serializable
 public class Name implements EntityComponent, PersistentComponent
 {
     @StringType(maxLength=80)

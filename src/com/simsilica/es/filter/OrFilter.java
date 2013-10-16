@@ -36,7 +36,6 @@ package com.simsilica.es.filter;
 
 import java.util.*;
 
-import com.jme3.network.serializing.Serializable;
 import com.simsilica.es.ComponentFilter;
 import com.simsilica.es.EntityComponent;
 
@@ -47,7 +46,6 @@ import com.simsilica.es.EntityComponent;
  *  @version   $Revision$
  *  @author    Paul Speed
  */
-@Serializable
 public class OrFilter<T extends EntityComponent> implements ComponentFilter<T>
 {
     private Class<T> type;

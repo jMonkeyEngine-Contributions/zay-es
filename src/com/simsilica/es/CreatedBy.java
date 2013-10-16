@@ -34,15 +34,12 @@
 
 package com.simsilica.es;
 
-import com.jme3.network.serializing.Serializable;
-
 /**
  *  Represents the entity that created some other entity.
  *
  *  @version   $Revision$
  *  @author    Paul Speed
  */
-@Serializable
 public class CreatedBy implements EntityComponent, PersistentComponent
 {
     private EntityId creatorId;

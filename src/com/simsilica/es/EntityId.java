@@ -34,14 +34,12 @@
 
 package com.simsilica.es;
 
-import com.jme3.network.serializing.Serializable;
 
 /**
  *
  *  @version   $Revision$
  *  @author    Paul Speed
  */
-@Serializable
 public final class EntityId implements Comparable<EntityId>
 {
     public static final EntityId NULL_ID = new EntityId( Long.MIN_VALUE );

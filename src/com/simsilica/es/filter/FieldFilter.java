@@ -38,7 +38,6 @@ import com.google.common.base.Objects;
 import java.lang.reflect.*;
 
 
-import com.jme3.network.serializing.Serializable;
 import com.simsilica.es.ComponentFilter;
 import com.simsilica.es.EntityComponent;
 
@@ -47,7 +46,6 @@ import com.simsilica.es.EntityComponent;
  *  @version   $Revision$
  *  @author    Paul Speed
  */
-@Serializable
 public class FieldFilter<T extends EntityComponent> implements ComponentFilter<T>
 {
     private Class<T> type;
