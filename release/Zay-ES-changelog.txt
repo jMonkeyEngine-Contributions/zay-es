@@ -1,0 +1,17 @@
+
+Zay-ES Core r
+-------------------
+* Removed the direct DefaultEntityData reference from DefaultEntity
+* Removed the direct reference to DefaultEntityData from DefaultEntitySet.
+* Added a protected isReleased() method to DefaultEntitySet so subclasses
+    can check released state.
+* Added a protected method for accessing the change queue.
+* Added a method to DefaultEntitySet.Transaction for directly injecting 
+    added entities.  (Useful for when entities are loaded asynchronously.)
+* Added an internal optimization to DefaultEntitySet that avoids attempting
+    to re-retrieve a component that was removed.
+* Added a protected registerComponentHandler() method to DefaultEntityData
+    so that subclasses can customimze component handler implementations.
+* Removed the SpiderMonkey dependency from core Zay-ES
+* Converted direct log4j references to slf4j.
+
