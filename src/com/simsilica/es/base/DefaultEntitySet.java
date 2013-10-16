@@ -53,6 +53,14 @@ public class DefaultEntitySet extends AbstractSet<Entity>
 {
     static Logger log = Logger.getLogger(EntitySet.class);
 
+    /**
+     *  Constant used during transaction processing to mark
+     *  removed components in already loaded entities.  This distinguishes
+     *  them from components that have yet to be filled in and prevents
+     *  the values from being re-retrieved during transaction finalization.
+     */
+    private static RemovedComponent REMOVED_COMPONENT = new RemovedComponent();     
+
     // Concurrent hash map because the change set accumulation
     // checks the map for entity ID existence.
     private Map<EntityId,Entity> entities = new HashMap<EntityId,Entity>();
@@ -60,7 +68,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
     private ConcurrentLinkedQueue<EntityChange> changes 
                     = new ConcurrentLinkedQueue<EntityChange>(); 
     
-    private DefaultEntityData ed;
+    private EntityData ed;
     private ComponentFilter mainFilter; // for now anyway
     private ComponentFilter[] filters;    
     private Class[] types;
@@ -73,12 +81,8 @@ public class DefaultEntitySet extends AbstractSet<Entity>
 
     private boolean released = false;    
 
-    public boolean debugOn = false;
-
-    // We could treat types as filters here too and just convert
-    // them to raw classes on input.
     
-    public DefaultEntitySet( DefaultEntityData ed, ComponentFilter filter, Class[] types )
+    public DefaultEntitySet( EntityData ed, ComponentFilter filter, Class[] types )
     {
         this.ed = ed;
         this.types = types;
@@ -443,13 +447,22 @@ public class DefaultEntitySet extends AbstractSet<Entity>
     @Override
     public void release()
     {
-        ed.releaseEntitySet(this);
+        if( ed instanceof DefaultEntityData ) 
+            {
+            // Other non-DefaultEntityData implementations will have
+            // to override release() if they need special behavior.
+            ((DefaultEntityData)ed).releaseEntitySet(this);
+            }
         
         // Except we can't clear because release() might have been
         // called from a different thread than the one processing
         // the data.
         // clear();
         released = true;
+    }
+    
+    protected boolean isReleased() {
+        return released;
     }
 
     protected boolean entityMatches( Entity e )
@@ -459,6 +472,15 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             {
             if( array[i] == null )
                 return false;
+            
+            if( array[i] == REMOVED_COMPONENT )
+                {
+                // Note: we may not catch them all but that's ok.  The
+                // entity is "removed" and so the state is invalid anyway...
+                // but I feel more comfortable clearing the reference if I can.
+                array[i] = null;
+                return false;
+                }
                 
             if( filters == null || filters[i] == null )
                 continue;
@@ -570,6 +592,11 @@ public class DefaultEntitySet extends AbstractSet<Entity>
         // Accumulate the change for the next update pass
         changes.add(change); 
     }
+ 
+    protected ConcurrentLinkedQueue<EntityChange> getChangeQueue() 
+    {
+        return changes;    
+    }
     
     private class EntityIterator implements Iterator<Entity>
     {
@@ -596,6 +623,15 @@ public class DefaultEntitySet extends AbstractSet<Entity>
         {
             delegate.remove();
         }
+    }
+ 
+    /**
+     *  A special entity component that is used during transaction processing
+     *  to temporarily mark a component as "removed".  This is different than
+     *  null which could also indicate "unset".
+     */
+    private static class RemovedComponent implements EntityComponent 
+    {
     }
     
     /**
@@ -635,6 +671,15 @@ public class DefaultEntitySet extends AbstractSet<Entity>
     {
         Map<EntityId,DefaultEntity> adds = new HashMap<EntityId,DefaultEntity>();
         Set<EntityId> mods = new HashSet<EntityId>();
+ 
+        /**
+         *  Called when we know (for whatever reason) that a full entity
+         *  is being added.  This is useful for any implementation that
+         *  asynchronously loads data.
+         */       
+        public void directAdd( DefaultEntity e ) {
+            adds.put(e.getId(), e);
+        }
         
         public void addChange( EntityChange change, Set<EntityChange> updates )
         {
@@ -675,11 +720,12 @@ public class DefaultEntitySet extends AbstractSet<Entity>
                         }
                     
                     // Else we need to add it.
-                
+ 
                     // Create an empty entity with the right number
                     // of components.
                     e = new DefaultEntity( ed, id, new EntityComponent[types.length], types );
                     adds.put( id, e );
+//System.out.println( "Trying to add:" + e );                 
                     }               
                 }
             else
@@ -717,11 +763,15 @@ public class DefaultEntitySet extends AbstractSet<Entity>
                     updates.add(change);
                 }
             
-            e.getComponents()[index] = comp;                     
+            // Setting a component to null because of a 'removed' 
+            // component is different than a component that just
+            // happens to be null because it hasn't been filled in yet.
+            e.getComponents()[index] = comp != null ? comp : REMOVED_COMPONENT;
         }
  
         protected boolean completeEntity( DefaultEntity e )
         {
+//System.out.println( "completeEntity(" + e + ")" );        
             // Try to make it complete if is isn't already.
             // We need to recheck the components against the
             // filters because we do no prefiltering on changes.
@@ -750,6 +800,14 @@ public class DefaultEntitySet extends AbstractSet<Entity>
                     if( array[i] == null )
                         return false;
                     }
+                else if( array[i] == REMOVED_COMPONENT ) 
+                    {
+                    // Set it back to null again just in case the caller
+                    // is holding a reference... but otherwise it means this
+                    // entity is 'dead'.
+                    array[i] = null;
+                    return false;
+                    } 
                 else
                     {
                     rechecking = true;
