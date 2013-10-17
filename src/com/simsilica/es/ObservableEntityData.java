@@ -41,11 +41,9 @@ package com.simsilica.es;
  *  for server-side dispatch of relevant changes to other
  *  remote clients.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public interface ObservableEntityData extends EntityData
-{
+public interface ObservableEntityData extends EntityData {
     public void addEntityComponentListener( EntityComponentListener l );
     public void removeEntityComponentListener( EntityComponentListener l );
 }

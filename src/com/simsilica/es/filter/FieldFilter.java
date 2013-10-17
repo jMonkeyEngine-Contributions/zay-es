@@ -46,79 +46,64 @@ import com.simsilica.es.EntityComponent;
  *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class FieldFilter<T extends EntityComponent> implements ComponentFilter<T>
-{
+public class FieldFilter<T extends EntityComponent> implements ComponentFilter<T> {
+
     private Class<T> type;
     private Field field;
     private Object value;
     private transient boolean initialized = false;
     
-    public FieldFilter()
-    {
+    public FieldFilter() {
     }
     
-    public FieldFilter( Class<T> type, String field, Object value )
-    {
-        try
-            {
+    public FieldFilter( Class<T> type, String field, Object value ) {
+        try {
             this.type = type;
             this.field = type.getDeclaredField(field);
             this.field.setAccessible(true);
             this.value = value;
-            }
-        catch( NoSuchFieldException e )
-            {
-            throw new IllegalArgumentException( "Field not found:" + field + " on type:" + type, e );
-            } 
+        } catch( NoSuchFieldException e ) {
+            throw new IllegalArgumentException("Field not found:" + field + " on type:" + type, e);
+        } 
     }
 
-    public static <T extends EntityComponent> FieldFilter<T> create( Class<T> type, String field, Object value )
-    {
+    public static <T extends EntityComponent> FieldFilter<T> create( Class<T> type, 
+                                                                     String field, Object value ) {
         return new FieldFilter<T>(type, field, value);
     }
 
-    public String getFieldName()
-    {
+    public String getFieldName() {
         return field.getName();
     }
 
-    public Object getValue()
-    {
+    public Object getValue() {
         return value;
     }
 
     @Override
-    public Class<T> getComponentType()
-    {
+    public Class<T> getComponentType() {
         return type;
     }
     
     @Override
-    public boolean evaluate( EntityComponent c )
-    {
-        if( !type.isInstance(c) )
-            {
+    public boolean evaluate( EntityComponent c ) {
+        if( !type.isInstance(c) ) {
             return false;
-            }
-        try        
-            {
-            if( !initialized )
-                {
+        }
+        try {
+            if( !initialized ) {
                 field.setAccessible(true);
                 initialized = true;
-                }
-            Object val = field.get(c);
-            return Objects.equal( value, val );
             }
-        catch( IllegalAccessException e )
-            {
-            throw new RuntimeException( "Error retrieving field[" + field + "] of:" + c, e );
-            } 
+            Object val = field.get(c);
+            return Objects.equal(value, val);
+        } catch( IllegalAccessException e ) {
+            throw new RuntimeException("Error retrieving field[" + field + "] of:" + c, e);
+        } 
     }
     
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "FieldFilter[" + field + " == " + value + "]";
     }
 }

@@ -39,9 +39,7 @@ package com.simsilica.es;
  *  Represents a particular chunk of data associated
  *  with a particular aspect of an entity.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public interface EntityComponent
-{
+public interface EntityComponent {
 }

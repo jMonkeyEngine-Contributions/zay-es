@@ -51,11 +51,10 @@ import com.simsilica.util.Reporter;
 
 /**
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class DefaultEntityData implements ObservableEntityData
-{
+public class DefaultEntityData implements ObservableEntityData {
+
     private Map<Class, ComponentHandler> handlers = new ConcurrentHashMap<Class, ComponentHandler>();    
     private EntityIdGenerator idGenerator;
     private StringIndex stringIndex;
@@ -67,24 +66,20 @@ public class DefaultEntityData implements ObservableEntityData
     private List<DefaultEntitySet> entitySets = new CopyOnWriteArrayList<DefaultEntitySet>();         
     private List<EntityComponentListener> entityListeners = new CopyOnWriteArrayList<EntityComponentListener>();      
     
-    public DefaultEntityData()
-    {
-        this( new DefaultEntityIdGenerator() );
+    public DefaultEntityData() {
+        this(new DefaultEntityIdGenerator());
     }
     
-    public DefaultEntityData( EntityIdGenerator idGenerator )
-    {    
-        ReportSystem.registerCacheReporter( new EntitySetsReporter() );
+    public DefaultEntityData( EntityIdGenerator idGenerator ) {    
+        ReportSystem.registerCacheReporter(new EntitySetsReporter());
         this.idGenerator = idGenerator;
     }        
  
-    protected void setIdGenerator( EntityIdGenerator idGenerator )
-    {
+    protected void setIdGenerator( EntityIdGenerator idGenerator ) {
         this.idGenerator = idGenerator;
     }
 
-    protected void setStringIndex( StringIndex stringIndex )
-    {
+    protected void setStringIndex( StringIndex stringIndex ) {
         this.stringIndex = stringIndex;
     }
 
@@ -93,31 +88,26 @@ public class DefaultEntityData implements ObservableEntityData
     }
  
     @Override
-    public void addEntityComponentListener( EntityComponentListener l )
-    {
+    public void addEntityComponentListener( EntityComponentListener l ) {
         entityListeners.add(l);
     }
     
     @Override
-    public void removeEntityComponentListener( EntityComponentListener l )
-    {
+    public void removeEntityComponentListener( EntityComponentListener l ) {
         entityListeners.remove(l);
     }
     
     @Override
-    public void close()
-    {    
+    public void close() {    
     }  
 
     @Override
-    public EntityId createEntity()
-    {
+    public EntityId createEntity() {
         return new EntityId(idGenerator.nextEntityId());
     }
 
     @Override
-    public void removeEntity( EntityId entityId )
-    {
+    public void removeEntity( EntityId entityId ) {
         // Note: because we only add the ComponentHandlers when
         // we encounter the component types... it's possible that
         // the entity stays orphaned with a few components if we
@@ -125,13 +115,13 @@ public class DefaultEntityData implements ObservableEntityData
         // probably specifically be given types someday.  FIXME
     
         // Remove all of its components
-        for( Class c : handlers.keySet() )
-            removeComponent( entityId, c );
+        for( Class c : handlers.keySet() ) {
+            removeComponent(entityId, c);
+        }
     }
 
     @Override
-    public StringIndex getStrings()
-    {
+    public StringIndex getStrings() {
         return stringIndex;
     }
     
@@ -140,160 +130,147 @@ public class DefaultEntityData implements ObservableEntityData
      *  find an appropriate handler.  Default implementation returns
      *  a new MapComponentHandler.
      */
-    protected ComponentHandler lookupDefaultHandler( Class type )
-    {
+    protected ComponentHandler lookupDefaultHandler( Class type ) {
         return new MapComponentHandler();
     }
  
-    protected ComponentHandler getHandler( Class type )
-    {
+    protected ComponentHandler getHandler( Class type ) {
+    
         ComponentHandler result = handlers.get(type);
-        if( result == null )
-            {
+        if( result == null ) {
             // A little double checked locking to make sure we 
             // don't create a handler twice
-            synchronized( this )
-                {
+            synchronized( this ) {
                 result = handlers.get(type);
-                if( result == null )
-                    {
+                if( result == null ) {
                     result = lookupDefaultHandler(type);
                     handlers.put(type, result);
-                    }
                 }
             }
+        }
         return result;             
     }
 
     @Override
-    public <T extends EntityComponent> T getComponent( EntityId entityId, Class<T> type )
-    {
+    public <T extends EntityComponent> T getComponent( EntityId entityId, Class<T> type ) {
         ComponentHandler handler = getHandler(type);
-        return (T)handler.getComponent( entityId );
+        return (T)handler.getComponent(entityId);
     }
     
     @Override
-    public void setComponent( EntityId entityId, EntityComponent component )
-    {
+    public void setComponent( EntityId entityId, EntityComponent component ) {
         ComponentHandler handler = getHandler(component.getClass());
-        handler.setComponent( entityId, component );
+        handler.setComponent(entityId, component);
         
         // Can now update the entity sets that care
-        entityChange( new EntityChange( entityId, component ) ); 
+        entityChange(new EntityChange(entityId, component)); 
     }
     
     @Override
-    public boolean removeComponent( EntityId entityId, Class type )  
-    {
+    public boolean removeComponent( EntityId entityId, Class type ) {
         ComponentHandler handler = getHandler(type);
         boolean result = handler.removeComponent(entityId);
         
         // Can now update the entity sets that care
-        entityChange( new EntityChange( entityId, type ) );
+        entityChange(new EntityChange(entityId, type));
         
         return result; 
     }
 
-    protected EntityId findSingleEntity( ComponentFilter filter )
-    {
+    protected EntityId findSingleEntity( ComponentFilter filter ) {
         return getHandler(filter.getComponentType()).findEntity(filter);
     }
 
-    protected Set<EntityId> getEntityIds( Class type )
-    {
+    protected Set<EntityId> getEntityIds( Class type ) {
         return getHandler(type).getEntities();
     }
 
-    protected Set<EntityId> getEntityIds( Class type, ComponentFilter filter )
-    {
-        return getHandler(type).getEntities( filter );
+    protected Set<EntityId> getEntityIds( Class type, ComponentFilter filter ) {
+        return getHandler(type).getEntities(filter);
     }
 
-    protected DefaultEntitySet createSet( ComponentFilter filter, Class... types )
-    {
-        DefaultEntitySet set = new DefaultEntitySet( this, filter, types );
+    protected DefaultEntitySet createSet( ComponentFilter filter, Class... types ) {
+        DefaultEntitySet set = new DefaultEntitySet(this, filter, types);
         entitySets.add(set);
         return set;
     }
 
-    protected void replace( Entity e, EntityComponent oldValue, EntityComponent newValue )
-    {
-        setComponent( e.getId(), newValue );
+    protected void replace( Entity e, EntityComponent oldValue, EntityComponent newValue ) {
+        setComponent(e.getId(), newValue);
     }
   
     @Override
-    public void setComponents( EntityId entityId, EntityComponent... components )
-    {
-        for( EntityComponent c : components )
-            setComponent( entityId, c );
+    public void setComponents( EntityId entityId, EntityComponent... components ) {
+        for( EntityComponent c : components ) {
+            setComponent(entityId, c);
+        }
     }
  
     @Override
-    public Entity getEntity( EntityId entityId, Class... types )
-    {
+    public Entity getEntity( EntityId entityId, Class... types ) {
         EntityComponent[] values = new EntityComponent[types.length]; 
-        for( int i = 0; i < values.length; i++ )
+        for( int i = 0; i < values.length; i++ ) {
             values[i] = getComponent( entityId, types[i] );
+        }
         return new DefaultEntity( this, entityId, values, types );            
     }
  
     @Override
-    public EntitySet getEntities( Class... types )
-    {
-        EntitySet results = createSet( (ComponentFilter)null, types );
+    public EntitySet getEntities( Class... types ) {
+    
+        EntitySet results = createSet((ComponentFilter)null, types);
          
-        Set<EntityId> first = getEntityIds( types[0] );
-        if( first.isEmpty() )
-            return results; 
+        Set<EntityId> first = getEntityIds(types[0]);
+        if( first.isEmpty() ) {
+            return results;
+        } 
         Set<EntityId> and = new HashSet<EntityId>();
         and.addAll(first); 
             
-        for( int i = 1; i < types.length; i++ )
-            {
-            and.retainAll( getEntityIds( types[i] ) );
-            }
+        for( int i = 1; i < types.length; i++ ) {
+            and.retainAll(getEntityIds(types[i]));
+        }
                               
         // Now we have the info needed to build the entity set
         EntityComponent[] buffer = new EntityComponent[types.length]; 
-        for( EntityId id : and )
-            {
-            for( int i = 0; i < buffer.length; i++ )
-                buffer[i] = getComponent( id, types[i] );
+        for( EntityId id : and ) {
+            for( int i = 0; i < buffer.length; i++ ) {
+                buffer[i] = getComponent(id, types[i]);
+            }
                 
             // Now create the entity
-            DefaultEntity e = new DefaultEntity( this, id, buffer.clone(), types );
+            DefaultEntity e = new DefaultEntity(this, id, buffer.clone(), types);
             results.add(e);
-            }
+        }
             
         return results;
     }
 
-    protected ComponentFilter forType( ComponentFilter filter, Class type )
-    {
+    protected ComponentFilter forType( ComponentFilter filter, Class type ) {
         if( filter == null || filter.getComponentType() != type )
             return null;
         return filter; 
     }
 
     @Override
-    public EntityId findEntity( ComponentFilter filter, Class... types )
-    {
-        if( types == null || types.length == 0 )
-            return findSingleEntity( filter );
+    public EntityId findEntity( ComponentFilter filter, Class... types ) {
+        if( types == null || types.length == 0 ) {
+            return findSingleEntity(filter);
+        }
         
-        Set<EntityId> first = getEntityIds( types[0], forType(filter, types[0]) );
+        Set<EntityId> first = getEntityIds(types[0], forType(filter, types[0]));
         if( first.isEmpty() )
             return null; 
         Set<EntityId> and = new HashSet<EntityId>();
         and.addAll(first); 
             
-        for( int i = 1; i < types.length; i++ )
-            {
-            Set<EntityId> sub = getEntityIds( types[i], forType(filter, types[i]) );
-            if( sub.isEmpty() )
-                return null;  
-            and.retainAll( sub );
-            }
+        for( int i = 1; i < types.length; i++ ) {
+            Set<EntityId> sub = getEntityIds(types[i], forType(filter, types[i]));
+            if( sub.isEmpty() ) {
+                return null;
+            }  
+            and.retainAll(sub);
+        }
  
         if( and.isEmpty() )
             return null;
@@ -302,60 +279,56 @@ public class DefaultEntityData implements ObservableEntityData
     }
  
     @Override
-    public Set<EntityId> findEntities( ComponentFilter filter, Class... types )
-    {
-        if( types == null || types.length == 0 )
+    public Set<EntityId> findEntities( ComponentFilter filter, Class... types ) {
+        if( types == null || types.length == 0 ) {
             types = new Class[] { filter.getComponentType() };
+        }
         
-        Set<EntityId> first = getEntityIds( types[0], forType(filter, types[0]) );
-        if( first.isEmpty() )
-            return Collections.emptySet(); 
+        Set<EntityId> first = getEntityIds(types[0], forType(filter, types[0]));
+        if( first.isEmpty() ) {
+            return Collections.emptySet();
+        } 
         Set<EntityId> and = new HashSet<EntityId>();
         and.addAll(first); 
             
-        for( int i = 1; i < types.length; i++ )
-            {
-            Set<EntityId> sub = getEntityIds( types[i], forType(filter, types[i]) );
-            if( sub.isEmpty() )
-                return Collections.emptySet();  
-            and.retainAll( sub );
-            }
+        for( int i = 1; i < types.length; i++ ) {
+            Set<EntityId> sub = getEntityIds(types[i], forType(filter, types[i]));
+            if( sub.isEmpty() ) {
+                return Collections.emptySet();
+            }  
+            and.retainAll(sub);
+        }
         
         return and;        
     }
 
     @Override
-    public EntitySet getEntities( ComponentFilter filter, Class... types )
-    {
-        DefaultEntitySet results = createSet( filter, types );
+    public EntitySet getEntities( ComponentFilter filter, Class... types ) {
+        DefaultEntitySet results = createSet(filter, types);
         results.loadEntities(false);
         return results;
     }
 
-    protected void releaseEntitySet( EntitySet entities )
-    {
+    protected void releaseEntitySet( EntitySet entities ) {
         entitySets.remove((DefaultEntitySet)entities);
     }
  
-    protected void entityChange( EntityChange change )
-    {
-        for( EntityComponentListener l : entityListeners )
-            {
-            l.componentChange( change );
-            }
+    protected void entityChange( EntityChange change ) {
     
-        for( DefaultEntitySet set : entitySets )
-            {
+        for( EntityComponentListener l : entityListeners ) {
+            l.componentChange(change);
+        }
+    
+        for( DefaultEntitySet set : entitySets ) {
             set.entityChange(change);
-            }       
+        }       
     }
  
-    private class EntitySetsReporter implements Reporter
-    {
+    private class EntitySetsReporter implements Reporter {
+    
         @Override
-        public void printReport( String type, java.io.PrintWriter out )
-        {
-            out.println( "EntityData->EntitySets:" + entitySets.size() );
+        public void printReport( String type, java.io.PrintWriter out ) {
+            out.println("EntityData->EntitySets:" + entitySets.size());
         }
     }            
 }

@@ -35,33 +35,29 @@
 package com.simsilica.es;
 
 /**
- *  Represents the entity that created some other entity.
+ *  Represents the entity that created some other entity as
+ *  a standardized component.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class CreatedBy implements EntityComponent, PersistentComponent
-{
+public class CreatedBy implements EntityComponent, PersistentComponent {
+
     private EntityId creatorId;
     
-    public CreatedBy()
-    {
-        this( EntityId.NULL_ID ); 
+    public CreatedBy() {
+        this(EntityId.NULL_ID); 
     }
     
-    public CreatedBy( EntityId creatorId )
-    {   
+    public CreatedBy( EntityId creatorId ) {   
         this.creatorId = creatorId;
     }
     
-    public EntityId getCreatorId()
-    {
+    public EntityId getCreatorId() {
         return creatorId;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "CreatedBy[" + creatorId + "]";
     }      
 }

@@ -44,19 +44,18 @@ import java.util.*;
  *  Default entity implementation that caches a subset
  *  of the components in an array.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class DefaultEntity implements Entity
-{
+public class DefaultEntity implements Entity {
+
     private EntityData ed;    
     private EntityId id;
     private EntityComponent[] components;
 
     private Class[] types; // temporarily for validating component types
 
-    public DefaultEntity( EntityData ed, EntityId id, EntityComponent[] components, Class[] types )
-    {
+    public DefaultEntity( EntityData ed, EntityId id, 
+                          EntityComponent[] components, Class[] types ) {
         this.ed = ed;
         this.id = id;
         this.components = components;
@@ -65,32 +64,30 @@ public class DefaultEntity implements Entity
         validate();
     }
     
-    protected void validate()
-    {
-        for( int i = 0; i < types.length; i++ )
-            {
-            if( components[i] == null )
+    protected void validate() {
+        for( int i = 0; i < types.length; i++ ) {
+            if( components[i] == null ) {
                 continue;
-            if( components[i].getClass() != types[i] )
-                throw new RuntimeException( "Validation error.  components[" + i + "]:" + components[i] + " is not of type:" + types[i] );
             }
+            if( components[i].getClass() != types[i] ) {
+                throw new RuntimeException( "Validation error.  components[" + i + "]:" 
+                                            + components[i] + " is not of type:" + types[i] );
+            }
+        }
     }
 
     @Override
-    public EntityId getId()
-    {
+    public EntityId getId() {
         return id;
     }
  
     @Override
-    public EntityComponent[] getComponents()
-    {
+    public EntityComponent[] getComponents() {
         return components;
     }
     
     @Override
-    public boolean equals( Object o )
-    {
+    public boolean equals( Object o ) {
         if( o == this )
             return true;
         if( o == null )
@@ -102,91 +99,48 @@ public class DefaultEntity implements Entity
     }
     
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return id.hashCode();
     }
     
     @Override
-    public <T extends EntityComponent> T get( Class<T> type )
-    {
-        for( EntityComponent c : components )
-            {
-            if( c != null && c.getClass() == type )
+    public <T extends EntityComponent> T get( Class<T> type ) {
+        for( EntityComponent c : components ) {
+            if( c != null && c.getClass() == type ) {
                 return type.cast(c);
             }
+        }
         return null;
     }
      
     @Override
-    public void set( EntityComponent c )
-    {
-        for( int i = 0; i < components.length; i++ )
-            {
-            if( components[i].getClass().isInstance(c) )
-                {               
+    public void set( EntityComponent c ) {
+    
+        for( int i = 0; i < components.length; i++ ) {        
+            if( components[i].getClass().isInstance(c) ) {               
                 ed.setComponent( getId(), c );
                 components[i] = c;
                 return;
-                }             
-            }
+            }             
+        }
             
-        //throw new IllegalArgumentException( "This entity is not a view of component:" + c );
-        
-        // The problem with sharing entities across all of the
-        // requests is that they might clobber each other.  If each system
-        // gets its own view then we don't have that issue.  Of course,
-        // this means more work for the queries but I think that's alright.
-        
         // We can still pass through the value to the EntityData even
         // if we can't return it
         ed.setComponent( id, c );
     }
  
     @Override
-    public boolean isComplete()
-    {
-        for( int i = 0; i < components.length; i++ )
-            {
-            if( components[i] == null )
+    public boolean isComplete() {
+        for( int i = 0; i < components.length; i++ ) {
+            if( components[i] == null ) {
                 return false;
             }
+        }
         return true;            
     }
     
-    protected void update( EntityComponent c )
-    {
-        for( int i = 0; i < components.length; i++ )
-            {
-            if( components[i].getClass().isInstance(c) )
-                {               
-                components[i] = c;
-                return;
-                }             
-            }
-    }
-    
-    protected void clear( Class type )
-    {
-        for( int i = 0; i < components.length; i++ )
-            {
-            if( components[i].getClass() == type )
-                {               
-                components[i] = null;
-                return;
-                }             
-            }
-    }
-    
-    protected void clear()
-    {
-        for( int i = 0; i < components.length; i++ )
-            components[i] = null;
-    }
-    
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "Entity[" + id + ", values=" + Arrays.asList(components) + "]";
     }
 }

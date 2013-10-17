@@ -37,32 +37,27 @@ package com.simsilica.es;
 
 /**
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public final class EntityId implements Comparable<EntityId>
-{
+public final class EntityId implements Comparable<EntityId> {
+
     public static final EntityId NULL_ID = new EntityId( Long.MIN_VALUE );
     
     private long id;
     
-    public EntityId()
-    {
+    public EntityId() {
     }
     
-    public EntityId( long id )
-    {
+    public EntityId( long id ) {
         this.id = id;
     }
     
-    public long getId()
-    {
+    public long getId() {
         return id;
     }
  
     @Override
-    public int compareTo( EntityId other )
-    {
+    public int compareTo( EntityId other ) {
         if( id < other.id )
             return -1;
         else if( id > other.id )
@@ -71,14 +66,12 @@ public final class EntityId implements Comparable<EntityId>
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return (int)(id^(id>>>32));
     }
  
     @Override
-    public boolean equals( Object o )
-    {
+    public boolean equals( Object o ) {
         if( o == this )
             return true;
         if( o == null )
@@ -90,8 +83,7 @@ public final class EntityId implements Comparable<EntityId>
     }
     
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "EntityId[" + id + "]";
     }
 }

@@ -36,14 +36,14 @@ package com.simsilica.es;
 
 
 /**
+ *  Implemented to provide custom component filtering when
+ *  searching for EntityIds or retrieving EntitySets.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public interface ComponentFilter<T extends EntityComponent>
-{
-    public Class<T> getComponentType();
-    
+public interface ComponentFilter<T extends EntityComponent> {
+
+    public Class<T> getComponentType();    
     public boolean evaluate( EntityComponent c );
 }
 

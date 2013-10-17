@@ -40,10 +40,8 @@ import java.io.*;
  *  Called by the ReportSystem to output information
  *  about a subsystem.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public interface Reporter
-{
+public interface Reporter {
     public void printReport( String reportType, PrintWriter out ); 
 }

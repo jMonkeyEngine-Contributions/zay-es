@@ -40,11 +40,10 @@ import java.util.*;
  *  The main entry point for retrieving entities
  *  and components.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public interface EntityData
-{
+public interface EntityData {
+
     public EntityId createEntity();
     public void removeEntity( EntityId entityId );
     

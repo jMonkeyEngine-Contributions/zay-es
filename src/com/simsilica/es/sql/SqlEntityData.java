@@ -48,74 +48,65 @@ import org.slf4j.LoggerFactory;
  *  EntityData implementation that uses SQL tables to
  *  store persistent information.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class SqlEntityData extends DefaultEntityData
-{
+public class SqlEntityData extends DefaultEntityData {
+
     static Logger log = LoggerFactory.getLogger(SqlEntityData.class);
     
     private String dbPath;
     private ThreadLocal<SqlSession> cachedSession = new ThreadLocal<SqlSession>();
  
-    public SqlEntityData( File dbPath, long writeDelay ) throws SQLException
-    {
-        this( dbPath.toURI().toString(), writeDelay );
+    public SqlEntityData( File dbPath, long writeDelay ) throws SQLException {
+        this(dbPath.toURI().toString(), writeDelay);
     }
     
-    public SqlEntityData( String dbPath, long writeDelay ) throws SQLException
-    {
+    public SqlEntityData( String dbPath, long writeDelay ) throws SQLException {
+    
         super(null);
         
         this.dbPath = dbPath;
 
-        try
-            {
+        try {
             // Hard code this stuff for now.
             Class.forName("org.hsqldb.jdbc.JDBCDriver");
-            }
-        catch( ClassNotFoundException e )
-            {
-            throw new SQLException( "Driver not found for: org.hsqldb.jdbc.JDBCDriver", e ); 
-            }
+        } catch( ClassNotFoundException e ) {
+            throw new SQLException("Driver not found for: org.hsqldb.jdbc.JDBCDriver", e); 
+        }
         
         // In a stand-alone client we will want a very quick write delay
         // to avoid crash-related mayhem.
-        execute( "SET FILES WRITE DELAY " + writeDelay + " MILLIS" );
-        execute( "SET FILES DEFRAG 50" );
+        execute("SET FILES WRITE DELAY " + writeDelay + " MILLIS");
+        execute("SET FILES DEFRAG 50");
                
-        setIdGenerator( PersistentEntityIdGenerator.create( this ) ); 
-        setStringIndex( new SqlStringIndex( this, 100 ) ); 
+        setIdGenerator(PersistentEntityIdGenerator.create( this )); 
+        setStringIndex(new SqlStringIndex( this, 100 )); 
     }
  
-    protected void execute( String statement ) throws SQLException 
-    {
+    protected void execute( String statement ) throws SQLException {
         SqlSession session = getSession();
         Statement st = session.getConnection().createStatement();
-        try
-            {
+        try {
             st.execute(statement);
-            }
-        finally 
-            {
+        } finally {
             st.close();
-            }
+        }
     }
     
-    protected SqlSession getSession() throws SQLException
-    {        
+    protected SqlSession getSession() throws SQLException {
         SqlSession session = cachedSession.get();
-        if( session != null )
+        if( session != null ) {
             return session;
+        }
  
         // Soooo... apparently hsqldb doesn't like proper
         // encoded URIs.
-        dbPath = dbPath.replaceAll( "%20", " " );
+        dbPath = dbPath.replaceAll("%20", " ");
                     
         Connection conn = DriverManager.getConnection("jdbc:hsqldb:" + dbPath + "/entity_db",    
                                                       "SA", "");
  
-        log.info( "Created connection.  Autocommit:" + conn.getAutoCommit() );
+        log.info("Created connection.  Autocommit:" + conn.getAutoCommit());
                                                                                      
         session = new SqlSession(conn);
         cachedSession.set(session);        
@@ -123,28 +114,24 @@ public class SqlEntityData extends DefaultEntityData
     } 
 
     @Override
-    protected ComponentHandler lookupDefaultHandler( Class type )
-    {
-        if( PersistentComponent.class.isAssignableFrom(type) )
+    protected ComponentHandler lookupDefaultHandler( Class type ) {
+        if( PersistentComponent.class.isAssignableFrom(type) ) {
             return new SqlComponentHandler(this, type);
+        }
         return super.lookupDefaultHandler(type);
     }
  
     @Override
-    public void close()
-    {
+    public void close() {   
         super.close();
-        try
-            {
+        try {
             // Shut the database down
             SqlSession session = getSession();
             execute("SHUTDOWN COMPACT");
             session.getConnection().close();    
-            }
-        catch( SQLException e )
-            {
-            throw new RuntimeException( "Database was not shutdown cleanly", e );
-            }
+        } catch( SQLException e ) {
+            throw new RuntimeException("Database was not shutdown cleanly", e);
+        }
     }
     
 }

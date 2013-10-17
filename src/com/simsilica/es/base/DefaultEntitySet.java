@@ -46,12 +46,11 @@ import org.slf4j.LoggerFactory;
  *  A set of entities that possess certain components with
  *  automatic updates as the entity components change.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
 public class DefaultEntitySet extends AbstractSet<Entity> 
-                              implements EntitySet
-{
+                              implements EntitySet {
+                              
     static Logger log = LoggerFactory.getLogger(EntitySet.class);
 
     /**
@@ -83,44 +82,36 @@ public class DefaultEntitySet extends AbstractSet<Entity>
     private boolean released = false;    
 
     
-    public DefaultEntitySet( EntityData ed, ComponentFilter filter, Class[] types )
-    {
+    public DefaultEntitySet( EntityData ed, ComponentFilter filter, Class[] types ) {
         this.ed = ed;
         this.types = types;
         setMainFilter(filter);
     }
 
-    protected Class[] getTypes()
-    {
+    protected Class[] getTypes() {
         return types;
     }
 
-    public String debugId()
-    {
+    public String debugId() {
         return "EntitySet@" + System.identityHashCode(this);
     }
     
-    protected void setMainFilter( ComponentFilter filter )
-    {
+    protected void setMainFilter( ComponentFilter filter ) {
         this.mainFilter = filter;
  
-        if( filter != null )
-            {       
+        if( filter != null ) {
             filters = new ComponentFilter[ types.length ];
-            for( int i = 0; i < types.length; i++ )
-                {
-                if( filter.getComponentType() == types[i] )
+            for( int i = 0; i < types.length; i++ ) {
+                if( filter.getComponentType() == types[i] ) {
                     filters[i] = filter;
                 }
             }
-        else
-            {
+        } else {
             filters = null;
-            }                
+        }                
     }
     
-    protected ComponentFilter getMainFilter()
-    {
+    protected ComponentFilter getMainFilter() {
         return mainFilter;
     }
     
@@ -129,9 +120,9 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      *  data.  This is called during creation (but not construction)
      *  and when the filter is reset.  
      */
-    protected void loadEntities( boolean reload )
-    {
-        Set<EntityId> idSet = ed.findEntities( mainFilter, types );
+    protected void loadEntities( boolean reload ) {
+    
+        Set<EntityId> idSet = ed.findEntities(mainFilter, types);
         if( idSet.isEmpty() )
             return;
  
@@ -141,31 +132,32 @@ public class DefaultEntitySet extends AbstractSet<Entity>
         
         // Now we have the info needed to build the entity set
         EntityComponent[] buffer = new EntityComponent[types.length]; 
-        for( EntityId id : idSet )
-            {
+        for( EntityId id : idSet ) {
             // If we already have the entity then it is not a new
             // add and we'll ignore it.  This means that some entities
             // may have newer info than others but we will get their
             // event soon enough.
             // We include this for the reload after a filter change. 
-            if( reload && containsId(id) )
+            if( reload && containsId(id) ) {
                 continue;
+            }
                 
-            for( int i = 0; i < buffer.length; i++ )
-                buffer[i] = ed.getComponent( id, types[i] );
+            for( int i = 0; i < buffer.length; i++ ) {
+                buffer[i] = ed.getComponent(id, types[i]);
+            }
                 
             // Now create the entity
-            DefaultEntity e = new DefaultEntity( ed, id, buffer.clone(), types );
-            if( add(e) && reload )
+            DefaultEntity e = new DefaultEntity(ed, id, buffer.clone(), types);
+            if( add(e) && reload ) {
                 addedEntities.add(e);
             }
+        }
     
         // I had a big long comment in AbstractEntityData worrying
         // about threading and stuff.  But the EntityChange events
         // are getting queued and as long as they aren't rejected
         // out of hand (which would be a bug) then we don't care if
-        // they come in while we build the entity set.
-        
+        // they come in while we build the entity set.        
     }     
 
     /**
@@ -173,17 +165,15 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      *  set's criteria.  This will update the removedEntities
      *  tracking.
      */
-    protected void purgeEntities()
-    {
-        for( Iterator<Entity> it = iterator(); it.hasNext(); )
-            {
+    protected void purgeEntities() {
+    
+        for( Iterator<Entity> it = iterator(); it.hasNext(); ) {        
             Entity e = it.next();
-            if( !entityMatches(e) )
-                {
+            if( !entityMatches(e) ) {
                 it.remove();
                 removedEntities.add(e);
-                }                 
-            }
+            }                 
+        }
     }
  
     /**
@@ -193,8 +183,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      *  changes will be applied during the filter transition.
      */
     @Override
-    public void resetFilter( ComponentFilter filter )
-    {
+    public void resetFilter( ComponentFilter filter ) {
         // General logic:
         // -remove the entities that don't match the filter
         // -find the entities that do and add them if they
@@ -240,83 +229,72 @@ public class DefaultEntitySet extends AbstractSet<Entity>
         // sets a flag and lets applyChanges() fix things.
                
         // Switch out the main filter
-        setMainFilter( filter );
+        setMainFilter(filter);
  
         filtersChanged = true;
     }
  
     @Override
-    public boolean containsId( EntityId id )
-    {
+    public boolean containsId( EntityId id ) {
         return entities.containsKey(id);
     }
  
     @Override
-    public Entity getEntity( EntityId id )
-    {
+    public Entity getEntity( EntityId id ) {
         return entities.get(id);
     }
  
     @Override
-    public boolean equals( Object o )
-    {
+    public boolean equals( Object o ) {
         return o == this;
     }
  
     @Override
-    public int size()
-    {
+    public int size() {
         return entities.size();
     }
     
     @Override
-    public Iterator<Entity> iterator()
-    {
+    public Iterator<Entity> iterator() {
         return new EntityIterator();
     }
  
     @Override
-    public void clear()
-    {
+    public void clear() {
         entities.clear();
     }
     
     @Override
-    public boolean add( Entity e )
-    {
+    public boolean add( Entity e ) {
         // Note: this may come back to bite me later but we
         //       return that we don't add it but we actually do replace
         //       the old value.
-        return entities.put( e.getId(), e ) == null;
+        return entities.put(e.getId(), e) == null;
     }
 
-    protected Entity remove( EntityId id )
-    {
+    protected Entity remove( EntityId id ) {
         return entities.remove(id);
     }
  
     @Override
-    public boolean remove( Object e )
-    {
+    public boolean remove( Object e ) {
         if( !(e instanceof Entity) )
             return false;
-        return entities.remove( ((Entity)e).getId() ) != null;
+        return entities.remove(((Entity)e).getId()) != null;
     }
 
     @Override
-    public boolean contains( Object e )
-    {
+    public boolean contains( Object e ) {
         if( !(e instanceof Entity) )
             return false;
-        return entities.containsKey( ((Entity)e).getId() );
+        return entities.containsKey(((Entity)e).getId());
     }
 
     /**
      *  Returns the entities that were added during applyChanges.
      */
     @Override
-    public Set<Entity> getAddedEntities()
-    {
+    public Set<Entity> getAddedEntities() {
         return addedEntities;
     }     
 
@@ -324,8 +302,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      *  Returns the entities that were changed during applyChanges.
      */
     @Override
-    public Set<Entity> getChangedEntities()
-    {
+    public Set<Entity> getChangedEntities() {
         return changedEntities;
     }     
 
@@ -333,23 +310,22 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      *  Returns the entities that were removed during applyChanges.
      */
     @Override
-    public Set<Entity> getRemovedEntities()
-    {
+    public Set<Entity> getRemovedEntities() {
         return removedEntities;
     }     
 
     @Override
-    public void clearChangeSets()
-    {
+    public void clearChangeSets() {
         addedEntities.clear();
         changedEntities.clear();
         removedEntities.clear();
     }
 
     @Override
-    public boolean hasChanges()
-    {
-        return !addedEntities.isEmpty() || !changedEntities.isEmpty() || !removedEntities.isEmpty();                        
+    public boolean hasChanges() {
+        return !addedEntities.isEmpty() 
+                || !changedEntities.isEmpty() 
+                || !removedEntities.isEmpty();                        
     }
 
     /**
@@ -358,8 +334,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      *  changes.
      */
     @Override
-    public boolean applyChanges()
-    {
+    public boolean applyChanges() {
         return applyChanges(null);
     }
  
@@ -370,31 +345,28 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      *  will be added to the supplied updates set.
      */
     @Override
-    public boolean applyChanges( Set<EntityChange> updates )
-    {
-        return applyChanges( updates, true );
+    public boolean applyChanges( Set<EntityChange> updates ) {
+        return applyChanges(updates, true);
     }
     
-    protected boolean buildTransactionChanges( Set<EntityChange> updates )
-    {
+    protected boolean buildTransactionChanges( Set<EntityChange> updates ) {
+    
         if( changes.isEmpty() )
             return false;
 
         EntityChange change;
-        while( (change = changes.poll()) != null )
-            {
-            transaction.addChange( change, updates );
-            }
+        while( (change = changes.poll()) != null ) {
+            transaction.addChange(change, updates);
+        }        
         return true;
     }
 
-    public boolean hasFilterChanged()
-    {
+    public boolean hasFilterChanged() {
         return filtersChanged;
     }
     
-    protected boolean applyChanges( Set<EntityChange> updates, boolean clearChangeSets )
-    {
+    protected boolean applyChanges( Set<EntityChange> updates, boolean clearChangeSets ) {
+    
         // Need to return something to the caller about the adds and removes
         // actually we could just add that information to internal buffers
         // that get reset each time this is called. That means for any given
@@ -407,11 +379,11 @@ public class DefaultEntitySet extends AbstractSet<Entity>
         // be made components either and we'd probably still care about whether
         // they were added or not or what specific components had changed...
         // even if only for performance reasons.  We'll see.
-        if( clearChangeSets )
+        if( clearChangeSets ) {
             clearChangeSets();
+        }
  
-        if( released )
-            {
+        if( released ) {
             // Then the changes are irrelevant
             changes.clear();
  
@@ -419,26 +391,26 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             removedEntities.addAll(this);
             clear();
             return hasChanges();
-            }
+        }
  
-        if( buildTransactionChanges(updates) )
-            {            
+        if( buildTransactionChanges(updates) ) {
             // Resolve all of the changes into the change sets
             transaction.resolveChanges();
-            }
+        }
             
-        if( filtersChanged )
-            {
+        if( filtersChanged ) {
             filtersChanged = false;
             
             // Remove any entities that no longer match
             purgeEntities();
  
             // Find the latest entities
-            loadEntities( true );
-            }
+            loadEntities(true);
+        }
  
-        return !addedEntities.isEmpty() || !changedEntities.isEmpty() || !removedEntities.isEmpty();                        
+        return !addedEntities.isEmpty() 
+                || !changedEntities.isEmpty() 
+                || !removedEntities.isEmpty();                        
     }     
  
     /**
@@ -446,14 +418,13 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      *  updates and destroys any internal data structures.
      */
     @Override
-    public void release()
-    {
-        if( ed instanceof DefaultEntityData ) 
-            {
+    public void release() {
+    
+        if( ed instanceof DefaultEntityData ) {
             // Other non-DefaultEntityData implementations will have
             // to override release() if they need special behavior.
             ((DefaultEntityData)ed).releaseEntitySet(this);
-            }
+        }
         
         // Except we can't clear because release() might have been
         // called from a different thread than the one processing
@@ -466,29 +437,30 @@ public class DefaultEntitySet extends AbstractSet<Entity>
         return released;
     }
 
-    protected boolean entityMatches( Entity e )
-    {
+    protected boolean entityMatches( Entity e ) {
+    
         EntityComponent[] array = e.getComponents();
-        for( int i = 0; i < types.length; i++ )
-            {
-            if( array[i] == null )
+        for( int i = 0; i < types.length; i++ ) {
+            if( array[i] == null ) {
                 return false;
+            }
             
-            if( array[i] == REMOVED_COMPONENT )
-                {
+            if( array[i] == REMOVED_COMPONENT ) {
                 // Note: we may not catch them all but that's ok.  The
                 // entity is "removed" and so the state is invalid anyway...
                 // but I feel more comfortable clearing the reference if I can.
                 array[i] = null;
                 return false;
-                }
+            }
                 
-            if( filters == null || filters[i] == null )
+            if( filters == null || filters[i] == null ) {
                 continue;
+            }
                 
-            if( !filters[i].evaluate(array[i]) )
+            if( !filters[i].evaluate(array[i]) ) {
                 return false;
             }
+        }
         return true; 
     }
  
@@ -496,45 +468,41 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      *  Returns true if the specific component matches the criteria
      *  for this entity set.
      */
-    protected boolean isMatchingComponent( EntityComponent c )
-    {
-        for( int i = 0; i < types.length; i++ )
-            {
-            if( c.getClass() != types[i] )
-                continue;                
-            if( filters != null && filters[i] != null )
-                {
+    protected boolean isMatchingComponent( EntityComponent c ) {
+    
+        for( int i = 0; i < types.length; i++ ) {
+            if( c.getClass() != types[i] ) {
+                continue;
+            }                
+            if( filters != null && filters[i] != null ) {
                 return filters[i].evaluate(c);
-                }
-            return true;                                
             }
-            
+            return true;                                
+        }           
         return false;
     }        
  
     @Override
-    public final boolean hasType( Class type )
-    {
-        for( Class c : types )
-            {
-            if( c == type )
+    public final boolean hasType( Class type ) {    
+        for( Class c : types ) {
+            if( c == type ) {
                 return true;
             }
+        }
         return false;
     }
     
-    private int typeIndex( Class type )
-    {
-        for( int i = 0; i < types.length; i++ )
-            {
-            if( types[i] == type )
+    private int typeIndex( Class type ) {
+        for( int i = 0; i < types.length; i++ ) {
+            if( types[i] == type ) {
                 return i;
             }
+        }
         return -1;
     }
  
-    protected boolean isRelevantChange( EntityChange change )
-    {
+    protected boolean isRelevantChange( EntityChange change ) {
+    
         // Here we care about any changes that change the status
         // of an entity's inclusion in this set.
         // So:
@@ -580,48 +548,42 @@ public class DefaultEntitySet extends AbstractSet<Entity>
         return true;
     } 
     
-    protected void entityChange( EntityChange change )
-    {
+    protected void entityChange( EntityChange change ) {
         if( log.isTraceEnabled() )
-            log.trace( "entityChange(" + change + ")" );    
-        if( !isRelevantChange( change ) )
+            log.trace("entityChange(" + change + ")");    
+        if( !isRelevantChange(change) )
             return;
             
         if( log.isTraceEnabled() )
-            log.trace( "Adding change:" + change );
+            log.trace("Adding change:" + change);
              
         // Accumulate the change for the next update pass
         changes.add(change); 
     }
  
-    protected ConcurrentLinkedQueue<EntityChange> getChangeQueue() 
-    {
+    protected ConcurrentLinkedQueue<EntityChange> getChangeQueue() {
         return changes;    
     }
     
-    private class EntityIterator implements Iterator<Entity>
-    {
+    private class EntityIterator implements Iterator<Entity> {
+    
         private Iterator<Map.Entry<EntityId,Entity>> delegate = entities.entrySet().iterator();
         
-        public EntityIterator()
-        {
+        public EntityIterator() {
         }
         
         @Override
-        public boolean hasNext()
-        {
+        public boolean hasNext() {
             return delegate.hasNext();
         }
         
         @Override
-        public Entity next()
-        {
+        public Entity next() {
             return delegate.next().getValue();
         }
         
         @Override
-        public void remove()
-        {
+        public void remove() {
             delegate.remove();
         }
     }
@@ -631,8 +593,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      *  to temporarily mark a component as "removed".  This is different than
      *  null which could also indicate "unset".
      */
-    private static class RemovedComponent implements EntityComponent 
-    {
+    private static class RemovedComponent implements EntityComponent {
     }
     
     /**
@@ -668,8 +629,8 @@ public class DefaultEntitySet extends AbstractSet<Entity>
         // redundantly pull its whole info and we no longer stress
         // the cache we put in to worry about that case.     
      */
-    protected class Transaction
-    {
+    protected class Transaction {
+    
         Map<EntityId,DefaultEntity> adds = new HashMap<EntityId,DefaultEntity>();
         Set<EntityId> mods = new HashSet<EntityId>();
  
@@ -682,28 +643,25 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             adds.put(e.getId(), e);
         }
         
-        public void addChange( EntityChange change, Set<EntityChange> updates )
-        {
+        public void addChange( EntityChange change, Set<EntityChange> updates ) {
             EntityId id = change.getEntityId();
             EntityComponent comp = change.getComponent();
             DefaultEntity e = (DefaultEntity)entities.get( id );
  
             // If we don't have the entity then it's an add 
             // and we need to create one.
-            if( e == null )
-                {
+            if( e == null ) {
+            
                 // See if we already added this one
                 e = adds.get(id);
                 
-                if( e == null )
-                    {
-                    if( comp == null )
-                        {
+                if( e == null ) {
+                    if( comp == null ) {
                         // We've never seen this entity before and we get
                         // an event about removing a component.  We can
                         // safely ignore it
                         return;
-                        }
+                    }
                         
                     // We add the components even if they don't match because
                     // otherwise we might have to retrieve them again.  We
@@ -715,39 +673,36 @@ public class DefaultEntitySet extends AbstractSet<Entity>
                     // then we created the entity for nothing.  This is an
                     // extremely common use-case for the types of components most
                     // likely to be spammed and filtered.
-                    if( !isMatchingComponent(comp) )
-                        {
+                    if( !isMatchingComponent(comp) ) {
                         return;
-                        }
+                    }
                     
                     // Else we need to add it.
  
                     // Create an empty entity with the right number
                     // of components.
-                    e = new DefaultEntity( ed, id, new EntityComponent[types.length], types );
-                    adds.put( id, e );
-//System.out.println( "Trying to add:" + e );                 
-                    }               
-                }
-            else
-                {                    
+                    e = new DefaultEntity(ed, id, new EntityComponent[types.length], types);
+                    adds.put(id, e);
+                }               
+            } else {
                 // Then it's an entity we have already and we are about
                 // to change it.
-                mods.add( id );
+                mods.add(id);
                 
                 // We track the updates that caused a change... we'll
                 // filter out the ones that were for removed entities
                 // later.  This is actually somewhat better than we did
                 // before since we only send changes for entities that
                 // are still relevant.
-                }
+            }
  
             // Apply the change
             int index;
-            if( comp == null )
+            if( comp == null ) {
                 index = typeIndex(change.getComponentType());
-            else
+            } else {
                 index = typeIndex(comp.getClass());
+            }
 
             // We keep track of the changes that might have been
             // relevant.  Technically this is too broadly scoped but
@@ -758,11 +713,15 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             // have the entity... no.  Because we would have pre-filtered
             // that case.  Still, we can double-check here by hitting it
             // against the filter before adding it to the updates set. 
-            if( updates != null )
-                {
-                if( comp == null || filters == null || filters[index] == null || filters[index].evaluate(comp) )
+            if( updates != null ) {
+                if( comp == null 
+                    || filters == null 
+                    || filters[index] == null 
+                    || filters[index].evaluate(comp) ) {
+                    
                     updates.add(change);
                 }
+            }
             
             // Setting a component to null because of a 'removed' 
             // component is different than a component that just
@@ -770,9 +729,8 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             e.getComponents()[index] = comp != null ? comp : REMOVED_COMPONENT;
         }
  
-        protected boolean completeEntity( DefaultEntity e )
-        {
-//System.out.println( "completeEntity(" + e + ")" );        
+        protected boolean completeEntity( DefaultEntity e ) {
+        
             // Try to make it complete if is isn't already.
             // We need to recheck the components against the
             // filters because we do no prefiltering on changes.
@@ -787,50 +745,46 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             // would remove the entity) then we would add it again
             // even though the components did not match.
             EntityComponent[] array = e.getComponents();
-            for( int i = 0; i < types.length; i++ )
-                {
+            for( int i = 0; i < types.length; i++ ) {
                 boolean rechecking = false;
-                if( array[i] == null )
-                    {
+                if( array[i] == null ) {
                     // Fill it in 
                     if( log.isDebugEnabled() )
-                        log.debug( "Pulling component type:" + types[i] + " for id:" + e.getId() );
-                    array[i] = ed.getComponent( e.getId(), types[i] );
+                        log.debug("Pulling component type:" + types[i] + " for id:" + e.getId());
+                    array[i] = ed.getComponent(e.getId(), types[i]);
                 
                     // If we get nothing back then this entity can't be completed
-                    if( array[i] == null )
+                    if( array[i] == null ) {
                         return false;
                     }
-                else if( array[i] == REMOVED_COMPONENT ) 
-                    {
+                } else if( array[i] == REMOVED_COMPONENT ) {
                     // Set it back to null again just in case the caller
                     // is holding a reference... but otherwise it means this
                     // entity is 'dead'.
                     array[i] = null;
                     return false;
-                    } 
-                else
-                    {
+                } else {
                     rechecking = true;
-                    }
+                }
                 
                 // Now that we have a value, check the filters
                 
                 // If we have a filter and it doesn't match the filter then
                 // this whole entity doesn't match
-                if( filters == null || filters[i] == null )
+                if( filters == null || filters[i] == null ) {
                     continue;
+                }
  
-                if( !filters[i].evaluate(array[i]) )
-                    {
+                if( !filters[i].evaluate(array[i]) ) {
+                
                     // Because we wasted a lot of time for something
                     // that should be filtered in most cases... usually
                     // it's a bug when it isn't.
                     //if( rechecking )
                     //    log.warn( "Non-matching component:" + array[i] + " for entity:" + e );
                     return false;
-                    }                    
-                }
+                }                    
+            }
             
             // Just a safety net... can maybe be removed    
             ((DefaultEntity)e).validate();
@@ -838,31 +792,27 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             return true;                
         }
  
-        public void resolveChanges()
-        {
+        public void resolveChanges() {
             // So now we can take what we've accumulated and figure
             // out what's what.
 
             // Process the adds.
-            for( DefaultEntity e : adds.values() )  
-                {
-                if( completeEntity(e) )
-                    {
+            for( DefaultEntity e : adds.values() ) {
+                if( completeEntity(e) ) {
                     // It was an added entity
-                    if( add(e) )
+                    if( add(e) ) {
                         addedEntities.add(e);
                     }
-                else
-                    {
+                } else {
                     // It couldn't be completed so it is not really an add...
                     // it's just a waste of our time. ;)
-                    }
                 }
+            }
                 
             // Now... see which changes were removes and which ones
             // were real updates
-            for( EntityId id : mods )
-                {
+            for( EntityId id : mods ) {
+            
                 Entity e = entities.get(id);
                 
                 //((DefaultEntity)e).validate();
@@ -870,16 +820,14 @@ public class DefaultEntitySet extends AbstractSet<Entity>
                 // e.isComplete() would run through the whole component
                 // loop which we will do anyway to check the filters.
                 // We'll combine these into one step
-                if( entityMatches(e) )
-                    {
+                if( entityMatches(e) ) {
                     changedEntities.add(e);
-                    }
-                else
-                    {
-                    if( remove(e) )                    
+                } else {
+                    if( remove(e) ) {                    
                         removedEntities.add(e);
                     }
                 }
+            }
                 
             // Clear the buffers for next time
             adds.clear();

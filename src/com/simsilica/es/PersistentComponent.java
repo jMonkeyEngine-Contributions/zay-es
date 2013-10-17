@@ -36,11 +36,11 @@ package com.simsilica.es;
 
 
 /**
- *  Represents a component that should be stored.
+ *  Represents a component that should be stored.  Different
+ *  EntityData implementations can use this to determine which
+ *  components to store and which to keep only in memory.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public interface PersistentComponent extends EntityComponent
-{
+public interface PersistentComponent extends EntityComponent {
 }

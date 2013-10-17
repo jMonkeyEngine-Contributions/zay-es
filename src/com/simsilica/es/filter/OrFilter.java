@@ -46,62 +46,52 @@ import com.simsilica.es.EntityComponent;
  *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class OrFilter<T extends EntityComponent> implements ComponentFilter<T>
-{
+public class OrFilter<T extends EntityComponent> implements ComponentFilter<T> {
+
     private Class<T> type;
     private ComponentFilter<? extends T>[] operands;
     
-    public OrFilter()
-    {
+    public OrFilter() {
     }
     
-    public OrFilter( Class<T> type, ComponentFilter<? extends T>... operands )
-    {
+    public OrFilter( Class<T> type, ComponentFilter<? extends T>... operands ) {
         this.type = type;
         this.operands = operands;
     }
 
-    public static <T extends EntityComponent> OrFilter<T> create( Class<T> type, ComponentFilter<? extends T>... operands )
-    {
+    public static <T extends EntityComponent> OrFilter<T> create( Class<T> type, 
+                                                                  ComponentFilter<? extends T>... operands ) {
         return new OrFilter<T>(type, operands);
     }
 
-    public ComponentFilter<? extends T>[] getOperands()
-    {
+    public ComponentFilter<? extends T>[] getOperands() {
         return operands;
     }
 
     @Override
-    public Class<T> getComponentType()
-    {
+    public Class<T> getComponentType() {
         return type;
     }
     
     @Override
-    public boolean evaluate( EntityComponent c )
-    {
-        if( !type.isInstance(c) )
-            {
+    public boolean evaluate( EntityComponent c ) {
+        if( !type.isInstance(c) ) {
             return false;
-            }
-        if( operands == null )
-            {
+        }
+        if( operands == null ) {
             return true;
-            }
+        }
  
-        for( ComponentFilter f : operands )
-            {
-            if( f.evaluate(c) )
-                {
+        for( ComponentFilter f : operands ) {
+            if( f.evaluate(c) ) {
                 return true;
-                }
             }
+        }
         return false;                    
     }
     
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "OrFilter[" + Arrays.asList(operands) + "]";
     }
 }

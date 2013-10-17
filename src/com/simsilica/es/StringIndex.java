@@ -39,11 +39,9 @@ package com.simsilica.es;
  *  Uniquely identifies strings by int id in a persistent
  *  way that can be stored in components.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public interface StringIndex
-{ 
+public interface StringIndex {
     public int getStringId(String s, boolean add);
     public String getString(int id);    
 }

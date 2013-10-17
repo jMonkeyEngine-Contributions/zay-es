@@ -37,16 +37,16 @@ package com.simsilica.es;
 
 /**
  *  Associates an entity ID to a set of data components
- *  that represents some of the aspects of that entity.
- *  An Entity may not have all components available depending
- *  on implementation.  It is only guaranteed to have the
- *  components available that were the criteria for its query.
+ *  that represents some of the aspects of that entity, ie:
+ *  an "entity view".  An Entity may not have all components 
+ *  available depending on implementation.  It is only guaranteed 
+ *  to have the components available that were the criteria for 
+ *  its query.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public interface Entity
-{
+public interface Entity {
+
     public EntityId getId();
     
     public <T extends EntityComponent> T get( Class<T> type );

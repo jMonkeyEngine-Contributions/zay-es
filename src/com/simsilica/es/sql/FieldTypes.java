@@ -43,470 +43,410 @@ import java.util.*;
 
 /**
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class FieldTypes
-{
+public class FieldTypes {
+
     private static final Map<String,String> dbTypes = new HashMap<String,String>();
-    static
-    {
-        dbTypes.put( "int", "INTEGER" );
-        dbTypes.put( "long", "BIGINT" );
-        dbTypes.put( "short", "SMALLINT" );
-        dbTypes.put( "byte", "TINYINT" );
-        dbTypes.put( "float", "FLOAT" ); // though these are actually the same size in hsql
-        dbTypes.put( "double", "DOUBLE" );
+    static {
+        dbTypes.put("int", "INTEGER");
+        dbTypes.put("long", "BIGINT");
+        dbTypes.put("short", "SMALLINT");
+        dbTypes.put("byte", "TINYINT");
+        dbTypes.put("float", "FLOAT"); // though these are actually the same size in hsql
+        dbTypes.put("double", "DOUBLE");
     }
 
-    public static List<FieldType> getFieldTypes( Class type )
-    {
-        return getFieldTypes( null, type );
+    public static List<FieldType> getFieldTypes( Class type ) {
+        return getFieldTypes(null, type);
     }        
         
-    protected static List<FieldType> getFieldTypes( String prefix, Class type )
-    {
+    protected static List<FieldType> getFieldTypes( String prefix, Class type ) {
+    
         List<FieldType> results = new ArrayList<FieldType>();
         Field[] fields = type.getDeclaredFields();
  
-        for( Field f : fields )
-            {
+        for( Field f : fields ) {
             // No static fields
-            if( Modifier.isStatic( f.getModifiers() ) )
+            if( Modifier.isStatic(f.getModifiers()) ) {
                 continue;
+            }
             
             // No transient fields
-            if( Modifier.isTransient( f.getModifiers() ) )
+            if( Modifier.isTransient(f.getModifiers()) ) {
                 continue;
- 
+            } 
             
             // Make sure we can access its value even when the field
             // is private.    
             f.setAccessible(true);
             
             Class ft = f.getType();            
-            if( ft.isPrimitive() )
-                {
-                results.add( new PrimitiveField(prefix, f) );
+            if( ft.isPrimitive() ) {
+                results.add(new PrimitiveField(prefix, f));
                 continue;
-                } 
+            } 
  
-            if( EntityId.class.isAssignableFrom(ft) )
-                {
-                results.add( new EntityIdField(prefix, f) );
+            if( EntityId.class.isAssignableFrom(ft) ) {
+                results.add(new EntityIdField(prefix, f));
                 continue;
-                }
+            }
  
-            if( String.class.equals(ft) )
-                {
-                results.add( new StringField(prefix, f) );
+            if( String.class.equals(ft) ) {
+                results.add(new StringField(prefix, f));
                 continue;
-                }
+            }
  
-            if( Enum.class.isAssignableFrom(ft) )
-                {
+            if( Enum.class.isAssignableFrom(ft) ) {
                 // This is not as straight forward to handle as we'd like.
                 // If we use strings then we have to calculate some max size
                 // and if we use ordinals then even reordering the enum will
                 // screw up the database mapping.                
-                throw new UnsupportedOperationException( "Enum types are not supported." );
-                }
-            
-            results.add( new ObjectField( prefix, f ) );            
+                throw new UnsupportedOperationException("Enum types are not supported.");
             }
+            
+            results.add(new ObjectField(prefix, f));            
+        }
          
         return results;
     }
 
-    protected static class EntityIdField implements FieldType
-    {
+    protected static class EntityIdField implements FieldType {
+    
         private String name;
         private String dbFieldName;
         private Field field;
         
-        public EntityIdField( Field field )
-        {
-            this( null, field );
+        public EntityIdField( Field field ) {
+            this(null, field);
         }
         
-        public EntityIdField( String prefix, Field field )
-        {
+        public EntityIdField( String prefix, Field field ) {
             this.field = field;
             this.name = field.getName();
-            if( prefix == null )
+            if( prefix == null ) {
                 dbFieldName = name;
-            else
+            } else {
                 dbFieldName = prefix + name;
+            }
         }
         
         @Override
-        public String getFieldName()
-        {
+        public String getFieldName() {
             return name;
         }
  
         @Override
-        public Class getType()
-        {
+        public Class getType() {
             return field.getType();
         }
         
         @Override
-        public String getDbType()
-        {
+        public String getDbType() {
             //String s = field.getType().getSimpleName();
             String result = dbTypes.get("long");
             return result; 
         }
         
         @Override
-        public void addFieldDefinitions( String prefix, Map<String,FieldType> defs )
-        {
-            defs.put( prefix + dbFieldName.toUpperCase(), this );
+        public void addFieldDefinitions( String prefix, Map<String,FieldType> defs ) {
+            defs.put(prefix + dbFieldName.toUpperCase(), this);
         }
         
         @Override
-        public void addFields( String prefix, List<String> fields )
-        {
-            fields.add( prefix + dbFieldName );
+        public void addFields( String prefix, List<String> fields ) {
+            fields.add(prefix + dbFieldName);
         }
     
         @Override
-        public Object toDbValue( Object o )
-        {
-            if( o == null )
+        public Object toDbValue( Object o ) {
+            if( o == null ) {
                 return null;
+            }
             return ((EntityId)o).getId();
         }
     
         @Override
-        public int store( Object object, PreparedStatement ps, int index ) throws SQLException
-        {
-            try
-                {
+        public int store( Object object, PreparedStatement ps, int index ) throws SQLException {
+            try {
                 EntityId entityId = (EntityId)field.get(object);
-                if( entityId != null )
-                    ps.setObject( index++, entityId.getId() );
-                else 
-                    ps.setObject( index++, null );
+                if( entityId != null ) {
+                    ps.setObject(index++, entityId.getId());
+                } else { 
+                    ps.setObject(index++, null);
+                }
                 return index;
-                }
-            catch( IllegalAccessException e )
-                {
-                throw new RuntimeException( "Error in field mapping", e );
-                }
+            } catch( IllegalAccessException e ) {
+                throw new RuntimeException("Error in field mapping", e);
+            }
         }
  
         @Override
-        public int load( Object target, ResultSet rs, int index ) throws SQLException
-        {
-            try
-                {
+        public int load( Object target, ResultSet rs, int index ) throws SQLException {
+            try {
                 Number value = (Number)rs.getObject(index++);
                 
-                if( value != null )
-                    field.set( target, new EntityId(value.longValue()) );
-                else
-                    field.set( target, null );
+                if( value != null ) {
+                    field.set(target, new EntityId(value.longValue()));
+                } else {
+                    field.set(target, null);
+                }
                 return index;
-                }
-            catch( IllegalAccessException e )
-                {
-                throw new RuntimeException( "Error in field mapping", e );
-                }
+            } catch( IllegalAccessException e ) {
+                throw new RuntimeException("Error in field mapping", e);
+            }
         }
         
         @Override
-        public String toString()
-        {
-            if( dbFieldName != name )
+        public String toString() {
+            if( dbFieldName != name ) {
                 return name + "/" + dbFieldName + ":" + getType();
+            }
             return getFieldName() + ":" + getType();
         }
     }
 
-    protected static class StringField implements FieldType
-    {
+    protected static class StringField implements FieldType {
+    
         private String name;
         private String dbFieldName;
         private Field field;
         private int maxLength;
         
-        public StringField( String prefix, Field field )
-        {
+        public StringField( String prefix, Field field ) {
+        
             this.field = field;
             this.name = field.getName();
-            if( prefix == null )
+            if( prefix == null ) {
                 dbFieldName = name;
-            else
+            } else {
                 dbFieldName = prefix + name;
+            }
                 
             // See if there is an annotation that denotes size
-            StringType meta = field.getAnnotation( StringType.class );
-            if( meta != null )
+            StringType meta = field.getAnnotation(StringType.class);
+            if( meta != null ) {
                 maxLength = meta.maxLength();
-            else
+            } else {
                 maxLength = 512;
+            }
         }
         
         @Override
-        public String getFieldName()
-        {
+        public String getFieldName() {
             return name;
         }
  
         @Override
-        public Class getType()
-        {
+        public Class getType() {
             return field.getType();
         }
         
         @Override
-        public String getDbType()
-        {
+        public String getDbType() {
             return "VARCHAR(" + maxLength + ")"; 
         }
         
         @Override
-        public void addFieldDefinitions( String prefix, Map<String,FieldType> defs )
-        {
-            defs.put( prefix + dbFieldName.toUpperCase(), this );
+        public void addFieldDefinitions( String prefix, Map<String,FieldType> defs ) {
+            defs.put(prefix + dbFieldName.toUpperCase(), this);
         }
         
         @Override
-        public void addFields( String prefix, List<String> fields )
-        {
-            fields.add( prefix + dbFieldName );
+        public void addFields( String prefix, List<String> fields ) {
+            fields.add(prefix + dbFieldName);
         }
     
         @Override
-        public Object toDbValue( Object o )
-        {
+        public Object toDbValue( Object o ) {
             return o;
         }
     
         @Override
-        public int store( Object object, PreparedStatement ps, int index ) throws SQLException
-        {
-            try
-                {
-                ps.setObject( index++, field.get(object) );
+        public int store( Object object, PreparedStatement ps, int index ) throws SQLException {
+            try {
+                ps.setObject(index++, field.get(object));
                 return index;
-                }
-            catch( IllegalAccessException e )
-                {
-                throw new RuntimeException( "Error in field mapping", e );
-                }
+            } catch( IllegalAccessException e ) {
+                throw new RuntimeException("Error in field mapping", e);
+            }
         }
  
         @Override
-        public int load( Object target, ResultSet rs, int index ) throws SQLException
-        {
-            try
-                {
-                field.set( target, rs.getObject(index++) );
+        public int load( Object target, ResultSet rs, int index ) throws SQLException {
+            try {
+                field.set(target, rs.getObject(index++));
                 return index;
-                }
-            catch( IllegalAccessException e )
-                {
-                throw new RuntimeException( "Error in field mapping", e );
-                }
+            } catch( IllegalAccessException e ) {
+                throw new RuntimeException("Error in field mapping", e);
+            }
         }
         
         @Override
-        public String toString()
-        {
-            if( dbFieldName != name )
+        public String toString() {
+            if( dbFieldName != name ) {
                 return name + "/" + dbFieldName + ":" + getType();
+            }
             return getFieldName() + ":" + getType();
         }
     }
     
-    protected static class ObjectField implements FieldType
-    {
+    protected static class ObjectField implements FieldType {
+    
         private String name;
         private Field field;
         private FieldType[] fields;
         
-        public ObjectField( String prefix, Field field )
-        {
+        public ObjectField( String prefix, Field field ) {
             this.field = field;
             this.name = field.getName(); 
-            List<FieldType> list = getFieldTypes( prefix, field.getType() );
+            List<FieldType> list = getFieldTypes(prefix, field.getType());
             fields = new FieldType[list.size()];
             fields = list.toArray(fields); 
         }
         
         @Override
-        public String getFieldName()
-        {
+        public String getFieldName() {
             return name;
         }
  
         @Override
-        public Class getType()
-        {
+        public Class getType() {
             return field.getType();
         }
  
         @Override
-        public String getDbType()
-        {
+        public String getDbType() {
             return "Undefined";
         }
         
         @Override
-        public void addFieldDefinitions( String prefix, Map<String,FieldType> defs )
-        {
+        public void addFieldDefinitions( String prefix, Map<String,FieldType> defs ) {
             prefix = prefix + name + "_";
                 
-            for( FieldType t : this.fields )
-                t.addFieldDefinitions( prefix.toUpperCase(), defs );
+            for( FieldType t : this.fields ) {
+                t.addFieldDefinitions(prefix.toUpperCase(), defs);
+            }
         }
        
         @Override
-        public void addFields( String prefix, List<String> fields )
-        {
+        public void addFields( String prefix, List<String> fields ) {
             prefix = prefix + name + "_";
                 
-            for( FieldType t : this.fields )
-                t.addFields( prefix, fields );             
+            for( FieldType t : this.fields ) {
+                t.addFields(prefix, fields);
+            }
         }
     
         @Override
-        public Object toDbValue( Object o )
-        {
+        public Object toDbValue( Object o ) {
             return o;
         }
         
         @Override
-        public int store( Object object, PreparedStatement ps, int index ) throws SQLException
-        {                
-            try
-                {
+        public int store( Object object, PreparedStatement ps, int index ) throws SQLException {
+            try {
                 Object subValue = field.get(object);
                 
-                for( FieldType t : fields )
-                    {
-                    index = t.store( subValue, ps, index );
-                    }
+                for( FieldType t : fields ) {
+                    index = t.store(subValue, ps, index);
+                }
                 return index;
-                }
-            catch( IllegalAccessException e )
-                {
-                throw new RuntimeException( "Error in field mapping", e );
-                }
+            } catch( IllegalAccessException e ) {
+                throw new RuntimeException("Error in field mapping", e);
+            }
         }
     
         @Override
-        public int load( Object target, ResultSet rs, int index ) throws SQLException
-        {
-            try
-                {
+        public int load( Object target, ResultSet rs, int index ) throws SQLException {
+            try {
                 Object subValue = field.getType().newInstance();
                 
-                for( FieldType t : fields )
-                    {
-                    index = t.load( subValue, rs, index );
-                    }
+                for( FieldType t : fields ) {
+                    index = t.load(subValue, rs, index);
+                }
                 
-                field.set( target, subValue );
+                field.set(target, subValue);
                 return index;
-                }
-            catch( InstantiationException e )
-                {
-                throw new RuntimeException( "Error in field mapping", e );
-                }
-            catch( IllegalAccessException e )
-                {
-                throw new RuntimeException( "Error in field mapping", e );
-                }
+            } catch( InstantiationException e ) {
+                throw new RuntimeException("Error in field mapping", e);
+            } catch( IllegalAccessException e ) {
+                throw new RuntimeException("Error in field mapping", e);
+            }
         }
         
         @Override
-        public String toString()
-        {
+        public String toString() {
             return getFieldName() + ":" + getType() + "{" + Arrays.asList(fields) + "}";
         }
     }
     
-    protected static class PrimitiveField implements FieldType
-    {
+    protected static class PrimitiveField implements FieldType {
+    
         private String name;
         private String dbFieldName;
         private Field field;
         
-        public PrimitiveField( Field field )
-        {
-            this( null, field );
+        public PrimitiveField( Field field ) {
+            this(null, field);
         }
         
-        public PrimitiveField( String prefix, Field field )
-        {
+        public PrimitiveField( String prefix, Field field ) {
             this.field = field;
             this.name = field.getName();
-            if( prefix == null )
+            if( prefix == null ) {
                 dbFieldName = name;
-            else
+            } else {
                 dbFieldName = prefix + name;
+            }
         }
         
         @Override
-        public String getFieldName()
-        {
+        public String getFieldName() {
             return name;
         }
  
         @Override
-        public Class getType()
-        {
+        public Class getType() {
             return field.getType();
         }
         
         @Override
-        public String getDbType()
-        {
+        public String getDbType() {
             String s = field.getType().getSimpleName();
             String result = dbTypes.get(s);
-            if( result != null )
+            if( result != null ) {
                 return result;
+            }
             return s; 
         }
         
         @Override
-        public void addFieldDefinitions( String prefix, Map<String,FieldType> defs )
-        {
-            defs.put( prefix + dbFieldName.toUpperCase(), this );
+        public void addFieldDefinitions( String prefix, Map<String,FieldType> defs ) {
+            defs.put(prefix + dbFieldName.toUpperCase(), this);
         }
         
         @Override
-        public void addFields( String prefix, List<String> fields )
-        {
-            fields.add( prefix + dbFieldName );
+        public void addFields( String prefix, List<String> fields ) {
+            fields.add(prefix + dbFieldName);
         }
     
         @Override
-        public Object toDbValue( Object o )
-        {
+        public Object toDbValue( Object o ) {
             return o;
         }
         
         @Override
-        public int store( Object object, PreparedStatement ps, int index ) throws SQLException
-        {
-            try
-                {
-                ps.setObject( index++, field.get(object) );
+        public int store( Object object, PreparedStatement ps, int index ) throws SQLException {        
+            try {
+                ps.setObject(index++, field.get(object));
                 return index;
-                }
-            catch( IllegalAccessException e )
-                {
-                throw new RuntimeException( "Error in field mapping", e );
-                }
+            } catch( IllegalAccessException e ) {
+                throw new RuntimeException("Error in field mapping", e);
+            }
         }
  
-        protected Object cast( Number n, Class c )
-        {
+        protected Object cast( Number n, Class c ) {
             if( c == Float.TYPE )
                 return n.floatValue();
             if( c == Byte.TYPE )
@@ -519,29 +459,26 @@ public class FieldTypes
         }
     
         @Override
-        public int load( Object target, ResultSet rs, int index ) throws SQLException
-        {
-            try
-                {
+        public int load( Object target, ResultSet rs, int index ) throws SQLException {
+            try {
                 Object value = rs.getObject(index++);
                 
-                if( value instanceof Number )
-                    value = cast( (Number)value, getType() );
+                if( value instanceof Number ) {
+                    value = cast((Number)value, getType());
+                }
                 
-                field.set( target, value );
+                field.set(target, value);
                 return index;
-                }
-            catch( IllegalAccessException e )
-                {
-                throw new RuntimeException( "Error in field mapping", e );
-                }
+            } catch( IllegalAccessException e ) {
+                throw new RuntimeException("Error in field mapping", e);
+            }
         }
         
         @Override
-        public String toString()
-        {
-            if( dbFieldName != name )
+        public String toString() {
+            if( dbFieldName != name ) {
                 return name + "/" + dbFieldName + ":" + getType();
+            }
             return getFieldName() + ":" + getType();
         }
     }             

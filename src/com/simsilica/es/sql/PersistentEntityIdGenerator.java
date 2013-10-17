@@ -40,39 +40,33 @@ import java.sql.*;
 /**
  *  Hands out new IDs.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class PersistentEntityIdGenerator implements EntityIdGenerator
-{
+public class PersistentEntityIdGenerator implements EntityIdGenerator {
+
     private SqlEntityData parent;
     private String tableName = "ENTITY_ID";
     private long entityId;
 
-    protected PersistentEntityIdGenerator( SqlEntityData parent ) throws SQLException
-    {
+    protected PersistentEntityIdGenerator( SqlEntityData parent ) throws SQLException {
         this.parent = parent;
         
         // See if the table exists
         SqlSession session = parent.getSession();
         DatabaseMetaData md = session.getConnection().getMetaData();
-        ResultSet rs = md.getColumns( null, "PUBLIC", tableName, null );
-        try
-            {
-            if( rs.next() )
-                {
+        ResultSet rs = md.getColumns(null, "PUBLIC", tableName, null);
+        try {
+            if( rs.next() ) {
                 loadId(session);
                 return;
-                }
             }
-        finally
-            {
+        } finally {
             rs.close();
-            }
+        }
 
         // Really should have a separate class for this
         StringBuilder sb = new StringBuilder( "CREATE" );
-        // If we don't create a cached table then all changes are last if
+        // If we don't create a cached table then all changes are lost if
         // we don't shut down cleanly.  Not good for entity Id.
         // Actually, that's true even for cached... if we don't wait long
         // enough.  MEMORY is worse though since all changes are lost without
@@ -80,71 +74,62 @@ public class PersistentEntityIdGenerator implements EntityIdGenerator
         // It can be changed... looking into it.
         // Well, it cannot be set per table... so we should add
         // safeguards if we can.
-        sb.append( " CACHED TABLE" );
-        sb.append( " " + tableName + "\n" );
-        sb.append( "(\n" );
-        sb.append( "  id TINYINT,\n" );
-        sb.append( "  entityId BIGINT" );
-        sb.append( "\n)" );
+        sb.append(" CACHED TABLE");
+        sb.append(" " + tableName + "\n");
+        sb.append("(\n");
+        sb.append("  id TINYINT,\n");
+        sb.append("  entityId BIGINT");
+        sb.append("\n)");
         
         Statement st = session.getConnection().createStatement();    
         st.executeUpdate(sb.toString());
         
         // And insert the initial zero record
         String sql = "INSERT INTO " + tableName + "(id,entityId) VALUES (0,0)"; 
-        int i = st.executeUpdate( sql );
-        if( i != 1 )
-            throw new SQLException( "Error initializing sequence table:" + sb );
+        int i = st.executeUpdate(sql);
+        if( i != 1 ) {
+            throw new SQLException("Error initializing sequence table:" + sb);
+        }
         st.close();    
     }
 
-    public static PersistentEntityIdGenerator create( SqlEntityData parent ) throws SQLException
-    {
+    public static PersistentEntityIdGenerator create( SqlEntityData parent ) throws SQLException {
         return new PersistentEntityIdGenerator(parent); 
     } 
     
-    protected void loadId( SqlSession session ) throws SQLException
-    {
+    protected void loadId( SqlSession session ) throws SQLException {
+    
         Statement st = session.getConnection().createStatement();
-        try
-            {
-            ResultSet rs = st.executeQuery( "SELECT entityId from " + tableName + " where id=0" );
-            if( rs.next() )
-                {
-                entityId = rs.getLong( 1 );
-                }
+        try {
+            ResultSet rs = st.executeQuery("SELECT entityId from " + tableName + " where id=0");
+            if( rs.next() ) {
+                entityId = rs.getLong(1);
             }
-        finally
-            {
+        } finally {
             st.close();
-            }    
+        }    
     }
  
-    public synchronized long nextEntityId() 
-    {
+    public synchronized long nextEntityId() {
+    
         long result = entityId++;
-        try
-            {
+        try {
             SqlSession session = parent.getSession();        
             Statement st = session.getConnection().createStatement();
-            try
-                {
+            try {
                 // Write the next value
                 String sql = "UPDATE " + tableName + " SET entityId=" + entityId + " WHERE id=0";
                 int update = st.executeUpdate(sql);
-                if( update != 1 )
-                    throw new SQLException( "EntityID sequence not updated." );
+                if( update != 1 ) {
+                    throw new SQLException("EntityID sequence not updated.");
+                }
                 return result;
-                }
-            finally
-                {
+            } finally {
                 st.close();
-                }
             }
-        catch( SQLException e )
-            {
-            throw new RuntimeException( "Error persisting entity ID", e );
-            }                
+        } catch( SQLException e ) {
+            throw new RuntimeException("Error persisting entity ID", e);
+        }                
     }
     
 }

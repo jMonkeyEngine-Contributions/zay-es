@@ -41,26 +41,22 @@ import java.util.concurrent.atomic.AtomicLong;
  *  that simply hands out entity IDs starting with 0 or other configured
  *  value and then incrementing.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class DefaultEntityIdGenerator implements EntityIdGenerator
-{
+public class DefaultEntityIdGenerator implements EntityIdGenerator {
+
     private AtomicLong entityId;
     
-    public DefaultEntityIdGenerator()
-    {
+    public DefaultEntityIdGenerator() {
         this(0);
     }
     
-    public DefaultEntityIdGenerator( long initialValue )
-    {
+    public DefaultEntityIdGenerator( long initialValue ) {
         this.entityId = new AtomicLong(initialValue);
     }
 
     @Override
-    public long nextEntityId()
-    {
+    public long nextEntityId() {
         return entityId.getAndIncrement();
     } 
 }

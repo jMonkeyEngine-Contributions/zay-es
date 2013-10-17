@@ -42,19 +42,26 @@ import java.util.*;
  *  A set of entities that possess certain components with
  *  automatic updates as the entity components change.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public interface EntitySet extends Set<Entity>
-{
+public interface EntitySet extends Set<Entity> {
+
     /**
      *  Swaps out the current main filter for a new one.  The
      *  changes will show up the next time applyChanges() is called.
      */
     public void resetFilter( ComponentFilter filter );
  
+    /**
+     *  Returns true if this set contains the entity with the
+     *  specified ID.
+     */
     public boolean containsId( EntityId id );
  
+    /**
+     *  Returns this set's version of the Entity for the specified
+     *  ID or null if this set does not contain the specified entity.
+     */
     public Entity getEntity( EntityId id );
     
     /**
@@ -109,7 +116,11 @@ public interface EntitySet extends Set<Entity>
      *  called.
      */
     public void release();
- 
+
+    /**
+     *  Returns true if this EntitySet is made of entities
+     *  that have the specified type of component.
+     */ 
     public boolean hasType( Class type );
 }
 

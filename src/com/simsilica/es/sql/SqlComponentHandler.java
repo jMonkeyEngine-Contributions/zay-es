@@ -45,114 +45,90 @@ import java.util.*;
 /**
  *  Sql-based component handler for in-memory components.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class SqlComponentHandler<T extends EntityComponent> implements ComponentHandler<T>
-{
+public class SqlComponentHandler<T extends EntityComponent> implements ComponentHandler<T> {
+
     private SqlEntityData parent;
     private Class<T> type;
     private ComponentTable<T> table;
  
-    public SqlComponentHandler( SqlEntityData parent, Class<T> type ) 
-    {
+    public SqlComponentHandler( SqlEntityData parent, Class<T> type ) {
         this.parent = parent;
         this.type = type;
-        try
-            {
-            this.table = ComponentTable.create( parent.getSession(), type );
-            }
-        catch( SQLException e )
-            {
-            throw new RuntimeException( "Error creating table for component type:" + type, e );
-            }
+        try {
+            this.table = ComponentTable.create(parent.getSession(), type);
+        } catch( SQLException e ) {
+            throw new RuntimeException("Error creating table for component type:" + type, e);
+        }
     }
     
-    protected SqlSession getSession() throws SQLException
-    {
+    protected SqlSession getSession() throws SQLException {
         return parent.getSession();
     }
     
     @Override
-    public void setComponent( EntityId entityId, T component )
-    {
-        try
-            {
-            table.setComponent( getSession(), entityId, component );
-            }
-        catch( SQLException e )
-            {
-            throw new RuntimeException( "Error setting component:" + component + " on entity:" + entityId, e ); 
-            }
+    public void setComponent( EntityId entityId, T component ) {
+        try {
+            table.setComponent(getSession(), entityId, component);
+        } catch( SQLException e ) {
+            throw new RuntimeException("Error setting component:" + component 
+                                        + " on entity:" + entityId, e); 
+        }
     }
     
     @Override
-    public boolean removeComponent( EntityId entityId )
-    {
-        try
-            {
-            return table.removeComponent( getSession(), entityId );
-            }
-        catch( SQLException e )
-            {
-            throw new RuntimeException( "Error removing component type:" + type + " from entity:" + entityId ); 
-            }
+    public boolean removeComponent( EntityId entityId ) {
+        try {
+            return table.removeComponent(getSession(), entityId);
+        } catch( SQLException e ) {
+            throw new RuntimeException("Error removing component type:" + type 
+                                        + " from entity:" + entityId); 
+        }
     }
     
     @Override
-    public T getComponent( EntityId entityId )
-    {
-        try
-            {       
-            return (T)table.getComponent( getSession(), entityId );
-            }
-        catch( SQLException e )
-            {
-            throw new RuntimeException( "Error retrieving component type:" + type + " for entity:" + entityId, e );
-            }       
+    public T getComponent( EntityId entityId ) {
+        try {       
+            return (T)table.getComponent(getSession(), entityId);
+        } catch( SQLException e ) {
+            throw new RuntimeException("Error retrieving component type:" + type 
+                                        + " for entity:" + entityId, e);
+        }       
     }
     
     @Override
-    public Set<EntityId> getEntities()
-    {
-        try
-            {
-            return table.getEntityIds( getSession() );
-            }
-        catch( SQLException e )
-            {
-            throw new RuntimeException( "Error retrieving component entities for type:" + type );
-            }
+    public Set<EntityId> getEntities() {
+        try {
+            return table.getEntityIds(getSession());
+        } catch( SQLException e ) {
+            throw new RuntimeException("Error retrieving component entities for type:" + type);
+        }
     }
      
     @Override
-    public Set<EntityId> getEntities( ComponentFilter filter )
-    {        
-        if( filter == null )
+    public Set<EntityId> getEntities( ComponentFilter filter ) {
+    
+        if( filter == null ) {
             return getEntities();
-        try
-            {
-            return table.getEntityIds( getSession(), filter );
-            }
-        catch( SQLException e )
-            {
-            throw new RuntimeException( "Error retrieving component entities for type:" + type, e );
-            }
+        }
+        try {
+            return table.getEntityIds(getSession(), filter);
+        } catch( SQLException e ) {
+            throw new RuntimeException("Error retrieving component entities for type:" + type, e);
+        }
     }
                 
     @Override
-    public EntityId findEntity( ComponentFilter filter )
-    {
-        //throw new UnsupportedOperationException( "SQL-base direct entity look-up not yet implemented." );
-        if( filter == null )
+    public EntityId findEntity( ComponentFilter filter ) {
+    
+        if( filter == null ) {
             return null;
-        try
-            {
-            return table.getEntityId( getSession(), filter );
-            }
-        catch( SQLException e )
-            {
-            throw new RuntimeException( "Error retrieving entity for filter:" + filter, e );
-            }
+        }
+        try {
+            return table.getEntityId(getSession(), filter);
+        } catch( SQLException e ) {
+            throw new RuntimeException("Error retrieving entity for filter:" + filter, e);
+        }
     } 
 }

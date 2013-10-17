@@ -41,12 +41,13 @@ import java.util.Set;
 
 
 /**
+ *  Handles the management of a particular component type
+ *  or set of component types.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public interface ComponentHandler<T extends EntityComponent>
-{
+public interface ComponentHandler<T extends EntityComponent> {
+
     public void setComponent( EntityId entityId, T component );
     public boolean removeComponent( EntityId entityId );
     public T getComponent( EntityId entityId );

@@ -37,8 +37,11 @@ package com.simsilica.es;
 import java.lang.annotation.*;
 
 /**
+ *  Identifies a string type field with the option of indicating
+ *  its maximum size for persistence.  This is a hint provided
+ *  to persistence layers as to how to store the particular
+ *  component field.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
 @Retention(RetentionPolicy.RUNTIME)

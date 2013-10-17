@@ -36,51 +36,49 @@ package com.simsilica.es;
 
 
 /**
+ *  Represents a single component change for some entity and is used
+ *  internally to the framework for requery optimization and by
+ *  ObservableEntityData implementions to provide change notification.
+ *  In general, applications should not need to use this as it's a framework
+ *  level feature, ie: useful for framework extensions more than application
+ *  code.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class EntityChange
-{
+public class EntityChange {
+
     private EntityId entityId;
     private EntityComponent component;
     private Class type;
         
-    public EntityChange( EntityId entityId, Class type, EntityComponent component )
-    {
+    public EntityChange( EntityId entityId, Class type, EntityComponent component ) {
         this.entityId = entityId;
         this.type = component == null ? type : component.getClass();
         this.component = component;
     }
         
-    public EntityChange( EntityId entityId, EntityComponent component )        
-    {
-        this( entityId, null, component );
+    public EntityChange( EntityId entityId, EntityComponent component ) {
+        this(entityId, null, component);
     }
         
-    public EntityChange( EntityId entityId, Class type )
-    {
+    public EntityChange( EntityId entityId, Class type ) {
         this( entityId, type, null );
     }
         
-    public EntityId getEntityId()
-    {
+    public EntityId getEntityId() {
         return entityId;
     }
  
-    public Class getComponentType()
-    {
+    public Class getComponentType() {
         return type;
     }
         
-    public EntityComponent getComponent()
-    {
+    public EntityComponent getComponent() {
         return component;
     }
         
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "EntityChange[" + entityId + ", " + component + ", " + type + "]";
     }     
 }

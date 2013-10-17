@@ -36,11 +36,14 @@ package com.simsilica.es;
 
 
 /**
+ *  Notified by the ObservableEntityData implementation it was
+ *  registered with about changes to entity components.  This is
+ *  primarily an entry point for framework extensions and is
+ *  generally not used by application code that is following
+ *  proper ES design.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public interface EntityComponentListener
-{
+public interface EntityComponentListener {
     public void componentChange( EntityChange change );
 }

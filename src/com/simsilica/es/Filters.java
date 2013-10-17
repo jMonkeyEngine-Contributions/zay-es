@@ -40,11 +40,10 @@ import com.simsilica.es.filter.*;
 /**
  *  Static utility methods pertaining to ComponentFilter instances. 
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class Filters
-{
+public class Filters {
+
     /**
      *  Creates a ComponentFilter that returns true if the specified
      *  field of the specified component type matches the specified value.
@@ -52,8 +51,7 @@ public class Filters
      *  is different.
      *  The value comparison is done with .equals().  Two null values are considered equal.
      */
-    public static <T extends EntityComponent> ComponentFilter<T> fieldEquals( Class<T> type, String field, Object value )
-    {
+    public static <T extends EntityComponent> ComponentFilter<T> fieldEquals( Class<T> type, String field, Object value ) {
         return FieldFilter.create( type, field, value );    
     }
 
@@ -63,8 +61,7 @@ public class Filters
      *  at the first true filter.  Child filters are evaluated in the order
      *  provided.
      */
-    public static <T extends EntityComponent> ComponentFilter<T> or( Class<T> type, ComponentFilter<? extends T>... operands )
-    {
+    public static <T extends EntityComponent> ComponentFilter<T> or( Class<T> type, ComponentFilter<? extends T>... operands ) {
         return OrFilter.create( type, operands );
     }
 
@@ -74,8 +71,7 @@ public class Filters
      *  at the first false filter.  Child filters are evaluated in the order
      *  provided.
      */
-    public static <T extends EntityComponent> ComponentFilter<T> and( Class<T> type, ComponentFilter<? extends T>... operands )
-    {
+    public static <T extends EntityComponent> ComponentFilter<T> and( Class<T> type, ComponentFilter<? extends T>... operands ) {
         return AndFilter.create( type, operands );    
     }    
 }

@@ -42,47 +42,41 @@ import java.util.concurrent.*;
  *  Keeps track of different types of reporters for generating
  *  status reports on various things.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class ReportSystem
-{
+public class ReportSystem {
+
     public static final String REPORT_CACHE = "cache";
     
     private static Map<String,List<Reporter>> reporters = new ConcurrentHashMap<String,List<Reporter>>();
     
-    private static List<Reporter> getList(String reportType)
-    {
+    private static List<Reporter> getList(String reportType) {
         List<Reporter> list = reporters.get(reportType);
-        if( list == null )
-            {
+        if( list == null ) {
             list = new CopyOnWriteArrayList<Reporter>();
             reporters.put(reportType, list);
-            }
+        }
         return list;
     }
     
-    public static void registerCacheReporter( Reporter r )
-    {
-        registerReporter( REPORT_CACHE, r );
+    public static void registerCacheReporter( Reporter r ) {
+        registerReporter(REPORT_CACHE, r);
     }
        
-    public static void registerReporter( String type, Reporter r )
-    {
+    public static void registerReporter( String type, Reporter r ) {
         getList(type).add(r);
     }   
  
-    public static void printReport( String type, PrintWriter out )
-    {
-        for( Reporter r : getList(type) )
-            r.printReport( type, out ); 
+    public static void printReport( String type, PrintWriter out ) {
+        for( Reporter r : getList(type) ) {
+            r.printReport(type, out);
+        } 
     }
     
-    public static String getReport( String type )
-    {
+    public static String getReport( String type ) {
         StringWriter sOut = new StringWriter();
         PrintWriter out = new PrintWriter(sOut);
-        printReport( type, out );
+        printReport(type, out);
         out.close();
         return sOut.toString();                
     }

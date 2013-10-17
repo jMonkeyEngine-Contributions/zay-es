@@ -40,44 +40,39 @@ import java.util.concurrent.*;
 
 /**
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class ChangeQueue extends ConcurrentLinkedQueue<EntityChange>
-{
+public class ChangeQueue extends ConcurrentLinkedQueue<EntityChange> {
     private ObservableEntityData parent;
     private QueueChangeListener listener;
     
-    public ChangeQueue( ObservableEntityData parent, Class... types )
-    {
+    public ChangeQueue( ObservableEntityData parent, Class... types ) {
         this.parent = parent;
         this.listener = new QueueChangeListener(types);
         parent.addEntityComponentListener(listener);
     }
 
-    protected EntityComponentListener getListener()
-    {
+    protected EntityComponentListener getListener() {
         return listener;
     }
     
-    public void release()
-    {
+    public void release() {
         parent.removeEntityComponentListener(listener);
     }
     
-    protected class QueueChangeListener implements EntityComponentListener
-    {
+    protected class QueueChangeListener implements EntityComponentListener {
+    
         private Set<Class> types = new HashSet<Class>();
-        public QueueChangeListener( Class... types )
-        {
-            this.types.addAll( Arrays.asList(types) );
+        
+        public QueueChangeListener( Class... types ) {
+            this.types.addAll(Arrays.asList(types));
         }
         
         @Override
-        public void componentChange( EntityChange change )
-        {
-            if( types.contains( change.getComponentType() ) )
+        public void componentChange( EntityChange change ) {
+            if( types.contains( change.getComponentType() ) ) {
                 add(change);
+            }
         }
     }
      

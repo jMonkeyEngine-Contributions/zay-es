@@ -45,143 +45,123 @@ import com.simsilica.util.Reporter;
 /**
  *  Sql-based StringIndex implementation with basic LRU cache.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class SqlStringIndex implements StringIndex
-{
+public class SqlStringIndex implements StringIndex {
+
     private SqlEntityData parent;
     private StringTable stringTable;
     private Cache<Integer,String> idToString;      
     private Cache<String,Integer> stringToId;      
  
-    public SqlStringIndex( SqlEntityData parent, int cacheSize ) 
-    {
+    public SqlStringIndex( SqlEntityData parent, int cacheSize ) {
         this.parent = parent;
     
         this.idToString = CacheBuilder.newBuilder().maximumSize(cacheSize).build();
         this.stringToId = CacheBuilder.newBuilder().maximumSize(cacheSize).build();
 
-        ReportSystem.registerCacheReporter( new CacheReporter() );
+        ReportSystem.registerCacheReporter(new CacheReporter());
         
-        try
-            {
-            this.stringTable = StringTable.create( parent.getSession() ); 
- 
-            /*       
-            System.out.println( "Zero test lookup:" + getString(0) );                   
-            int test = getStringId( "testing", true );
-            System.out.println( "Test string id:" + test );        
-            System.out.println( "Reciprocal test lookup:" + getString(test) );
-            */                   
-            }
-        catch( SQLException e )
-            {
-            throw new RuntimeException( "Error creating string table", e );
-            }
+        try {
+            this.stringTable = StringTable.create(parent.getSession()); 
+        } catch( SQLException e ) {
+            throw new RuntimeException("Error creating string table", e);
+        }
     }
     
-    protected SqlSession getSession() throws SQLException
-    {
+    protected SqlSession getSession() throws SQLException {
         return parent.getSession();
     }
 
     // A safe lookup with no adds... easier than try/catching all
     // over the place
-    protected int lookupId( String s )
-    {
-        try        
-            {
-            return stringTable.getStringId( getSession(), s, false );
-            }
-        catch( SQLException e )
-            {
-            throw new RuntimeException( "Error getting string ID for:" + s, e );
-            }
+    protected int lookupId( String s ) {
+        try {
+            return stringTable.getStringId(getSession(), s, false);
+        } catch( SQLException e ) {
+            throw new RuntimeException("Error getting string ID for:" + s, e);
+        }
     }
 
     @Override
-    public int getStringId( String s, boolean add )
-    {
+    public int getStringId( String s, boolean add ) {
+    
         Integer result = stringToId.getIfPresent(s);
-        if( result != null )
+        if( result != null ) {
             return result;
+        }
 
         // Try a naked lookup
         int i = lookupId(s);
-        if( i < 0 && add )
-            { 
-            synchronized( this )
-                {
+        if( i < 0 && add ) { 
+            synchronized( this ) {
                 // Check the cache again... the string may have been added
                 // while we were waiting for the synch and if so then it will
                 // still be cached (presuming we aren't tearing through ID lookups
                 // like madmen.)           
                 result = stringToId.getIfPresent(s);
-                if( result != null )
+                if( result != null ) {
                     return result;
+                }
                 
-                try        
-                    {
-                    i = stringTable.getStringId( getSession(), s, add );
-                    if( i < 0 )
+                try {
+                    i = stringTable.getStringId(getSession(), s, add);
+                    if( i < 0 ) {
                         return -1;
+                    }
     
                     // For the easy double-checked locking to work, we
                     // need to cache inside the synch block.  We could have
                     // just done another DB look-up above and then avoided this
                     // but this might be a little faster in heavy-contention.                                       
-                    stringToId.put( s, i );
-                    idToString.put( i, s );
+                    stringToId.put(s, i);
+                    idToString.put(i, s);
                     return i;           
-                    }
-                catch( SQLException e )
-                    {
-                    throw new RuntimeException( "Error getting string ID for:" + s, e );
-                    }
+                } catch( SQLException e ) {
+                    throw new RuntimeException("Error getting string ID for:" + s, e);
                 }
             }
+        }
         
         // If we weren't adding above then it might still be negative
-        if( i < 0 )
+        if( i < 0 ) {
             return -1;
+        }
                                         
-        stringToId.put( s, i );
-        idToString.put( i, s );
+        stringToId.put(s, i);
+        idToString.put(i, s);
  
         return i;           
     }
     
     @Override
-    public String getString( int id )
-    {
+    public String getString( int id ) {
+    
         String result = idToString.getIfPresent(id);
-        if( result != null )
+        if( result != null ) {
             return result;
+        }
             
-        try        
-            {
-            result = stringTable.getString( getSession(), id );
-            if( result != null )
-                {
-                idToString.put( id, result );
-                stringToId.put( result, id );
-                }
+        try {
+            result = stringTable.getString(getSession(), id);
+            if( result != null ) {
+                idToString.put(id, result);
+                stringToId.put(result, id);
+            }
             return result;
-            }
-        catch( SQLException e )
-            {
-            throw new RuntimeException( "Error getting string for ID:" + id, e );
-            }
+        } catch( SQLException e ) {
+            throw new RuntimeException("Error getting string for ID:" + id, e);
+        }
     }
         
-    private class CacheReporter implements Reporter
-    {
+    private class CacheReporter implements Reporter {
+    
         @Override
-        public void printReport( String type, java.io.PrintWriter out )
-        {
-            out.println( "SqlStringIndex->id to string:" + idToString.size() + " stats:" + idToString.stats() );
-            out.println( "SqlStringIndex->string to id:" + stringToId.size() + " stats:" + stringToId.stats() );
+        public void printReport( String type, java.io.PrintWriter out ) {
+            out.println("SqlStringIndex->id to string:" + idToString.size() 
+                            + " stats:" + idToString.stats());
+            out.println("SqlStringIndex->string to id:" + stringToId.size() 
+                            + " stats:" + stringToId.stats());
         }
     }            
 }

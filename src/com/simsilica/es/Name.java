@@ -36,33 +36,28 @@ package com.simsilica.es;
 
 
 /**
- *  Represents the name of an entity.
+ *  Represents the name of an entity as a standardized component.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class Name implements EntityComponent, PersistentComponent
-{
+public class Name implements EntityComponent, PersistentComponent {
+
     @StringType(maxLength=80)
     private String name;
     
-    public Name()
-    {
+    public Name() {
     }
     
-    public Name( String name )
-    {   
+    public Name( String name ) {   
         this.name = name;
     }
     
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "Name[" + name + "]";
     }      
 }

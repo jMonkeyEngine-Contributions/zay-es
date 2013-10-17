@@ -37,11 +37,9 @@ package com.simsilica.es.base;
 /**
  *  Hands out new IDs in an implementation specific way.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public interface EntityIdGenerator
-{
+public interface EntityIdGenerator {
     public long nextEntityId(); 
 }
 

@@ -44,64 +44,59 @@ import java.util.concurrent.*;
 /**
  *  Map-based component handler for in-memory components.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class MapComponentHandler<T extends EntityComponent> implements ComponentHandler<T>
-{
+public class MapComponentHandler<T extends EntityComponent> 
+                    implements ComponentHandler<T> {
+                    
     private Map<EntityId,T> components = new ConcurrentHashMap<EntityId,T>();
  
-    public MapComponentHandler()
-    {
+    public MapComponentHandler() {
     }
     
     @Override
-    public void setComponent( EntityId entityId, T component )
-    {
+    public void setComponent( EntityId entityId, T component ) {
         components.put(entityId, component);
     }
     
     @Override
-    public boolean removeComponent( EntityId entityId )
-    {
+    public boolean removeComponent( EntityId entityId ) {
         return components.remove(entityId) != null;
     }
     
     @Override
-    public T getComponent( EntityId entityId )
-    {
+    public T getComponent( EntityId entityId ) {
         return components.get(entityId);
     }
     
     @Override
-    public Set<EntityId> getEntities()
-    {
+    public Set<EntityId> getEntities() {
         return components.keySet();
     } 
 
     @Override
-    public Set<EntityId> getEntities( ComponentFilter filter )
-    {        
-        if( filter == null )
+    public Set<EntityId> getEntities( ComponentFilter filter ) {
+    
+        if( filter == null ) {
             return components.keySet();
+        }
                
         Set<EntityId> results = new HashSet<EntityId>();
-        for( Map.Entry<EntityId,T> e : components.entrySet() )
-            {
-            if( filter.evaluate( (EntityComponent)e.getValue() ) )
+        for( Map.Entry<EntityId,T> e : components.entrySet() ) {
+            if( filter.evaluate((EntityComponent)e.getValue()) ) {
                 results.add(e.getKey());
             }
+        }
         return results;
     }
     
     @Override
-    public EntityId findEntity( ComponentFilter filter )
-    {
-        for( Map.Entry<EntityId,T> e : components.entrySet() )
-            {
-            if( filter == null || filter.evaluate( (EntityComponent)e.getValue() ) )
+    public EntityId findEntity( ComponentFilter filter ) {
+        for( Map.Entry<EntityId,T> e : components.entrySet() ) {
+            if( filter == null || filter.evaluate((EntityComponent)e.getValue()) ) {
                 return e.getKey();
             }
+        }
         return null;
     }
 }

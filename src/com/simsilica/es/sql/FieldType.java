@@ -39,11 +39,10 @@ import java.util.*;
 
 /**
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
-public interface FieldType
-{
+public interface FieldType {
+
     public String getFieldName();
     
     public Class getType();
