@@ -418,8 +418,10 @@ public class RemoteEntityData implements EntityData {
                         
             activeSets.remove(setId);
                         
-            ReleaseEntitySetMessage msg = new ReleaseEntitySetMessage(setId);
-            client.send(channel, msg);                       
+            if( client.isConnected() ) {
+                ReleaseEntitySetMessage msg = new ReleaseEntitySetMessage(setId);
+                client.send(channel, msg);                       
+            }
         }
         
         @Override
