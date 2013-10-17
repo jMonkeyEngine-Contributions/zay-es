@@ -54,6 +54,7 @@ import trap.game.ModelType;
 import trap.game.MoveTo;
 import trap.game.Position;
 import trap.game.Speed;
+import trap.net.msg.GameTimeMessage;
 import trap.net.msg.MazeDataMessage;
 import trap.net.msg.PlayerInfoMessage;
 
@@ -67,6 +68,7 @@ public class TrapSerializers {
     static Logger log = LoggerFactory.getLogger(TrapSerializers.class);
     
     private static final Class[] classes = {
+        GameTimeMessage.class,
         MazeDataMessage.class,
         PlayerInfoMessage.class
     };

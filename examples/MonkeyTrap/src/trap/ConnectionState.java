@@ -72,6 +72,8 @@ public class ConnectionState extends BaseAppState {
     
     private EntityData remoteEd;
     private EntitySet test;
+ 
+    private GamePlayState gameState;
     
     private ClientObserver clientObserver = new ClientObserver();
     
@@ -176,6 +178,16 @@ int counter = 0;
                 ComponentFilter chests = Filters.fieldEquals(ModelType.class, "type", "Chest");
                 test2.resetFilter(chests);   
             }
+        }
+        
+        if( gameClient != null && gameClient.getMaze() != null && gameClient.getPlayer() != null ) {
+            // We're ready to go
+            gameState = new GamePlayState( gameClient );
+            getStateManager().attach(gameState);
+            
+            // Stop calling our update... not sure how we will get cleaned
+            // up exactly. 
+            setEnabled(false);
         }
     }
 

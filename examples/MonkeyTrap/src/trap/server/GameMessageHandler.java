@@ -46,6 +46,7 @@ import trap.game.GameSystems;
 import trap.game.Maze;
 import trap.game.MazeService;
 import trap.game.MonkeyTrapConstants;
+import trap.net.msg.GameTimeMessage;
 import trap.net.msg.MazeDataMessage;
 import trap.net.msg.PlayerInfoMessage;
 
@@ -78,6 +79,12 @@ public class GameMessageHandler {
             ed.setComponent(player, new Dead(systems.getGameTime()));
         }
     }
+ 
+    protected void ping( GameTimeMessage msg ) {
+        // Send the latest game time back
+        long time = systems.getGameTime();
+        conn.send(msg.updateGameTime(time).setReliable(true));
+    }
     
     protected void playerInfo( PlayerInfoMessage msg ) {
 System.out.println( "Got player info:" + msg );    
@@ -98,6 +105,9 @@ System.out.println( "Got player info:" + msg );
  
             // Send a message back to the player with their entity ID
             conn.send(new PlayerInfoMessage(player).setReliable(true));
+            
+            // Send the current game time
+            conn.send(new GameTimeMessage(time).setReliable(true));
             
             // Go ahead and send them the maze, also
             conn.send(new MazeDataMessage(maze).setReliable(true));           

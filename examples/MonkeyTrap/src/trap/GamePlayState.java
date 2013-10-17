@@ -46,6 +46,7 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.simsilica.es.ComponentFilter;
+import com.simsilica.es.Entity;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntitySet;
 import com.simsilica.es.Filters;
@@ -75,6 +76,7 @@ public class GamePlayState extends BaseAppState {
     // There will be only one in single player but this way
     // it will get refreshed automatically.
     private EntitySet players;
+    private Entity player;
 
     private Listener audioListener = new Listener(); 
 
@@ -123,10 +125,7 @@ public class GamePlayState extends BaseAppState {
         AppStateManager stateMgr = app.getStateManager();
         for( AppState state : gameStates ) {
             stateMgr.attach(state);   
-        }
-                
-        // In single player we know we will be there already
-        getState(HudState.class).setPlayer(players.getEntity(client.getPlayer()));  
+        }                
     }
 
     @Override
@@ -172,6 +171,16 @@ public class GamePlayState extends BaseAppState {
         if( players.applyChanges() ) {
             getState(HudState.class).updatePlayer();
         }
+        
+        if( player == null ) {
+            // In multiplayer it may take a few frames to get the
+            // player.
+            player = players.getEntity(client.getPlayer());
+            if( player != null ) {
+                getState(HudState.class).setPlayer(player);
+            }
+        }  
+
     }
 
     @Override

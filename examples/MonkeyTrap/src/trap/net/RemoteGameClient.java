@@ -45,6 +45,7 @@ import trap.GameClient;
 import trap.game.Direction;
 import trap.game.Maze;
 import trap.game.TimeProvider;
+import trap.net.msg.GameTimeMessage;
 import trap.net.msg.MazeDataMessage;
 import trap.net.msg.PlayerInfoMessage;
 
@@ -64,8 +65,11 @@ public class RemoteGameClient implements GameClient {
     private Maze maze;
  
     private long frameDelay = 200 * 1000000L; // 200 ms 
+    //private long frameDelay = 500 * 1000000L; // 500 ms 
     private long renderTime;
     private long serverTimeOffset;
+    private long pingDelay = 500 * 1000000L; // 500 ms  
+    private long nextPing;
     
     private ObjectMessageDelegator delegator;
     
@@ -82,7 +86,7 @@ public class RemoteGameClient implements GameClient {
     }
 
     public final long getGameTime() {
-        return System.nanoTime() + serverTimeOffset;
+        return System.nanoTime() - serverTimeOffset;
     }
    
     public final long getRenderTime() {
@@ -91,6 +95,10 @@ public class RemoteGameClient implements GameClient {
 
     public void updateRenderTime() {
         renderTime = getGameTime() - frameDelay;
+        if( renderTime > nextPing ) {
+            nextPing = renderTime + pingDelay;
+            sendPing();
+        }
     }
     
     public TimeProvider getRenderTimeProvider() {
@@ -113,8 +121,9 @@ public class RemoteGameClient implements GameClient {
         return maze;
     }
 
-    public void move(Direction dir) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void move( Direction dir ) {
+        System.out.println( "Want to move:" + dir );
+        //throw new UnsupportedOperationException("Not supported yet.");
     }
 
     protected void playerInfo( PlayerInfoMessage msg ) {
@@ -125,6 +134,29 @@ public class RemoteGameClient implements GameClient {
     protected void mazeData( MazeDataMessage msg ) {
         System.out.println( "mazeData(" + msg + ")" );
         maze = new Maze(msg.getWidth(), msg.getHeight(), msg.getCells()); 
+    }
+
+    protected void gameTime( GameTimeMessage msg ) {
+        //System.out.println( "gameTime:" + msg );
+        if( msg.getTime() != msg.getSentTime() ) {
+            long gt = getGameTime();
+            //System.out.println( "game time:" + gt );            
+            //System.out.println( "PING:  round trip:" + ((gt - msg.getSentTime()) / 1000000.0) + " ms" ); 
+        } 
+        long time = msg.getTime();
+        long now = System.nanoTime();
+        long predictedOffset = now - time;
+//System.out.println( "predicted offset:" + predictedOffset );        
+        if( Math.abs(predictedOffset - serverTimeOffset) > 15000000 ) {
+System.out.println( "Adjusting time offset." );        
+            // If it's more than 15 ms then we will adjust
+            serverTimeOffset = predictedOffset; 
+        } 
+    }
+
+    protected void sendPing() {
+        // Send our latest time and let the server ping us back        
+        client.send(new GameTimeMessage(getGameTime()).setReliable(true));
     }
 
     public void close() {
