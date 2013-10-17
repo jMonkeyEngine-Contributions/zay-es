@@ -1,3 +1,9 @@
+Zay-ES Core r1202
+------------------
+* Reformatted source code to be closer to normal Java coding conventions.
+* Added some Javadoc here and there.
+* Removed unused methods update() and clear() from DefaultEntity
+
 
 Zay-ES Core r1200
 -------------------
