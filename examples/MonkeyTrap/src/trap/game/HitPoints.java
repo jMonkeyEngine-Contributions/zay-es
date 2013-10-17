@@ -45,6 +45,9 @@ import com.simsilica.es.EntityComponent;
 public class HitPoints implements EntityComponent {
     private int health;
     
+    public HitPoints() {
+    }
+    
     public HitPoints( int health ) { 
         this.health = health;
     }

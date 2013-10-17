@@ -93,6 +93,9 @@ public class MovementService implements Service {
         // Perform all movements for all active mobs
         for( Entity e : mobs ) {
             MoveTo to = e.get(MoveTo.class);
+if( to == null ) {
+    System.out.println( "Incomplete entity:" + e );
+}            
             if( to.getTime() > gameTime ) {
                 continue;
             }

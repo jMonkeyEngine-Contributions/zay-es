@@ -47,6 +47,9 @@ import com.simsilica.es.EntityComponent;
 public class ModelType implements EntityComponent {
     private String type;
 
+    public ModelType() {
+    }
+    
     public ModelType( String type ) {
         this.type = type;
     }

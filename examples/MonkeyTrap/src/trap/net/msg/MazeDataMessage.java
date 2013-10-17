@@ -32,32 +32,49 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package trap.game;
+package trap.net.msg;
 
-import com.simsilica.es.EntityComponent;
+import com.jme3.network.AbstractMessage;
+import com.jme3.network.serializing.Serializable;
+import trap.game.Maze;
 
 
 /**
- *  A buff for health.
+ *  Sent by the server to the client maze data upon connection.
  *
+ *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class HealthChange implements EntityComponent {
-    private int delta;
+@Serializable
+public class MazeDataMessage extends AbstractMessage {
+
+    private int xSize;
+    private int ySize;
+    private int[][] cells;
+
+    public MazeDataMessage() {
+    }
+    
+    public MazeDataMessage( Maze maze ) {
+        this.xSize = maze.getWidth();
+        this.ySize = maze.getHeight();
+        this.cells = maze.getCells();
+    }
+    
+    public int getWidth() {
+        return xSize;
+    }
+    
+    public int getHeight() {
+        return ySize;
+    }
+    
+    public int[][] getCells() {
+        return cells;
+    }
  
-    public HealthChange() {
-    }
-              
-    public HealthChange( int delta ) {
-        this.delta = delta;
-    }
-    
-    public int getDelta() {
-        return delta;
-    }
-    
-    @Override
+    @Override   
     public String toString() {
-        return "HealthChange[" + delta + "]";
+        return "MazeDataMessage[width=" + xSize + ", height=" + ySize + "]";
     }
 }

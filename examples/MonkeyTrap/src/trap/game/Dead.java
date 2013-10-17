@@ -46,6 +46,9 @@ import com.simsilica.es.EntityId;
 public class Dead implements EntityComponent {
     private long time;
     
+    public Dead() {
+    }
+    
     public Dead( long time ) {
         this.time = time;
     }

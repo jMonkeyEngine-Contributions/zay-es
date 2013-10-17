@@ -51,6 +51,9 @@ public class MoveTo implements EntityComponent {
     private long time;
     private Vector3f pos;
     
+    public MoveTo() {
+    }
+    
     public MoveTo( Vector3f pos, long time ) {
         this.time = time;
         this.pos = pos;

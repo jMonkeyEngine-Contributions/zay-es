@@ -50,6 +50,9 @@ public class Position implements EntityComponent {
     private Quaternion facing;
     private long startTime;
     private long endTime;
+    
+    public Position() {
+    }
 
     public Position( Vector3f location, long startTime, long endTime ) {
         this(location, new Quaternion(), startTime, endTime);

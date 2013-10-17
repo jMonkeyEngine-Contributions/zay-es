@@ -45,6 +45,9 @@ import com.simsilica.es.EntityComponent;
 public class MaxHitPoints implements EntityComponent {
     private int health;
     
+    public MaxHitPoints() {
+    }
+    
     public MaxHitPoints( int health ) { 
         this.health = health;
     }

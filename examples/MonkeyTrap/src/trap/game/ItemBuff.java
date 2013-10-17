@@ -47,6 +47,9 @@ import com.simsilica.es.EntityId;
 public class ItemBuff implements EntityComponent {
     private EntityId target;
     private long decay;
+ 
+    public ItemBuff() {
+    }
     
     public ItemBuff( EntityId target, long decay ) {
         this.target = target;

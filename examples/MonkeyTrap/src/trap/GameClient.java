@@ -38,6 +38,7 @@ import trap.game.Direction;
 import trap.game.TimeProvider;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
+import trap.game.Maze;
 
 
 /**
@@ -54,7 +55,8 @@ public interface GameClient
         
     public EntityId getPlayer();
     public EntityData getEntityData();
-    
+    public Maze getMaze();
+        
     public void move( Direction dir );
     
     public void close();

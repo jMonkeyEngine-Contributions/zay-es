@@ -34,6 +34,8 @@
 
 package trap.server;
 
+import com.jme3.network.ConnectionListener;
+import com.simsilica.es.server.EntityDataHostService;
 import com.jme3.network.HostedConnection;
 import com.jme3.network.Network;
 import com.jme3.network.Server;
@@ -42,6 +44,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import trap.game.GameSystems;
 import trap.game.MonkeyTrapConstants;
+import trap.game.Service;
+import trap.net.TrapSerializers;
+import com.simsilica.es.net.EntitySerializers;
+import com.simsilica.es.server.SessionDataDelegator;
 
 
 /**
@@ -55,6 +61,14 @@ public class GameServer
     private GameSystems systems;
     private int port;
     private Server host;    
+    private EntityDataHostService edHost;
+    
+    private ConnectionObserver connectionObserver = new ConnectionObserver();
+
+    static {
+        EntitySerializers.initialize();
+        TrapSerializers.initialize();    
+    }
 
     public GameServer( GameSystems systems, int port ) {
         this.systems = systems;
@@ -66,11 +80,41 @@ public class GameServer
         host = Network.createServer(MonkeyTrapConstants.GAME_NAME, 
                                     MonkeyTrapConstants.PROTOCOL_VERSION, 
                                     port, port);
+                                    
+        System.out.println("Adding channel 0 on port:" + (port+1));                                    
+        host.addChannel(port+1);
+ 
+        // Add our own stub service to send updates at the end of
+        // the game update cycle
+        systems.addService(new Service() {
+                public void update( long gameTime ) {
+                    edHost.sendUpdates();
+                }
+
+                public void initialize( GameSystems systems ) {
+                    // Setup the network listeners
+                    edHost = new EntityDataHostService(host, 0, systems.getEntityData());                 
+                }
+
+                public void terminate( GameSystems systems ) {
+                    // Remove the listeners for the es hosting
+                    edHost.stop();        
+                }
+            });
         
-        // Setup the network listeners
-                 
         // Start the game systems
         systems.start();
+ 
+        // Will delegate certain messages to the GameMessageHandler for
+        // a particular connection.
+        SessionDataDelegator delegator = new SessionDataDelegator(GameMessageHandler.class, 
+                                                                  GameMessageHandler.ATTRIBUTE,
+                                                                  true);
+        host.addMessageListener(delegator, delegator.getMessageTypes());
+ 
+        // Add our own connection listener that will add GameMessageHandlers
+        // to connections.
+        host.addConnectionListener(connectionObserver);
         
         // Start accepting connections
         host.start();
@@ -80,9 +124,23 @@ public class GameServer
         // Stop accepting network connections and kick any
         // existing clients.
         host.close();
-        
+ 
         // Shut down the game systems
         systems.stop();
+    }
+
+    protected void addConnection( HostedConnection conn ) {
+        System.out.println( "New connection from:" + conn );
+        GameMessageHandler handler = new GameMessageHandler(systems, conn);
+        conn.setAttribute(GameMessageHandler.ATTRIBUTE, handler);
+    }
+    
+    protected void removeConnection( HostedConnection conn ) {
+        System.out.println( "Connection closed:" + conn );        
+        GameMessageHandler handler = conn.getAttribute(GameMessageHandler.ATTRIBUTE);
+        if( handler != null ) {
+            handler.close();
+        }
     }
 
     public static void main( String... args ) throws Exception {
@@ -120,5 +178,16 @@ public class GameServer
         
         System.out.println("Stopping server.");
         server.stop();    
+    }
+    
+    private class ConnectionObserver implements ConnectionListener {
+
+        public void connectionAdded(Server server, HostedConnection hc) {
+            addConnection(hc);
+        }
+
+        public void connectionRemoved(Server server, HostedConnection hc) {
+            removeConnection(hc);
+        }
     }
 }

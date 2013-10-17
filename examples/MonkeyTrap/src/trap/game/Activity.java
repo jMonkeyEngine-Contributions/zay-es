@@ -55,6 +55,9 @@ public class Activity implements EntityComponent {
     private byte type;  
     private long startTime;
     private long endTime;
+ 
+    public Activity() {
+    }
     
     public Activity( byte type, long startTime, long endTime ) {
         this.type = type;

@@ -45,6 +45,9 @@ import com.simsilica.es.EntityComponent;
  */
 public class Decay implements EntityComponent {
     private long at;
+ 
+    public Decay() {
+    }
     
     public Decay( long at ) {
         this.at = at;

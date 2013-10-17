@@ -55,6 +55,7 @@ import trap.game.MoveTo;
 /**
  *
  *  @author    Paul Speed
+ *  @Deprecated Not using this anymore but not ready to delete it yet either. 
  */
 public class SinglePlayerClient implements GameClient
 {
@@ -124,6 +125,10 @@ public class SinglePlayerClient implements GameClient
     public EntityId getPlayer() {
         return player;
     }
+    
+    public Maze getMaze() {
+        return systems.getService(MazeService.class).getMaze();            
+    }    
     
     public void move( Direction dir ) {
         long time = getGameTime();

@@ -40,8 +40,6 @@ import com.simsilica.es.EntityComponent;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntitySet;
-import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -75,6 +73,11 @@ public class MazeService implements Service {
     
     public Maze getMaze() {
         return maze;
+    }
+
+    public Vector3f getPlayerSpawnLocation() {
+        // For now always drop them in the same place
+        return new Vector3f(maze.getXSeed() * 2, 0, maze.getYSeed() * 2);
     }
 
     public Vector3f findRandomLocation() {

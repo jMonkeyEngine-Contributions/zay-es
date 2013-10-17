@@ -47,6 +47,9 @@ import com.simsilica.es.EntityId;
 public class Buff implements EntityComponent { 
     private EntityId target;
     private long startTime;
+ 
+    public Buff() {
+    }
     
     public Buff( EntityId target, long startTime ) {
         this.target = target;

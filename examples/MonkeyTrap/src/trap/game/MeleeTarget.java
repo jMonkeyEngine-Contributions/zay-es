@@ -46,6 +46,9 @@ import com.simsilica.es.EntityId;
 public class MeleeTarget implements EntityComponent {
     private EntityId target;
     private long time;
+
+    public MeleeTarget() {
+    }
     
     public MeleeTarget( EntityId target, long time ) {
         this.target = target;

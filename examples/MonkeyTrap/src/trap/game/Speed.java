@@ -45,7 +45,10 @@ import com.simsilica.es.EntityComponent;
 public class Speed implements EntityComponent {
     private double move;
     private double turn;
-    
+ 
+    public Speed() {
+    }
+       
     public Speed( double move, double turn ) {
         this.move = move;
         this.turn = turn;

@@ -49,6 +49,9 @@ public class Collision implements EntityComponent {
     private ModelType type1;
     private ModelType type2;
     
+    public Collision() {
+    }
+    
     public Collision( long time, EntityId collider1, ModelType type1,
                       EntityId collider2, ModelType type2 ) {
         this.time = time;                      

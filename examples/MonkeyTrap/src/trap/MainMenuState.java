@@ -53,6 +53,7 @@ import com.simsilica.lemur.event.BaseAppState;
 import com.simsilica.lemur.style.ElementId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import trap.game.GameSystems;
 
 
 /**
@@ -185,7 +186,12 @@ public class MainMenuState extends BaseAppState {
     private class StartSingle implements Command<Button> {
         public void execute( Button source ) {
             startSound.playInstance();
-            getStateManager().attach(new SinglePlayerState());
+            
+            // Create the single player client and start it up               
+            SinglePlayerClient client = new SinglePlayerClient(new GameSystems());
+            client.start();
+            
+            getStateManager().attach(new GamePlayState(client));
             setEnabled(false);
         }
     }

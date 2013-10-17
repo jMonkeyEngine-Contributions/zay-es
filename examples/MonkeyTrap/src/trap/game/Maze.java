@@ -73,6 +73,12 @@ public class Maze
         this.cells = new int[xSize][ySize];
     }
  
+    public Maze( int xSize, int ySize, int[][] cells ) {
+        this.xSize = xSize;
+        this.ySize = ySize;
+        this.cells = cells;
+    }
+ 
     public int getXSeed() {
         return xSeed;
     }

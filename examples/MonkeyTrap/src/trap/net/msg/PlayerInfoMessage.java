@@ -32,32 +32,48 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package trap.game;
+package trap.net.msg;
 
-import com.simsilica.es.EntityComponent;
+import com.jme3.network.AbstractMessage;
+import com.jme3.network.serializing.Serializable;
+import com.simsilica.es.EntityId;
 
 
 /**
- *  A buff for health.
+ *  Dual-purpose message that is used to tell the server about
+ *  the new player info as well as return the player info (inclduing
+ *  EntityId) back to the client.
  *
+ *  @version   $Revision$
  *  @author    Paul Speed
  */
-public class HealthChange implements EntityComponent {
-    private int delta;
+@Serializable
+public class PlayerInfoMessage extends AbstractMessage {
+
+    private String name;
+    private EntityId entityId;
+
+    public PlayerInfoMessage() {
+    }
+    
+    public PlayerInfoMessage( String name ) {
+        this.name = name;
+    }
+    
+    public PlayerInfoMessage( EntityId id ) {
+        this.entityId = id;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public EntityId getEntityId() {
+        return entityId;
+    }
  
-    public HealthChange() {
-    }
-              
-    public HealthChange( int delta ) {
-        this.delta = delta;
-    }
-    
-    public int getDelta() {
-        return delta;
-    }
-    
-    @Override
+    @Override   
     public String toString() {
-        return "HealthChange[" + delta + "]";
+        return "PlayerInfoMessage[name=" + name + ", entityId=" + entityId + "]";
     }
 }
