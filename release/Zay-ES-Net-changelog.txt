@@ -1,0 +1,12 @@
+
+Zay-ES-Net r?
+--------------
+* Modified RemoteEntityData.RemoteEntitySet.release() to check
+    to see if the connection is still connected before sending
+    the release message.
+* Fixed a bug where really eager sendUpdate() calls were causing
+    thread contention with entity set creation.  This would be
+    especially true for large sets and short update cycles.
+* Fixed a similar future-bug for resetting the filter, too,
+    though that one would be much harder to time just right, ie:
+    even more bizarre if seen in the wild.

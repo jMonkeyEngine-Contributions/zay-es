@@ -58,6 +58,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,6 +84,16 @@ public class HostedEntityData {
     
     private AtomicBoolean closing = new AtomicBoolean(false);
     private Map<Integer, EntitySet> activeSets = new ConcurrentHashMap<Integer, EntitySet>();
+ 
+    /**
+     *  Used to lock against sending updates in specific cases where
+     *  the EntitySet updates would cause issues for other code.  So far
+     *  there is only one use-case.
+     *  This lock will block the whole sendUpdates() method and should
+     *  only be issued for really short-lived operations like resetting
+     *  a filter.
+     */
+    private Lock updateLock = new ReentrantLock();
  
     /**
      *  Reused during update sending to capture the latest entity
@@ -185,7 +197,6 @@ public class HostedEntityData {
         }
             
         set = ed.getEntities(msg.getFilter(), msg.getComponentTypes());
-        activeSets.put(setId, set);
         
         int batchMax = service.getMaxEntityBatchSize();
         List<ComponentData> data = new ArrayList<ComponentData>();
@@ -198,20 +209,44 @@ public class HostedEntityData {
         
         if( !data.isEmpty() ) {
             sendAndClear(setId, data);
-        }               
+        }
+        
+        // Put the EntitySet into the active sets after we have
+        // iterated over its data.  This prevents one case where
+        // an eager sendUpdates() could applyChanges() on top of
+        // us while doing a full data flush to the client.  After
+        // this, all updates will be sent to the client via the
+        // sendUpdates() method and there won't be a thread conflict
+        // (except with filter resets which will be dealt with 
+        //  using a short-lived lock for that case.)
+        activeSets.put(setId, set);
     }
  
     public void resetEntitySetFilter( HostedConnection source, ResetEntitySetFilterMessage msg ) {
         if( log.isTraceEnabled() )
             log.trace( "resetEntitySetFilter:" + msg );
-        EntitySet set = activeSets.get(msg.getSetId());
-        set.resetFilter(msg.getFilter());        
+        
+        // Note: we could avoid the lock by queuing a command that applies
+        //       the filter in sendUpdates() but we don't really avoid much
+        //       threading overhead that way.
+        updateLock.lock();
+        try {
+            EntitySet set = activeSets.get(msg.getSetId());
+            set.resetFilter(msg.getFilter());
+        } finally {
+            updateLock.unlock();
+        }        
     } 
  
     public void releaseEntitySet( HostedConnection source, ReleaseEntitySetMessage msg ) {
         if( log.isTraceEnabled() ) {
             log.trace("releaseEntitySet:" + msg);
         }
+        
+        // Releasing an entity set is (currently) a safe operation
+        // to perform even if the set is in use at the time.  The client
+        // already has to deal with the race condition of continuing to
+        // get updates for a (from their perspective) released set anyway.        
         EntitySet set = activeSets.remove(msg.getSetId());
         set.release();            
     }
@@ -239,41 +274,49 @@ public class HostedEntityData {
         changeBuffer.clear();
         entityBuffer.clear();
  
-        // Go through all of the active sets 
-        int entityMax = service.getMaxEntityBatchSize();
-        for( Map.Entry<Integer,EntitySet> e : activeSets.entrySet() ) {
+        // One lock per update is better than locking per entity set
+        // even if it makes message handling methods wait a little longer.
+        // They can afford to wait.
+        updateLock.lock();
+        try {
+            // Go through all of the active sets 
+            int entityMax = service.getMaxEntityBatchSize();
+            for( Map.Entry<Integer,EntitySet> e : activeSets.entrySet() ) {
             
-            EntitySet set = e.getValue();
-            if( !set.applyChanges(changeBuffer) ) {
-                // No changes to this set since last time
-                continue;
-            }
-                        
-            // In theory we could just send the raw component changes
-            // and let the client sort out the adds, removes, etc. for
-            // their entity sets.
-            // However, in the case of adds, we potentially make the
-            // client do a lot more network comms just to sort it out.
-            // For example, if the client only sees one change that
-            // causes the entity to get added then it will have to
-            // retrieve all of the other components for that entity.
-            // When we detect an add, it's in our best interest to go
-            // ahead and send the whole thing.
-            // Removes are a little different since the client will
-            // instantly know to remove it just from the component
-            // change.
-            
-            // So, send adds specifically
-            for( Entity entity : set.getAddedEntities() ) {
-                entityBuffer.add( new ComponentData(entity) );                
-                if( entityBuffer.size() > entityMax ) {
-                    sendAndClear(e.getKey(), entityBuffer);
+                EntitySet set = e.getValue();
+                if( !set.applyChanges(changeBuffer) ) {
+                    // No changes to this set since last time
+                    continue;
                 }
+                            
+                // In theory we could just send the raw component changes
+                // and let the client sort out the adds, removes, etc. for
+                // their entity sets.
+                // However, in the case of adds, we potentially make the
+                // client do a lot more network comms just to sort it out.
+                // For example, if the client only sees one change that
+                // causes the entity to get added then it will have to
+                // retrieve all of the other components for that entity.
+                // When we detect an add, it's in our best interest to go
+                // ahead and send the whole thing.
+                // Removes are a little different since the client will
+                // instantly know to remove it just from the component
+                // change.
+                
+                // So, send adds specifically
+                for( Entity entity : set.getAddedEntities() ) {
+                    entityBuffer.add( new ComponentData(entity) );                
+                    if( entityBuffer.size() > entityMax ) {
+                        sendAndClear(e.getKey(), entityBuffer);
+                    }
+                }
+                
+                if( !entityBuffer.isEmpty() ) {
+                    sendAndClear(e.getKey(), entityBuffer);
+                } 
             }
-            
-            if( !entityBuffer.isEmpty() ) {
-                sendAndClear(e.getKey(), entityBuffer);
-            } 
+        } finally {
+            updateLock.unlock();
         }
         
         if( !changeBuffer.isEmpty() ) {
