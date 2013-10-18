@@ -126,11 +126,17 @@ public class LootService implements Service {
     }
 
     public void update( long gameTime ) {
-        dead.applyChanges();
+        dead.applyChanges();        
         for( Entity e : dead ) {
             // don't generate the loot until the time is right
             Dead death = e.get(Dead.class);
-            if( death.getTime() < gameTime ) {
+            if( death.getTime() > gameTime ) {
+                continue;
+            }
+            
+            // See if it still has hitpoints... if not then we've
+            // already seen it and we're just waiting for it to decay
+            if( ed.getComponent(e.getId(), HitPoints.class) == null ) {
                 continue;
             }
             

@@ -87,9 +87,12 @@ public class CombatBuffService implements Service {
                 log.warn( "Buff:" + e + " did not have an active entry." );
                 continue;  
             }
-            
+ 
+            // If we're dead, we may not have components anymore           
             CombatStrength existing = ed.getComponent(buff.mob, CombatStrength.class);
-            ed.setComponent(buff.mob, existing.newRemoved(buff.buff)); 
+            if( existing != null ) {
+                ed.setComponent(buff.mob, existing.newRemoved(buff.buff));
+            } 
         }
     }
      
@@ -128,8 +131,11 @@ public class CombatBuffService implements Service {
                 continue;  
             }
             
+            // If we're dead, we may not have components anymore           
             ArmorStrength existing = ed.getComponent(buff.mob, ArmorStrength.class);
-            ed.setComponent(buff.mob, existing.newRemoved(buff.buff)); 
+            if( existing != null ) {
+                ed.setComponent(buff.mob, existing.newRemoved(buff.buff));
+            } 
         }
     }
      
