@@ -1,6 +1,6 @@
 
-Zay-ES-Net r?
---------------
+Zay-ES-Net r1207
+-----------------
 * Modified RemoteEntityData.RemoteEntitySet.release() to check
     to see if the connection is still connected before sending
     the release message.
