@@ -44,7 +44,6 @@ import com.simsilica.es.EntityId;
  *  about the latest game time but also can be used to 
  *  determine ping times.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
 @Serializable

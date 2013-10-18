@@ -62,7 +62,7 @@ public class SinglePlayerClient implements GameClient
     private GameSystems systems;
     private EntityData ed;
     private EntityId player;
-    private long frameDelay = 100 * 1000000L; // 200 ms 
+    private long frameDelay = 200 * 1000000L; // 200 ms 
     private long renderTime;
 
     private Direction currentDir = Direction.South;

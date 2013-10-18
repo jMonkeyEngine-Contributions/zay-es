@@ -47,6 +47,7 @@ import trap.game.Maze;
 import trap.game.TimeProvider;
 import trap.net.msg.GameTimeMessage;
 import trap.net.msg.MazeDataMessage;
+import trap.net.msg.MoveMessage;
 import trap.net.msg.PlayerInfoMessage;
 
 
@@ -72,6 +73,9 @@ public class RemoteGameClient implements GameClient {
     private long nextPing;
     
     private ObjectMessageDelegator delegator;
+    
+    private Direction lastDir;
+    private long lastTime;
     
     public RemoteGameClient( String playerName, Client client, int entityChannel ) {
         this.client = client;
@@ -123,6 +127,13 @@ public class RemoteGameClient implements GameClient {
 
     public void move( Direction dir ) {
         System.out.println( "Want to move:" + dir );
+        long now = getGameTime();
+        long interval = 50 * 1000000L; // 50 ms
+        if( dir != lastDir || lastTime < now + interval ) {
+            lastDir = dir;
+            lastTime = now;
+            client.send(new MoveMessage(dir).setReliable(true));
+        }
         //throw new UnsupportedOperationException("Not supported yet.");
     }
 

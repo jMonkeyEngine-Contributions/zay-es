@@ -40,14 +40,20 @@ import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.Name;
 import trap.game.Activity;
+import trap.game.CellEntities;
 import trap.game.Dead;
+import trap.game.Direction;
 import trap.game.EntityFactories;
 import trap.game.GameSystems;
 import trap.game.Maze;
 import trap.game.MazeService;
+import trap.game.MeleeTarget;
 import trap.game.MonkeyTrapConstants;
+import trap.game.MoveTo;
+import trap.game.Position;
 import trap.net.msg.GameTimeMessage;
 import trap.net.msg.MazeDataMessage;
+import trap.net.msg.MoveMessage;
 import trap.net.msg.PlayerInfoMessage;
 
 
@@ -65,6 +71,9 @@ public class GameMessageHandler {
     private EntityData ed;
     private String name;
     private EntityId player;
+
+    private long nextMove;
+    private Direction currentDir = Direction.South;
 
     public GameMessageHandler( GameSystems systems, HostedConnection conn ) {
         this.systems = systems;
@@ -112,5 +121,127 @@ System.out.println( "Got player info:" + msg );
             // Go ahead and send them the maze, also
             conn.send(new MazeDataMessage(maze).setReliable(true));           
         }
+    }
+    
+    protected void move( MoveMessage msg ) {
+        
+        Direction dir = msg.getDirection();
+            
+        long time = systems.getGameTime();
+        if( time < nextMove ) {
+            return;
+        }
+ 
+        // Most of this code should really go into 
+        // general entity movement and/or be exposed as a
+        // method on GameSystems to be used for any moving
+        // entity.
+ 
+        // See if we have a move or activity
+        MoveTo move = ed.getComponent(player, MoveTo.class);
+        if( move != null ) {
+//System.out.println( "moving " + (time/1000000.0) );        
+            return;
+        }
+        Activity activity = ed.getComponent(player, Activity.class);
+//System.out.println( "activity:" + activity );
+
+        // Seems like the grace period is not needed but I will leave
+        // it just in case.        
+        long gracePeriod = 0; // 200 * 1000000L;
+        if( activity != null && (time + gracePeriod) < activity.getEndTime() ) {
+//System.out.println( "Busy doing activity until:" + (activity.getEndTime()/1000000.0) + "  " + (time/1000000.0) );                
+//            nextMove = activity.getEndTime();
+            return; 
+        }  
+//System.out.println( "Now:" + (time/1000000.0) );
+ 
+        MazeService mazeService = systems.getService(MazeService.class);
+        Maze maze = mazeService.getMaze();
+        
+        if( dir == currentDir ) {       
+            Position current = ed.getComponent(player, Position.class);
+            Vector3f loc = current.getLocation();
+            int x = (int)(loc.x / 2);
+            int y = (int)(loc.z / 2);            
+            int value = maze.get(dir, x, y);            
+            if( maze.isSolid(value) )
+                return;
+
+            long moveTime = activity != null ? activity.getEndTime() : time;
+            moveTime = Math.max(moveTime, time);
+//System.out.println( "------------ MOVE -----------------" ); 
+            // Else see if there is something to attack.
+            // Note: in multiplayer this check would be done on the server
+            //       and not the client, so would still have access to the
+            //       maze service.
+            if( mazeService.isOccupied(dir, x, y) ) {
+                // Attack instead of move
+                //System.out.println( "ATTACK!!! at:" + moveTime );
+                
+                // Just for testing
+                long actTimeNanos =  1000 * 1000000L;
+                Activity fight = new Activity(Activity.FIGHTING, moveTime, moveTime + actTimeNanos);  
+                ed.setComponent(player, fight);                
+ 
+                CellEntities cell = mazeService.getEntities(dir, x,y);
+                EntityId hit = cell.getSolids().get(0);
+                
+                MeleeTarget attack = new MeleeTarget( hit, moveTime );
+                ed.setComponent(player, attack);
+                
+                return;
+            }                
+ 
+            
+            //System.out.println( "Trying to move to:" + dir.forward(loc, 2) + "  at:" + (moveTime/1000000.0) ); 
+            ed.setComponent(player, new MoveTo(dir.forward(loc, 2), moveTime));
+            
+            // Just give it a little time to catch up
+            //nextMove = time + 100 * 1000000L;
+            
+            //mob.setComponents(new MoveTo(dir.forward(loc, 2), time));            
+            /*
+                
+            double distance = 2.0;       
+            long actionTimeMs = (long)(distance/MonkeyTrapConstants.MONKEY_MOVE_SPEED * 1000.0);
+            long actionTimeNanos = actionTimeMs * 1000000;
+            
+            Position next = new Position(dir.forward(loc, 2),
+                                         dir.getFacing(),
+                                         time,
+                                         time + actionTimeNanos);
+            Activity act = new Activity(Activity.WALKING, time, time + actionTimeNanos);                                           
+            ed.setComponents(player, next, act);
+            nextMove = time + actionTimeNanos;// * 1000000L;*/
+        } else {
+            if( activity != null && time < activity.getEndTime() ) {
+                return;
+            }
+ 
+            // Note: it might be better to move the decision to turn
+            // or move to the control side, ie: give two separate methods
+            // and let the control interface decide.  Gives move options
+            // now that the movement service is used and will automatically
+            // turn the player anyway.  This turn is just for when they want
+            // to turn and not move.
+ 
+//System.out.println( "Turning." );            
+            // Change the dir first... but that's quicker
+            currentDir = dir;
+            Position current = ed.getComponent(player, Position.class);
+            
+            long actionTimeMs = 100;  // 100 ms 
+            long actionTimeNanos = actionTimeMs * 1000000;
+            
+            long moveTime = activity != null ? activity.getEndTime() : time;
+            moveTime = Math.max(moveTime, time);
+            
+            Position next = new Position(current.getLocation(), dir.getFacing(), moveTime, moveTime + actionTimeNanos);
+            Activity act = new Activity(Activity.TURNING, moveTime, moveTime + actionTimeNanos);                                           
+            ed.setComponents(player, next, act);
+            nextMove = time + actionTimeNanos;// * 1000000L;             
+        }       
+    
     }
 }

@@ -45,6 +45,7 @@ import trap.game.Collision;
 import trap.game.CombatStrength;
 import trap.game.Dead;
 import trap.game.Decay;
+import trap.game.Direction;
 import trap.game.HealthChange;
 import trap.game.HitPoints;
 import trap.game.ItemBuff;
@@ -56,6 +57,7 @@ import trap.game.Position;
 import trap.game.Speed;
 import trap.net.msg.GameTimeMessage;
 import trap.net.msg.MazeDataMessage;
+import trap.net.msg.MoveMessage;
 import trap.net.msg.PlayerInfoMessage;
 
 
@@ -70,6 +72,7 @@ public class TrapSerializers {
     private static final Class[] classes = {
         GameTimeMessage.class,
         MazeDataMessage.class,
+        MoveMessage.class,
         PlayerInfoMessage.class
     };
     

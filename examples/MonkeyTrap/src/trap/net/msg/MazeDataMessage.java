@@ -42,7 +42,6 @@ import trap.game.Maze;
 /**
  *  Sent by the server to the client maze data upon connection.
  *
- *  @version   $Revision$
  *  @author    Paul Speed
  */
 @Serializable

@@ -36,43 +36,35 @@ package trap.net.msg;
 
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
-import com.simsilica.es.EntityId;
+import trap.game.Direction;
 
 
 /**
- *  Dual-purpose message that is used to tell the server about
- *  the new player info as well as return the player info (inclduing
- *  EntityId) back to the client.
+ *  Used to send move requests to the server.
  *
  *  @author    Paul Speed
  */
 @Serializable
-public class PlayerInfoMessage extends AbstractMessage {
+public class MoveMessage extends AbstractMessage {
 
-    private String name;
-    private EntityId entityId;
+    private int dir;
 
-    public PlayerInfoMessage() {
+    public MoveMessage() {
     }
     
-    public PlayerInfoMessage( String name ) {
-        this.name = name;
+    public MoveMessage( Direction direction ) {
+        // I don't feel like adding @Serializable to Direction
+        // or adding "yet another" set of forced serializers.
+        // Easy enough to just convert it.
+        this.dir = direction.ordinal();
     }
     
-    public PlayerInfoMessage( EntityId id ) {
-        this.entityId = id;
+    public Direction getDirection() {
+        return Direction.values()[dir];
     }
     
-    public String getName() {
-        return name;
-    }
-    
-    public EntityId getEntityId() {
-        return entityId;
-    }
- 
     @Override   
     public String toString() {
-        return "PlayerInfoMessage[name=" + name + ", entityId=" + entityId + "]";
+        return "MoveMessage[direction=" + getDirection() + "]";
     }
 }
