@@ -330,7 +330,11 @@ public class HostedEntityData {
                 if( changeList.size() > changeMax ) {
                     sendAndClear(changeList);
                 } 
-            }             
+            }
+            
+            if( !changeList.isEmpty() ) {             
+                sendAndClear(changeList);
+            }
         }
     }         
 }
