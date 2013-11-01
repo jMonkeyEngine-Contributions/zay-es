@@ -42,7 +42,6 @@ import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Matrix4f;
 import com.jme3.math.Quaternion;
-import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.post.Filter;
 import com.jme3.renderer.Camera;
@@ -58,6 +57,7 @@ import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.texture.FrameBuffer;
+import com.jme3.texture.Texture;
 import com.jme3.util.BufferUtils;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
@@ -153,7 +153,7 @@ public class DropShadowFilter extends Filter
         Material m = shadowMaterial = new Material( assets, "MatDefs/Shadows.j3md" );
         m.setColor( "ShadowColor", new ColorRGBA(0,0,0,0.75f) );
         m.getAdditionalRenderState().setDepthWrite(false);
-        m.getAdditionalRenderState().setDepthTest(false);
+        m.getAdditionalRenderState().setDepthTest(false); 
         m.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
         shadowGeom.setMaterial(m);
         shadowGeom.setLocalTranslation(0, 100, 0);
@@ -185,8 +185,21 @@ public class DropShadowFilter extends Filter
         BoundingSphere cullCheck = new BoundingSphere();
         Vector3f pos = new Vector3f();
 
-        shadowMaterial.setTexture( "FrameTexture", prevFilterBuffer.getColorBuffer().getTexture() );
-        shadowMaterial.setTexture( "DepthTexture", prevFilterBuffer.getDepthBuffer().getTexture() );
+        Texture frameTex = prevFilterBuffer.getColorBuffer().getTexture(); 
+        Texture depthTex = prevFilterBuffer.getDepthBuffer().getTexture(); 
+        shadowMaterial.setTexture("FrameTexture", frameTex);
+        if( frameTex.getImage().getMultiSamples() > 1 ) {
+            shadowMaterial.setInt("NumSamples", frameTex.getImage().getMultiSamples());
+        } else {
+            shadowMaterial.clearParam("NumSamples");
+        }
+        
+        shadowMaterial.setTexture("DepthTexture", depthTex);
+        if( depthTex.getImage().getMultiSamples() > 1 ) {
+            shadowMaterial.setInt("NumSamplesDepth", depthTex.getImage().getMultiSamples());
+        } else {
+            shadowMaterial.clearParam("NumSamplesDepth");
+        }
 //        shadowMaterial.setVector2( "NearFar", new Vector2f(cam.getFrustumNear(), cam.getFrustumFar()) );
 
         int size = casters.size();

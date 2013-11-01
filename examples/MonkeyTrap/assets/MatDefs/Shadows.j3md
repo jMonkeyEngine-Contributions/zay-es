@@ -1,6 +1,8 @@
 MaterialDef Simple Shadows {
 
     MaterialParameters {
+        Int NumSamples
+        Int NumSamplesDepth
 
         Color ShadowColor
 
@@ -19,6 +21,8 @@ MaterialDef Simple Shadows {
         }
 
         Defines {
+            RESOLVE_MS : NumSamples
+            RESOLVE_DEPTH_MS : NumSamplesDepth
         }
     }
 

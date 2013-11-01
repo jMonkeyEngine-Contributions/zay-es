@@ -1,3 +1,4 @@
+#import "Common/ShaderLib/MultiSample.glsllib"
 
 //#define SHOW_BOX
 //#define SHOW_DELTA
@@ -6,8 +7,8 @@ uniform vec2 g_FrustumNearFar;
 uniform vec4 g_ViewPort;
 
 uniform vec4 m_ShadowColor;
-uniform sampler2D m_FrameTexture;
-uniform sampler2D m_DepthTexture;
+uniform COLORTEXTURE m_FrameTexture;
+uniform DEPTHTEXTURE m_DepthTexture;
 
 varying vec3 texCoord;
 varying vec3 vViewDir;
@@ -18,7 +19,7 @@ void main(){
 
     vec2 uv = vec2(gl_FragCoord.x/g_ViewPort.z, gl_FragCoord.y/g_ViewPort.w);
 
-    float zBuffer = texture2D( m_DepthTexture, uv ).r;
+    float zBuffer = getDepth( m_DepthTexture, uv ).r;
 
     //
     // z_buffer_value = a + b / z;
