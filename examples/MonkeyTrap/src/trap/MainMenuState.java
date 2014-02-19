@@ -29,7 +29,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * SOFTWARE, Even IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 package trap;
@@ -125,7 +125,7 @@ public class MainMenuState extends BaseAppState {
 
         // Create the dymamic network settings
         // panel
-        network = new Container(new SpringGridLayout(Axis.Y, Axis.X, FillMode.EVEN, FillMode.LAST), 
+        network = new Container(new SpringGridLayout(Axis.Y, Axis.X, FillMode.Even, FillMode.Last), 
                                 new ElementId(DungeonStyles.SUBMENU_ID), "dungeon");
         network.addChild(new Label("Player:", new ElementId(DungeonStyles.EDIT_LABEL_ID), "dungeon"));
         userField = network.addChild(new TextField("Random" + Math.round(Math.random() * 100), "dungeon"), 1);

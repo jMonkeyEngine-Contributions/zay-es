@@ -69,7 +69,7 @@ public class DungeonStyles {
         // any style.
         Attributes title = styles.getSelector(TITLE_ID, null);
         title.set("fontSize", 48f);
-        title.set("textHAlignment", HAlignment.CENTER);
+        title.set("textHAlignment", HAlignment.Center);
 
         Attributes message = styles.getSelector(MESSAGE_ID, null);
         message.set("fontSize", 32f);
@@ -103,7 +103,7 @@ public class DungeonStyles {
         Attributes button = styles.getSelector(Button.ELEMENT_ID, "dungeon");
         button.set("background", woodBevel.clone());
         button.set("insets", new Insets3f(1, 35, 10, 35));
-        button.set("textHAlignment", HAlignment.CENTER);
+        button.set("textHAlignment", HAlignment.Center);
         button.set("fontSize", 32f);
         
         
@@ -114,7 +114,7 @@ public class DungeonStyles {
         Attributes editLabel = styles.getSelector(EDIT_LABEL_ID, "dungeon");
         editLabel.set("fontSize", 24f);
         editLabel.set("insets", new Insets3f(5, 5, 5, 5)); 
-        editLabel.set("textHAlignment", HAlignment.RIGHT);
+        editLabel.set("textHAlignment", HAlignment.Right);
         //editLabel.set("color", new ColorRGBA(0, 0, 0.2f, 1)); 
         editLabel.set("color", ColorRGBA.White); 
         editLabel.set("shadowOffset", new Vector3f(1, -1, 0.1f)); 

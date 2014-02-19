@@ -29,7 +29,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * SOFTWARE, Even IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package trap;
 
@@ -85,7 +85,7 @@ public class HudState extends BaseAppState {
         playerPanel = new Container();
         playerPanel.setInsets(new Insets3f(5, 5, 5, 5));
  
-        topRow = playerPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y, FillMode.NONE, FillMode.NONE)));
+        topRow = playerPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y, FillMode.None, FillMode.None)));
                
         playerName = topRow.addChild(new Label("Player"));
         playerName.setInsets(new Insets3f(0, 5, 0, 10));
@@ -93,7 +93,7 @@ public class HudState extends BaseAppState {
         Label healthIcon = topRow.addChild(new Label(""));                
         health = topRow.addChild(new Label("100%"));         
          
-        combatStats = playerPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y, FillMode.NONE, FillMode.NONE)));
+        combatStats = playerPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y, FillMode.None, FillMode.None)));
                 
         IconComponent icon = new IconComponent( "Interface/health-icon.png", 0.5f, 0, 0, 0.01f, false );
         healthIcon.setBackground(icon);
