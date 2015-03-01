@@ -51,6 +51,7 @@ import com.simsilica.es.net.GetEntitySetMessage;
 import com.simsilica.es.net.ReleaseEntitySetMessage;
 import com.simsilica.es.net.ResetEntitySetFilterMessage;
 import com.simsilica.es.net.ResultComponentsMessage;
+import com.simsilica.es.net.StringIdMessage;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -249,6 +250,18 @@ public class HostedEntityData {
         // get updates for a (from their perspective) released set anyway.        
         EntitySet set = activeSets.remove(msg.getSetId());
         set.release();            
+    }
+    
+    public void getStringInfo( HostedConnection source, StringIdMessage msg ) {
+        if( msg.getId() != null ) {
+            source.send(new StringIdMessage(msg.getRequestId(), 
+                                            ed.getStrings().getString(msg.getId())));   
+        } else if( msg.getString() != null ) {
+            source.send(new StringIdMessage(msg.getRequestId(), 
+                                            ed.getStrings().getStringId(msg.getString(), false)));   
+        } else {
+            throw new RuntimeException("Bad StringIdMessage:" + msg);
+        }
     }
 
     protected void sendAndClear( int setId, List<ComponentData> buffer ) {

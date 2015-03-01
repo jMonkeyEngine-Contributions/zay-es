@@ -66,7 +66,8 @@ public class EntitySerializers {
         GetEntitySetMessage.class,
         ReleaseEntitySetMessage.class,
         ResetEntitySetFilterMessage.class,  
-        ResultComponentsMessage.class,          
+        ResultComponentsMessage.class,
+        StringIdMessage.class          
     };
 
     private static final Class[] forced = {

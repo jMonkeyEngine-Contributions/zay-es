@@ -70,6 +70,7 @@ import com.simsilica.es.net.ObjectMessageDelegator;
 import com.simsilica.es.net.ReleaseEntitySetMessage;
 import com.simsilica.es.net.ResetEntitySetFilterMessage;
 import com.simsilica.es.net.ResultComponentsMessage;
+import com.simsilica.es.net.StringIdMessage;
 
 
 /**
@@ -129,6 +130,8 @@ public class RemoteEntityData implements EntityData {
     private Map<Integer,RemoteEntitySet> activeSets = new ConcurrentHashMap<Integer,RemoteEntitySet>();
 
     private ObjectMessageDelegator messageHandler; 
+
+    private RemoteStringIndex strings = new RemoteStringIndex(this);
 
     /**
      *  Creates a new RemoteEntityData instance that will communicate
@@ -355,10 +358,36 @@ public class RemoteEntityData implements EntityData {
     public void close() {
         client.removeMessageListener(messageHandler, messageHandler.getMessageTypes());
     }
+ 
+    protected StringIdMessage getStringResponse( StringIdMessage msg ) {
+        int id = msg.getRequestId();
+        msg.setReliable(true);
+                
+        // Setup response tracking
+        PendingStringRequest request = new PendingStringRequest(msg);
+        pendingRequests.put(id, request);
+        
+        // Now we can send
+        client.send(channel, msg);
+        
+        try {
+            return request.getResult();
+        } catch( InterruptedException e ) {
+            throw new RuntimeException("Interrupted waiting for string data.", e);
+        }        
+    }
+ 
+    protected Integer getStringId( String s ) {
+        return getStringResponse(new StringIdMessage(nextRequestId.getAndIncrement(), s)).getId();
+    }
+    
+    protected String getString( int id ) {
+        return getStringResponse(new StringIdMessage(nextRequestId.getAndIncrement(), id)).getString();
+    }
     
     @Override
     public StringIndex getStrings() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return strings;
     }
 
     @Override
@@ -565,6 +594,19 @@ public class RemoteEntityData implements EntityData {
             }
             
             request.dataReceived(msg);
+        }
+        
+        public void stringId( StringIdMessage msg ) {
+            if( log.isTraceEnabled() ) {
+                log.trace("stringId(" + msg + ")");
+            } 
+            PendingRequest request = pendingRequests.remove(msg.getRequestId());
+            if( request == null ) {
+                log.error("Received result string ID message but no request is pending, id:" + msg.getRequestId());
+                return;
+            }            
+            
+            request.dataReceived(msg);
         }        
     }
     
@@ -628,5 +670,16 @@ public class RemoteEntityData implements EntityData {
         public void dataReceived( EntityIdsMessage m ) {
             setResult( m.getIds() );
         }
+    }
+    
+    protected class PendingStringRequest extends PendingRequest<StringIdMessage, StringIdMessage> {
+        public PendingStringRequest( Message request ) {
+            super(request);
+        }
+        
+        @Override
+        public void dataReceived( StringIdMessage m ) {
+            setResult(m);
+        }        
     }
 }

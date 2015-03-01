@@ -1,4 +1,9 @@
 
+Zay-ES-Net r???
+-----------------
+* Implemented RemoteEntityData's string index.
+
+
 Zay-ES-Net r1207
 -----------------
 * Modified RemoteEntityData.RemoteEntitySet.release() to check
