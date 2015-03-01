@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
 public class DefaultEntitySet extends AbstractSet<Entity> 
                               implements EntitySet {
                               
-    static Logger log = LoggerFactory.getLogger(EntitySet.class);
+    static Logger log = LoggerFactory.getLogger(DefaultEntitySet.class);
 
     /**
      *  Constant used during transaction processing to mark

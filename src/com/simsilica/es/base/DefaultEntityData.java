@@ -153,12 +153,18 @@ public class DefaultEntityData implements ObservableEntityData {
 
     @Override
     public <T extends EntityComponent> T getComponent( EntityId entityId, Class<T> type ) {
+        if( entityId == null ) {
+            throw new IllegalArgumentException("EntityId cannot be null.");
+        }
         ComponentHandler handler = getHandler(type);
         return (T)handler.getComponent(entityId);
     }
     
     @Override
     public void setComponent( EntityId entityId, EntityComponent component ) {
+        if( entityId == null ) {
+            throw new IllegalArgumentException("EntityId cannot be null.");
+        }
         ComponentHandler handler = getHandler(component.getClass());
         handler.setComponent(entityId, component);
         
@@ -168,6 +174,9 @@ public class DefaultEntityData implements ObservableEntityData {
     
     @Override
     public boolean removeComponent( EntityId entityId, Class type ) {
+        if( entityId == null ) {
+            throw new IllegalArgumentException("EntityId cannot be null.");
+        }
         ComponentHandler handler = getHandler(type);
         boolean result = handler.removeComponent(entityId);
         
