@@ -1,8 +1,10 @@
-Zay-ES Core r???
------------------
+Zay-ES Core v1.1.1
+-------------------
 * Fixed the DefaultEntitySet logger to log to the appropriate category.
-* Added some defensive entityId paramater checks to DefaultEntityData 
+* Added some defensive entityId parameter checks to DefaultEntityData 
     getComponent and setComponent.
+* Added an in-memory StringIndex implementation and include it by default
+    in DefaultEntityData if it hasn't been extended.
     
 
 Zay-ES Core r1202

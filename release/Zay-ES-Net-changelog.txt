@@ -1,7 +1,8 @@
 
-Zay-ES-Net r???
------------------
+Zay-ES-Net v1.1.1
+------------------
 * Implemented RemoteEntityData's string index.
+* Added trace log for cache hits in RemoteEntityData.
 
 
 Zay-ES-Net r1207
