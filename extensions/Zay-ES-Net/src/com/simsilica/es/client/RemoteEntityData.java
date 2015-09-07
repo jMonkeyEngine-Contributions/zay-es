@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: RemoteEntityData.java 1581 2015-03-01 07:30:19Z PSpeed42@gmail.com $
  *
  * Copyright (c) 2013 jMonkeyEngine
  * All rights reserved.
@@ -201,6 +201,9 @@ public class RemoteEntityData implements EntityData {
             if( updateTime > latest ) {
                 latest = updateTime;
                 fromCache = value;
+                if( log.isTraceEnabled() ) {
+                    log.trace("Found cached component from:" + updateTime + " in set for:" + Arrays.asList(set.getTypes()));
+                }
             }
         }
         if( fromCache != null ) {
