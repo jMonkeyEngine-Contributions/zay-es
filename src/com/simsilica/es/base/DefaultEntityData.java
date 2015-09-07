@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: DefaultEntityData.java 1580 2015-03-01 07:28:10Z PSpeed42@gmail.com $
  *
  * Copyright (c) 2011-2013 jMonkeyEngine
  * All rights reserved.
@@ -73,8 +73,14 @@ public class DefaultEntityData implements ObservableEntityData {
     public DefaultEntityData( EntityIdGenerator idGenerator ) {    
         ReportSystem.registerCacheReporter(new EntitySetsReporter());
         this.idGenerator = idGenerator;
-    }        
- 
+        
+        // If we haven't been extended then go ahead and create a
+        // default string index
+        if( getClass() == DefaultEntityData.class ) {
+            this.stringIndex = new MemStringIndex();
+        }
+    }
+    
     protected void setIdGenerator( EntityIdGenerator idGenerator ) {
         this.idGenerator = idGenerator;
     }
