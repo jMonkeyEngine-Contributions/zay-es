@@ -74,7 +74,7 @@ public class EntityChangeSerializer extends Serializer {
         classSerializer.writeObject(buffer, change.getComponentType());
         
         // Have to use dynamic lookup for the value
-        Serializer.writeClassAndObject(buffer, change.getComponent());
+        Serializer.writeClassAndObject(buffer, TransientUtils.clean(change.getComponent()));
     }
 }
 

@@ -1,4 +1,15 @@
 
+Zay-ES-Net v???
+------------------
+* Added support for a TransientComponent tagging interface
+    that can be used to avoid sending certain component types over the
+    wire. (They go over as null.)  Note: the classes themselves still
+    need to be registered with the Serializer so that the types can be
+    sent.  This is a compromise over a more invasive and ultimately less
+    flexible transient design. (For example: this still lets you grab
+    entities with a transient component for selection purposes, it just won't
+    have a value.)
+
 Zay-ES-Net v1.1.1
 ------------------
 * Implemented RemoteEntityData's string index.

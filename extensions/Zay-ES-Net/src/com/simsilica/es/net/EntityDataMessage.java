@@ -84,12 +84,14 @@ public class EntityDataMessage extends AbstractMessage {
         }
         
         public ComponentData( Entity entity ) {
-            this(entity.getId(), entity.getComponents());
+            this.entity = entity.getId();
+            this.components = TransientUtils.safeClean(entity.getComponents());
         }
         
         public ComponentData( EntityId entity, EntityComponent... components ) {
             this.entity = entity;
-            this.components = components;
+            this.components = TransientUtils.safeClean(components); // might have been directly passed an array.
+                                                                    // can't tell from here.
         }
         
         public EntityId getEntityId() {

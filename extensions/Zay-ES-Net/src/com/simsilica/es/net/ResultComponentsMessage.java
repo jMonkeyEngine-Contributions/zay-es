@@ -59,7 +59,7 @@ public class ResultComponentsMessage extends AbstractMessage {
     public ResultComponentsMessage( int requestId, Entity e ) {
         this.requestId = requestId;
         this.entityId = e.getId();
-        this.components = e.getComponents();
+        this.components = TransientUtils.safeClean(e.getComponents());
     }
 
     public ResultComponentsMessage( int requestId, EntityId id ) {
