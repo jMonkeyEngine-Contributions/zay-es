@@ -1,3 +1,11 @@
+Zay-ES Core v1.2.1
+-------------------
+* Added the ability to get a WatchedEntity which acts like an entity
+    except can be watched for changes in a way similar to a whole
+    EntitySet.  Useful for single-entity focused systems like player
+    displays/controls.
+    
+
 Zay-ES Core v1.1.1
 -------------------
 * Fixed the DefaultEntitySet logger to log to the appropriate category.

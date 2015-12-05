@@ -43,6 +43,7 @@ import com.simsilica.es.EntityId;
 import com.simsilica.es.EntitySet;
 import com.simsilica.es.ObservableEntityData;
 import com.simsilica.es.StringIndex;
+import com.simsilica.es.WatchedEntity;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -55,7 +56,7 @@ import com.simsilica.util.Reporter;
  */
 public class DefaultEntityData implements ObservableEntityData {
 
-    private Map<Class, ComponentHandler> handlers = new ConcurrentHashMap<Class, ComponentHandler>();    
+    private final Map<Class, ComponentHandler> handlers = new ConcurrentHashMap<Class, ComponentHandler>();    
     private EntityIdGenerator idGenerator;
     private StringIndex stringIndex;
 
@@ -63,8 +64,8 @@ public class DefaultEntityData implements ObservableEntityData {
      *  Keeps the unreleased entity sets so that we can give
      *  them the change updates relevant to them.
      */
-    private List<DefaultEntitySet> entitySets = new CopyOnWriteArrayList<DefaultEntitySet>();         
-    private List<EntityComponentListener> entityListeners = new CopyOnWriteArrayList<EntityComponentListener>();      
+    private final List<DefaultEntitySet> entitySets = new CopyOnWriteArrayList<DefaultEntitySet>();         
+    private final List<EntityComponentListener> entityListeners = new CopyOnWriteArrayList<EntityComponentListener>();      
     
     public DefaultEntityData() {
         this(new DefaultEntityIdGenerator());
@@ -322,6 +323,18 @@ public class DefaultEntityData implements ObservableEntityData {
         DefaultEntitySet results = createSet(filter, types);
         results.loadEntities(false);
         return results;
+    }
+
+    @Override
+    public WatchedEntity watchEntity( EntityId id, Class... types ) {
+
+        // Collect the components    
+        EntityComponent[] buffer = new EntityComponent[types.length]; 
+        for( int i = 0; i < buffer.length; i++ ) {
+            buffer[i] = getComponent(id, types[i]);
+        }
+ 
+        return new DefaultWatchedEntity(this, id, buffer, types);               
     }
 
     protected void releaseEntitySet( EntitySet entities ) {

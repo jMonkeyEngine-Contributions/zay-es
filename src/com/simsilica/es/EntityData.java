@@ -60,6 +60,8 @@ public interface EntityData {
     public EntitySet getEntities( Class... types );
     public EntitySet getEntities( ComponentFilter filter, Class... types );
 
+    public WatchedEntity watchEntity( EntityId entityId, Class... types );
+
     public StringIndex getStrings();
     
     public void close();  
