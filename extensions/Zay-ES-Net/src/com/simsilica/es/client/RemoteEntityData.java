@@ -45,6 +45,7 @@ import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntitySet;
 import com.simsilica.es.StringIndex;
+import com.simsilica.es.WatchedEntity;
 import com.simsilica.es.base.DefaultEntity;
 import com.simsilica.es.base.DefaultEntitySet;
 import com.simsilica.es.net.ComponentChangeMessage;
@@ -97,16 +98,16 @@ public class RemoteEntityData implements EntityData {
     /**
      *  Keeps track of the next ID for a remote entity set.
      */
-    private static AtomicInteger nextSetId = new AtomicInteger();
+    private static final AtomicInteger nextSetId = new AtomicInteger();
 
     /**
      *  Keeps track of the next ID used for requests that return
      *  results... especially when the caller will be waiting for them.
      */
-    private static AtomicInteger nextRequestId = new AtomicInteger();
+    private static final AtomicInteger nextRequestId = new AtomicInteger();
 
-    private Client client;
-    private int channel;
+    private final Client client;
+    private final int channel;
     
     /**
      *  Track the time of the last EntityChange message we've
@@ -120,18 +121,18 @@ public class RemoteEntityData implements EntityData {
     /**
      *  Holds the blocked requests that are pending.
      */
-    private Map<Integer,PendingRequest> pendingRequests = new ConcurrentHashMap<Integer,PendingRequest>();
+    private final Map<Integer,PendingRequest> pendingRequests = new ConcurrentHashMap<Integer,PendingRequest>();
     
     /**
      *  The active EntitySets that have been requested by the user
      *  but not yet released.  Incoming changes and updates are applied
      *  to these sets by setId.
      */
-    private Map<Integer,RemoteEntitySet> activeSets = new ConcurrentHashMap<Integer,RemoteEntitySet>();
+    private final Map<Integer,RemoteEntitySet> activeSets = new ConcurrentHashMap<Integer,RemoteEntitySet>();
 
-    private ObjectMessageDelegator messageHandler; 
+    private final ObjectMessageDelegator messageHandler; 
 
-    private RemoteStringIndex strings = new RemoteStringIndex(this);
+    private final RemoteStringIndex strings = new RemoteStringIndex(this);
 
     /**
      *  Creates a new RemoteEntityData instance that will communicate
@@ -424,11 +425,16 @@ public class RemoteEntityData implements EntityData {
             set.entityChange(change);
         }       
     }
+
+    @Override
+    public WatchedEntity watchEntity( EntityId entityId, Class... types ) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
     
     private class RemoteEntitySet extends DefaultEntitySet {
     
-        private int setId;
-        private ConcurrentLinkedQueue<DefaultEntity> directAdds 
+        private final int setId;
+        private final ConcurrentLinkedQueue<DefaultEntity> directAdds 
                     = new ConcurrentLinkedQueue<DefaultEntity>();
         private long lastUpdate;                    
 
@@ -615,8 +621,8 @@ public class RemoteEntityData implements EntityData {
     
     protected abstract class PendingRequest<M, T> {
         protected Message request;
-        private AtomicReference<T> result = new AtomicReference<T>();
-        private CountDownLatch received = new CountDownLatch(1);
+        private final AtomicReference<T> result = new AtomicReference<T>();
+        private final CountDownLatch received = new CountDownLatch(1);
  
         protected PendingRequest( Message request ) {
             this.request = request;
