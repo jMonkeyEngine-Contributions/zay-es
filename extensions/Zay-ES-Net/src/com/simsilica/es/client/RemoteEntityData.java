@@ -48,6 +48,7 @@ import com.simsilica.es.StringIndex;
 import com.simsilica.es.WatchedEntity;
 import com.simsilica.es.base.DefaultEntity;
 import com.simsilica.es.base.DefaultEntitySet;
+import com.simsilica.es.base.DefaultWatchedEntity;
 import com.simsilica.es.net.ComponentChangeMessage;
 import com.simsilica.es.net.EntityDataMessage;
 import java.util.Arrays;
@@ -69,9 +70,11 @@ import com.simsilica.es.net.GetComponentsMessage;
 import com.simsilica.es.net.GetEntitySetMessage;
 import com.simsilica.es.net.ObjectMessageDelegator;
 import com.simsilica.es.net.ReleaseEntitySetMessage;
+import com.simsilica.es.net.ReleaseWatchedEntityMessage;
 import com.simsilica.es.net.ResetEntitySetFilterMessage;
 import com.simsilica.es.net.ResultComponentsMessage;
 import com.simsilica.es.net.StringIdMessage;
+import com.simsilica.es.net.WatchEntityMessage;
 
 
 /**
@@ -101,6 +104,11 @@ public class RemoteEntityData implements EntityData {
     private static final AtomicInteger nextSetId = new AtomicInteger();
 
     /**
+     *  Keeps track of the next ID for a remote watched entity.
+     */
+    private static final AtomicInteger nextWatchId = new AtomicInteger();
+    
+    /**
      *  Keeps track of the next ID used for requests that return
      *  results... especially when the caller will be waiting for them.
      */
@@ -129,6 +137,13 @@ public class RemoteEntityData implements EntityData {
      *  to these sets by setId.
      */
     private final Map<Integer,RemoteEntitySet> activeSets = new ConcurrentHashMap<Integer,RemoteEntitySet>();
+
+    /** 
+     *  The active watched entities.  We don't support 'observability' on the remote
+     *  entity data at this point and I'd rather not make that decisions in haste.
+     *  But WatchedEntities will need to be updated just the same.
+     */
+    private final Map<Integer,RemoteWatchedEntity> watchedEntities = new ConcurrentHashMap<Integer,RemoteWatchedEntity>();     
 
     private final ObjectMessageDelegator messageHandler; 
 
@@ -359,6 +374,38 @@ public class RemoteEntityData implements EntityData {
     }
 
     @Override
+    public WatchedEntity watchEntity( EntityId entityId, Class... types ) {
+    
+        // Need to fetch the entity
+        int watchId = nextWatchId.getAndIncrement();
+        int msgId = nextRequestId.getAndIncrement();
+        WatchEntityMessage msg = new WatchEntityMessage(msgId, watchId, entityId, types);
+        msg.setReliable(true);
+        
+        // Setup the 'pending' request tracking so that we
+        // can wait for the response.  Just in case, always make sure to
+        // do this before sending the message.
+        PendingWatchEntityRequest request = new PendingWatchEntityRequest(msg); 
+        pendingRequests.put(msgId, request);
+        
+        // Now send the message.
+        client.send(channel, msg);
+
+        WatchedEntity result;
+        try {
+            // Wait for the response
+            result = request.getResult();           
+        } catch( InterruptedException e ) {
+            throw new RuntimeException("Interrupted waiting for watched entity data.", e);
+        }
+
+        if( log.isTraceEnabled() ) {
+            log.trace("result:" + result);
+        }
+        return result;
+    }
+    
+    @Override
     public void close() {
         client.removeMessageListener(messageHandler, messageHandler.getMessageTypes());
     }
@@ -423,14 +470,13 @@ public class RemoteEntityData implements EntityData {
     
         for( RemoteEntitySet set : activeSets.values() ) {
             set.entityChange(change);
+        }
+        
+        for( RemoteWatchedEntity e : watchedEntities.values() ) {
+            e.addChange(change);
         }       
     }
 
-    @Override
-    public WatchedEntity watchEntity( EntityId entityId, Class... types ) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
     private class RemoteEntitySet extends DefaultEntitySet {
     
         private final int setId;
@@ -550,6 +596,42 @@ public class RemoteEntityData implements EntityData {
         }
     }
     
+    private class RemoteWatchedEntity extends DefaultWatchedEntity {
+
+        private final int watchId;
+
+        public RemoteWatchedEntity( EntityData ed, int watchId, EntityId id, 
+                                    EntityComponent[] components, Class[] types ) {
+            super(ed, id, components, types);
+            this.watchId = watchId;
+            watchedEntities.put(watchId, this);
+        }                                    
+
+        @Override
+        public void release() {
+            if( isReleased() ) {
+                return;
+            }
+            super.release();
+ 
+            if( log.isDebugEnabled() ) {
+                log.debug("Releasing watched entity:" + watchId );
+            }
+                        
+            watchedEntities.remove(watchId);
+                        
+            if( client.isConnected() ) {
+                ReleaseWatchedEntityMessage msg = new ReleaseWatchedEntityMessage(watchId);
+                client.send(channel, msg);                       
+            }
+        }
+
+        @Override
+        protected void addChange( EntityChange change ) {
+            super.addChange(change);
+        }
+    }
+ 
     private class EntityMessageHandler {
 
         public void entityComponents( ResultComponentsMessage msg ) {
@@ -668,6 +750,24 @@ public class RemoteEntityData implements EntityData {
             setResult(e);
         }
     }
+
+    protected class PendingWatchEntityRequest extends PendingRequest<ResultComponentsMessage, WatchedEntity> {
+
+        public PendingWatchEntityRequest( WatchEntityMessage request ) {
+            super( request );
+        }        
+
+        @Override
+        public void dataReceived( ResultComponentsMessage m ) {
+ 
+            WatchedEntity e = new RemoteWatchedEntity(RemoteEntityData.this, 
+                                                      ((WatchEntityMessage)request).getWatchId(),
+                                                      m.getEntityId(), 
+                                                      m.getComponents(), 
+                                                      ((WatchEntityMessage)request).getComponentTypes());
+            setResult(e);
+        }
+    } 
 
     protected class PendingEntityIdsRequest extends PendingRequest<EntityIdsMessage, EntityId[]> {
     

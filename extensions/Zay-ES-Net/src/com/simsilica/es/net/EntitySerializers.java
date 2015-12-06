@@ -65,9 +65,11 @@ public class EntitySerializers {
         GetComponentsMessage.class,
         GetEntitySetMessage.class,
         ReleaseEntitySetMessage.class,
+        ReleaseWatchedEntityMessage.class,
         ResetEntitySetFilterMessage.class,  
         ResultComponentsMessage.class,
-        StringIdMessage.class          
+        StringIdMessage.class,
+        WatchEntityMessage.class          
     };
 
     private static final Class[] forced = {

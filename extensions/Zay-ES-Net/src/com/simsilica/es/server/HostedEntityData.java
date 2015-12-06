@@ -40,6 +40,7 @@ import com.simsilica.es.EntityChange;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntitySet;
+import com.simsilica.es.WatchedEntity;
 import com.simsilica.es.net.ComponentChangeMessage;
 import com.simsilica.es.net.EntityDataMessage;
 import com.simsilica.es.net.EntityDataMessage.ComponentData;
@@ -49,9 +50,11 @@ import com.simsilica.es.net.FindEntityMessage;
 import com.simsilica.es.net.GetComponentsMessage;
 import com.simsilica.es.net.GetEntitySetMessage;
 import com.simsilica.es.net.ReleaseEntitySetMessage;
+import com.simsilica.es.net.ReleaseWatchedEntityMessage;
 import com.simsilica.es.net.ResetEntitySetFilterMessage;
 import com.simsilica.es.net.ResultComponentsMessage;
 import com.simsilica.es.net.StringIdMessage;
+import com.simsilica.es.net.WatchEntityMessage;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -79,12 +82,13 @@ public class HostedEntityData {
  
     static Logger log = LoggerFactory.getLogger(HostedEntityData.class);  
  
-    private EntityDataHostService service;   
-    private HostedConnection conn;
-    private EntityData ed;
+    private final EntityDataHostService service;   
+    private final HostedConnection conn;
+    private final EntityData ed;
     
-    private AtomicBoolean closing = new AtomicBoolean(false);
-    private Map<Integer, EntitySet> activeSets = new ConcurrentHashMap<Integer, EntitySet>();
+    private final AtomicBoolean closing = new AtomicBoolean(false);
+    private final Map<Integer, EntitySet> activeSets = new ConcurrentHashMap<Integer, EntitySet>();
+    private final Map<Integer, WatchedEntity> activeEntities = new ConcurrentHashMap<Integer, WatchedEntity>();
  
     /**
      *  Used to lock against sending updates in specific cases where
@@ -94,25 +98,25 @@ public class HostedEntityData {
      *  only be issued for really short-lived operations like resetting
      *  a filter.
      */
-    private Lock updateLock = new ReentrantLock();
+    private final Lock updateLock = new ReentrantLock();
  
     /**
      *  Reused during update sending to capture the latest entity
      *  set updates. 
      */   
-    private Set<EntityChange> changeBuffer = new HashSet<EntityChange>();
+    private final Set<EntityChange> changeBuffer = new HashSet<EntityChange>();
     
     /**
      *  Reused during update sending to collect full entity changes before
      *  sending them on.
      */
-    private List<ComponentData> entityBuffer = new ArrayList<ComponentData>();
+    private final List<ComponentData> entityBuffer = new ArrayList<ComponentData>();
 
     /**
      *  Reused during update sending to collect batches of component changes
      *  before sending them on. 
      */
-    private List<EntityChange> changeList = new ArrayList<EntityChange>();
+    private final List<EntityChange> changeList = new ArrayList<EntityChange>();
     
     public HostedEntityData( EntityDataHostService service, HostedConnection conn, EntityData ed ) {
         this.service = service;
@@ -132,8 +136,16 @@ public class HostedEntityData {
         for( EntitySet set : activeSets.values() ) {
             log.trace("Releasing: EntitySet@" + System.identityHashCode(set));        
             set.release();
-        }    
-    }
+        }
+        activeSets.clear();
+        
+        // Release all of the active entities
+        for( WatchedEntity e : activeEntities.values() ) {
+            log.trace("Releasing: WatchedEntity@" + System.identityHashCode(e));        
+            e.release();
+        }
+        activeEntities.clear();    
+    }    
     
     public void getComponents( HostedConnection source, GetComponentsMessage msg ) {
         if( log.isTraceEnabled() ) {
@@ -146,7 +158,7 @@ public class HostedEntityData {
         source.send(service.getChannel(), 
                     new ResultComponentsMessage(msg.getRequestId(), e));
     }
- 
+  
     public void findEntities( HostedConnection source, FindEntitiesMessage msg ) {
         if( log.isTraceEnabled() ) {
             log.trace("findEntities:" + msg);
@@ -159,7 +171,7 @@ public class HostedEntityData {
                     new EntityIdsMessage(msg.getRequestId(), result));                    
     }
 
-    public void findEntity( HostedConnection source, FindEntityMessage msg ) {
+    public void findEntity( HostedConnection source, FindEntityMessage msg ) {        
         if( log.isTraceEnabled() ) {
             log.trace("findEntity:" + msg);
         }    
@@ -171,6 +183,37 @@ public class HostedEntityData {
                     new EntityIdsMessage(msg.getRequestId(), result));                    
     }
     
+    public void watchEntity( HostedConnection source, WatchEntityMessage msg ) {
+        
+        if( log.isTraceEnabled() ) {
+            log.trace("watchEntity:" + msg);
+        } 
+        int watchId = msg.getWatchId();
+        WatchedEntity result = activeEntities.get(watchId);
+        if( result != null ) {
+            throw new RuntimeException("WatchedEntity already exists for watch ID:" + watchId);
+        }        
+        
+        result = ed.watchEntity(msg.getEntityId(), msg.getComponentTypes());
+        activeEntities.put(watchId, result);
+        if( log.isTraceEnabled() ) {
+            log.trace("Sending back entity data:" + result);
+        }
+        
+        // We can reuse the result components message        
+        source.send(service.getChannel(), 
+                    new ResultComponentsMessage(msg.getRequestId(), result));
+    }
+    
+    public void releaseEntity( HostedConnection source, ReleaseWatchedEntityMessage msg ) {
+        if( log.isTraceEnabled() ) {
+            log.trace("releaseEntity:" + msg);
+        }
+        int watchId = msg.getWatchId();
+        WatchedEntity e = activeEntities.remove(watchId);
+        e.release();
+    }
+   
     public void getEntitySet( HostedConnection source, GetEntitySetMessage msg ) {
         if( log.isTraceEnabled() ) {
             log.trace("getEntitySet:" + msg);
@@ -275,7 +318,7 @@ public class HostedEntityData {
     }
     
     /**
-     *  Periodically called be the EntityDataHostService to send any relevant changes
+     *  Periodically called by the EntityDataHostService to send any relevant changes
      *  to the client.
      */
     public void sendUpdates() {
@@ -330,6 +373,11 @@ public class HostedEntityData {
             }
         } finally {
             updateLock.unlock();
+        }
+        
+        // Collect changes for any active entities
+        for( WatchedEntity e : activeEntities.values() ) {
+            e.applyChanges(changeBuffer);
         }
         
         if( !changeBuffer.isEmpty() ) {
