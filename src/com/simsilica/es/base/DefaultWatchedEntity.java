@@ -70,6 +70,7 @@ public class DefaultWatchedEntity implements WatchedEntity {
     private final EntityId id;
     private final EntityComponent[] components;
     private final Class[] types;
+    private final Set<Class> typeSet;
     private final ChangeProcessor listener;
     private final ConcurrentLinkedQueue<EntityChange> changes = new ConcurrentLinkedQueue<EntityChange>();
     private boolean released;
@@ -80,7 +81,8 @@ public class DefaultWatchedEntity implements WatchedEntity {
         this.id = id;
         this.components = components;
         this.types = types;
-        this.listener = new ChangeProcessor(types);
+        this.typeSet = new HashSet<Class>(Arrays.asList(types));
+        this.listener = new ChangeProcessor();
         if( ed instanceof ObservableEntityData ) {
             ((ObservableEntityData)ed).addEntityComponentListener(listener);
         }
@@ -192,34 +194,34 @@ public class DefaultWatchedEntity implements WatchedEntity {
         }
     }
  
+    protected boolean isReleased() {
+        return released;
+    }
+ 
     protected void addChange( EntityChange change ) {
+
+        // If it's not for this entity then just ignore it
+        if( id.getId() != change.getEntityId().getId() ) {
+            return;
+        }
+            
+        // Now that we've done the quick check do the ever slightly
+        // more expensive check
+        if( !typeSet.contains(change.getComponentType()) ) {
+            return;
+        }
+
+        // Good enough       
         changes.add(change);
     }
 
     private class ChangeProcessor implements EntityComponentListener {
     
-        private final Set<Class> types = new HashSet<Class>();
-        private final long id;
-        
-        public ChangeProcessor( Class[] types ) {
-            this.id = getId().getId();
-            this.types.addAll(Arrays.asList(types));
+        public ChangeProcessor() {
         }
     
         @Override
         public void componentChange( EntityChange change ) {
-            // If it's not for this entity then just ignore it
-            if( id != change.getEntityId().getId() ) {
-                return;
-            }
-            
-            // Now that we've done the quick check do the ever slightly
-            // more expensive check
-            if( !types.contains(change.getComponentType()) ) {
-                return;
-            }
-     
-            // Good enough       
             addChange(change);
         }
     }
