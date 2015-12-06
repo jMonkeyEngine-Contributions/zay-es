@@ -159,6 +159,9 @@ public class DefaultWatchedEntity implements WatchedEntity {
         while( (change = changes.poll()) != null ) {
             if( applyChange(change) ) {
                 hasChanges = true;
+                if( updates != null ) {
+                    updates.add(change);
+                }
             }
         }
         
