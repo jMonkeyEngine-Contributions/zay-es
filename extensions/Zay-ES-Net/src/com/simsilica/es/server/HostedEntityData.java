@@ -82,7 +82,7 @@ public class HostedEntityData {
  
     static Logger log = LoggerFactory.getLogger(HostedEntityData.class);  
  
-    private final EntityDataHostService service;   
+    private final EntityHostSettings settings;   
     private final HostedConnection conn;
     private final EntityData ed;
     
@@ -118,8 +118,8 @@ public class HostedEntityData {
      */
     private final List<EntityChange> changeList = new ArrayList<EntityChange>();
     
-    public HostedEntityData( EntityDataHostService service, HostedConnection conn, EntityData ed ) {
-        this.service = service;
+    public HostedEntityData( EntityHostSettings settings, HostedConnection conn, EntityData ed ) {
+        this.settings = settings;
         this.ed = ed;
         this.conn = conn;
         log.trace("Created HostedEntityData:" + this);    
@@ -155,7 +155,7 @@ public class HostedEntityData {
         if( log.isTraceEnabled() ) {
             log.trace("Sending back entity data:" + e);
         }        
-        source.send(service.getChannel(), 
+        source.send(settings.getChannel(), 
                     new ResultComponentsMessage(msg.getRequestId(), e));
     }
   
@@ -167,7 +167,7 @@ public class HostedEntityData {
         if( log.isTraceEnabled() ) {        
             log.trace("Sending back entity ID data:" + result);
         }        
-        source.send(service.getChannel(),
+        source.send(settings.getChannel(),
                     new EntityIdsMessage(msg.getRequestId(), result));                    
     }
 
@@ -179,7 +179,7 @@ public class HostedEntityData {
         if( log.isTraceEnabled() ) {
             log.trace("Sending back entity ID data:" + result);
         }        
-        source.send(service.getChannel(),
+        source.send(settings.getChannel(),
                     new EntityIdsMessage(msg.getRequestId(), result));                    
     }
     
@@ -201,7 +201,7 @@ public class HostedEntityData {
         }
         
         // We can reuse the result components message        
-        source.send(service.getChannel(), 
+        source.send(settings.getChannel(), 
                     new ResultComponentsMessage(msg.getRequestId(), result));
     }
     
@@ -242,7 +242,7 @@ public class HostedEntityData {
             
         set = ed.getEntities(msg.getFilter(), msg.getComponentTypes());
         
-        int batchMax = service.getMaxEntityBatchSize();
+        int batchMax = settings.getMaxEntityBatchSize();
         List<ComponentData> data = new ArrayList<ComponentData>();
         for( Entity e : set ) {
             data.add(new ComponentData(e));
@@ -308,12 +308,12 @@ public class HostedEntityData {
     }
 
     protected void sendAndClear( int setId, List<ComponentData> buffer ) {
-        conn.send(service.getChannel(), new EntityDataMessage(setId, buffer));
+        conn.send(settings.getChannel(), new EntityDataMessage(setId, buffer));
         buffer.clear();
     }
  
     protected void sendAndClear( List<EntityChange> buffer ) {
-        conn.send(service.getChannel(), new ComponentChangeMessage(buffer));
+        conn.send(settings.getChannel(), new ComponentChangeMessage(buffer));
         buffer.clear(); 
     }
     
@@ -336,7 +336,7 @@ public class HostedEntityData {
         updateLock.lock();
         try {
             // Go through all of the active sets 
-            int entityMax = service.getMaxEntityBatchSize();
+            int entityMax = settings.getMaxEntityBatchSize();
             for( Map.Entry<Integer,EntitySet> e : activeSets.entrySet() ) {
             
                 EntitySet set = e.getValue();
@@ -366,6 +366,21 @@ public class HostedEntityData {
                         sendAndClear(e.getKey(), entityBuffer);
                     }
                 }
+ 
+                // Note to self: I'm trying to decide if sending the removes
+                // gets around some problems or creates new ones.  Right now
+                // there are a bunch of component sends that should not be 
+                // sent and there are a bunch of retrievals on the client trying
+                // to complete entities that will never complete.  Since adds
+                // are kind of forced then we could force removes also and lockstep
+                // the remote entity sets (removing some of the automatic processing).
+                // The fear is that we might create an ordering problem but I think
+                // if we make the remote version of entity set 'dumber' then it's 
+                // not an issue.  It will then only pay attention to changes that
+                // directly affect it (pass all filters) and ignore everything else.
+                // Adds and removes would come in explicitly so it doesn't need to
+                // detect them.
+                
                 
                 if( !entityBuffer.isEmpty() ) {
                     sendAndClear(e.getKey(), entityBuffer);
@@ -385,7 +400,7 @@ public class HostedEntityData {
             // Note: it's possible some of these are redundant with
             //       the adds above but there is no easy way to
             //       safely detect that.            
-            int changeMax = service.getMaxChangeBatchSize(); 
+            int changeMax = settings.getMaxChangeBatchSize(); 
             for( EntityChange c : changeBuffer ) {
                 changeList.add(c);
                 if( changeList.size() > changeMax ) {

@@ -49,22 +49,26 @@ import org.slf4j.LoggerFactory;
  *  are sent.
  *
  *  <p>It is up to the game server to periodically call sendUpdates()
- *  to flush any pending EntitySet changes to clients.</p> 
+ *  to flush any pending EntitySet changes to clients.</p>
+ *
+ *  <p>For JME 3.1 and above, use EntityDataHostedService and EntityDataClientService
+ *  instead of these more crude classes.  They will be deprecated when JME 3.1 is
+ *  full released.</p> 
  *
  *  @author    Paul Speed
  */
-public class EntityDataHostService {
+public class EntityDataHostService implements EntityHostSettings {
 
     static Logger log = LoggerFactory.getLogger(EntityDataHostService.class);
     
-    private Server server;
-    private int channel;
-    private EntityData ed;
+    private final Server server;
+    private final int channel;
+    private final EntityData ed;
     private boolean autoHost = true;
     private int maxEntityBatchSize = 20;
     private int maxChangeBatchSize = 20;
     
-    private ConnectionObserver connectionObserver;
+    private final ConnectionObserver connectionObserver;
  
     /**
      *  Creates a new EntityDataHostService that will watch for new
@@ -87,6 +91,7 @@ public class EntityDataHostService {
         server.addMessageListener(delegator, delegator.getMessageTypes());
     }
     
+    @Override
     public int getChannel() {
         return channel;
     }
@@ -154,6 +159,7 @@ public class EntityDataHostService {
         this.maxEntityBatchSize = i;
     }
  
+    @Override
     public int getMaxEntityBatchSize() {
         return maxEntityBatchSize;
     }
@@ -168,6 +174,7 @@ public class EntityDataHostService {
         this.maxChangeBatchSize = i;
     }
  
+    @Override
     public int getMaxChangeBatchSize() {
         return maxChangeBatchSize;
     }
