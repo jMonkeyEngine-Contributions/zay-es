@@ -9,6 +9,12 @@ Zay-ES-Net v???
     flexible transient design. (For example: this still lets you grab
     entities with a transient component for selection purposes, it just won't
     have a value.)
+* Added support for the new WatchedEntity feature of EntityData.  This can
+    be a more efficient way of tracking one entity versus constantly polling
+    using getComponent().
+* Added EntityDataHostedService and EntityDataClientService implementations
+    to take advantage of JME 3.1's new service model.
+    
 
 Zay-ES-Net v1.1.1
 ------------------
