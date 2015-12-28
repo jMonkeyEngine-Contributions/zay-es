@@ -41,6 +41,7 @@ import com.jme3.network.Server;
 import com.jme3.network.service.AbstractHostedService;
 import com.jme3.network.service.HostedServiceManager;
 import com.simsilica.es.EntityData;
+import com.simsilica.es.ObservableEntityData;
 import com.simsilica.es.net.EntitySerializers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +65,7 @@ public class EntityDataHostedService extends AbstractHostedService
     static Logger log = LoggerFactory.getLogger(EntityDataHostedService.class);
 
     private int channel;
-    private final EntityData ed;
+    private final ObservableEntityData ed;
     private boolean autoHost = true;
     private int maxEntityBatchSize = 20;
     private int maxChangeBatchSize = 20;
@@ -75,7 +76,7 @@ public class EntityDataHostedService extends AbstractHostedService
      *  Creates a new EntityDataHostedService for the specified EntityData that will
      *  communicate over the specified channel.  Autohosting is set to true by default.
      */
-    public EntityDataHostedService( int channel, EntityData ed ) {
+    public EntityDataHostedService( int channel, ObservableEntityData ed ) {
         this(channel, ed, true);
     }
     
@@ -84,7 +85,7 @@ public class EntityDataHostedService extends AbstractHostedService
      *  communicate over the specified channel and will automatically host for new connections
      *  depending on the specified autoHost value.
      */
-    public EntityDataHostedService( int channel, EntityData ed, boolean autoHost ) {
+    public EntityDataHostedService( int channel, ObservableEntityData ed, boolean autoHost ) {
         this.channel = channel;
         this.ed = ed;
         this.autoHost = autoHost;

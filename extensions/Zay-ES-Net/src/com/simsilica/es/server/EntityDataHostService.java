@@ -37,7 +37,7 @@ package com.simsilica.es.server;
 import com.jme3.network.ConnectionListener;
 import com.jme3.network.HostedConnection;
 import com.jme3.network.Server;
-import com.simsilica.es.EntityData;
+import com.simsilica.es.ObservableEntityData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +63,7 @@ public class EntityDataHostService implements EntityHostSettings {
     
     private final Server server;
     private final int channel;
-    private final EntityData ed;
+    private final ObservableEntityData ed;
     private boolean autoHost = true;
     private int maxEntityBatchSize = 20;
     private int maxChangeBatchSize = 20;
@@ -76,7 +76,7 @@ public class EntityDataHostService implements EntityHostSettings {
      *  specified EntityData.  Entity request and response messages will
      *  be sent on the specified channel.
      */   
-    public EntityDataHostService( Server server, int channel, EntityData ed ) {
+    public EntityDataHostService( Server server, int channel, ObservableEntityData ed ) {
         this.server = server;
         this.channel = channel;
         this.ed = ed;
