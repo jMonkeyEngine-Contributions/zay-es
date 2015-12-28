@@ -234,8 +234,11 @@ public class DefaultEntityData implements ObservableEntityData {
     @Override
     public EntitySet getEntities( Class... types ) {
     
-        EntitySet results = createSet((ComponentFilter)null, types);
+        DefaultEntitySet results = createSet((ComponentFilter)null, types);
+        results.loadEntities(false);
          
+        /*
+        Should be enough to let the EntitySet load itself.        
         Set<EntityId> first = getEntityIds(types[0]);
         if( first.isEmpty() ) {
             return results;
@@ -257,7 +260,7 @@ public class DefaultEntityData implements ObservableEntityData {
             // Now create the entity
             DefaultEntity e = new DefaultEntity(this, id, buffer.clone(), types);
             results.add(e);
-        }
+        }*/
             
         return results;
     }
@@ -329,12 +332,15 @@ public class DefaultEntityData implements ObservableEntityData {
     public WatchedEntity watchEntity( EntityId id, Class... types ) {
 
         // Collect the components    
-        EntityComponent[] buffer = new EntityComponent[types.length]; 
+        /*EntityComponent[] buffer = new EntityComponent[types.length]; 
         for( int i = 0; i < buffer.length; i++ ) {
             buffer[i] = getComponent(id, types[i]);
         }
- 
-        return new DefaultWatchedEntity(this, id, buffer, types);               
+        
+        DefaultWatchedEntity does that itself now
+        */
+    
+        return new DefaultWatchedEntity(this, id, types);               
     }
 
     protected void releaseEntitySet( EntitySet entities ) {

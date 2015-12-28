@@ -95,7 +95,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
     public String debugId() {
         return "EntitySet@" + System.identityHashCode(this);
     }
-    
+
     protected void setMainFilter( ComponentFilter filter ) {
         this.mainFilter = filter;
  
@@ -121,7 +121,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      *  and when the filter is reset.  
      */
     protected void loadEntities( boolean reload ) {
-    
+
         Set<EntityId> idSet = ed.findEntities(mainFilter, types);
         if( idSet.isEmpty() )
             return;
@@ -184,6 +184,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      */
     @Override
     public void resetFilter( ComponentFilter filter ) {
+
         // General logic:
         // -remove the entities that don't match the filter
         // -find the entities that do and add them if they
@@ -237,6 +238,11 @@ public class DefaultEntitySet extends AbstractSet<Entity>
     @Override
     public boolean containsId( EntityId id ) {
         return entities.containsKey(id);
+    }
+ 
+    @Override
+    public Set<EntityId> getEntityIds() {
+        return entities.keySet();
     }
  
     @Override
@@ -335,7 +341,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      */
     @Override
     public boolean applyChanges() {
-        return applyChanges(null);
+        return applyChanges(null, true);
     }
  
     /**
@@ -346,6 +352,8 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      */
     @Override
     public boolean applyChanges( Set<EntityChange> updates ) {
+        //if( updates != null ) {
+        //    throw new UnsupportedOperationException("The applyChanges(Set<EntityChange>) is deprecated and no longer operates.  It will be removed soon.");
         return applyChanges(updates, true);
     }
     
@@ -398,9 +406,9 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             transaction.resolveChanges();
         }
             
-        if( filtersChanged ) {
+        if( filtersChanged ) {        
             filtersChanged = false;
-            
+ 
             // Remove any entities that no longer match
             purgeEntities();
  
@@ -647,11 +655,10 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             EntityId id = change.getEntityId();
             EntityComponent comp = change.getComponent();
             DefaultEntity e = (DefaultEntity)entities.get( id );
- 
+
             // If we don't have the entity then it's an add 
             // and we need to create one.
-            if( e == null ) {
-            
+            if( e == null ) {            
                 // See if we already added this one
                 e = adds.get(id);
                 
@@ -683,7 +690,8 @@ public class DefaultEntitySet extends AbstractSet<Entity>
                     // of components.
                     e = new DefaultEntity(ed, id, new EntityComponent[types.length], types);
                     adds.put(id, e);
-                }               
+                }
+                               
             } else {
                 // Then it's an entity we have already and we are about
                 // to change it.
@@ -718,8 +726,29 @@ public class DefaultEntitySet extends AbstractSet<Entity>
                     || filters == null 
                     || filters[index] == null 
                     || filters[index].evaluate(comp) ) {
-                    
+                     
+                    // || mainFilter.evaluate(e.get(mainFilter.getComponentType())) ) {
+                    //
+                    // The last condition above is proposed by user qxCsXO1
+                    // in this thread: http://hub.jmonkeyengine.org/t/zay-es-net-componentfilter-not-working/33196
+                    //
+                    // What it does is avoid adding updates for entities that don't
+                    // meet the main filter.  This comes up in cases where a player
+                    // is filtering by something like an OwnedBy component but is still
+                    // getting position changes for those entities.
+                    //
+                    // Unfortunately, the issue with the above change is it might
+                    // miss some changes.  We may not have applied the change yet that
+                    // lets e.get(mainFilter.getComponentType()) pass.  When we eventually
+                    // get to it then we've already missed the other updates.  If those
+                    // other changes happen infrequently then the client can be really
+                    // behind.
+                    // 
+                    // It could be that we have no choice but to make two passes through
+                    // the change events or go through the updates and remove the ones
+                    // for entities that aren't in the set anymore.  
                     updates.add(change);
+                } else {
                 }
             }
             
@@ -727,6 +756,22 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             // component is different than a component that just
             // happens to be null because it hasn't been filled in yet.
             e.getComponents()[index] = comp != null ? comp : REMOVED_COMPONENT;
+           
+            // There is another issue I've just thought of regarding the updates
+            // set.  The updates will potentially come out of order.  Mostly
+            // we update often enough that it won't happen much but it is possible
+            // that two changes to the same component get added to the set out of
+            // order and then the clients (in a network use-case) end up with
+            // incorrect values.
+            //
+            // Two approaches I see:
+            // 1) timestamp the updates so we can sort them by order.
+            //
+            // 2) abandon the collection of an updates set completely and go
+            //    with another solution in the networking layer that does its
+            //    own change tracking more accurately and sends them per entity set
+            //    or something.
+
         }
  
         protected boolean completeEntity( DefaultEntity e ) {
@@ -755,6 +800,9 @@ public class DefaultEntitySet extends AbstractSet<Entity>
                 
                     // If we get nothing back then this entity can't be completed
                     if( array[i] == null ) {
+                        if( log.isDebugEnabled() ) {
+                            log.debug("Entity " + e.getId() + " could not be completed for type:" + types[i]);
+                        }
                         return false;
                     }
                 } else if( array[i] == REMOVED_COMPONENT ) {

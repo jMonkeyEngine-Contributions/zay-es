@@ -75,16 +75,29 @@ public class DefaultWatchedEntity implements WatchedEntity {
     private final ConcurrentLinkedQueue<EntityChange> changes = new ConcurrentLinkedQueue<EntityChange>();
     private boolean released;
     
-    public DefaultWatchedEntity( EntityData ed, EntityId id, 
-                                 EntityComponent[] components, Class[] types ) {
+    public DefaultWatchedEntity( EntityData ed, EntityId id, Class[] types ) {
+        this(ed, id, null, types);
+    }
+    
+    public DefaultWatchedEntity( EntityData ed, EntityId id, EntityComponent[] data, Class[] types ) {
         this.ed = ed;
         this.id = id;
-        this.components = components;
+        this.components = data == null ? new EntityComponent[types.length] : data;
         this.types = types;
         this.typeSet = new HashSet<Class>(Arrays.asList(types));
         this.listener = new ChangeProcessor();
         if( ed instanceof ObservableEntityData ) {
             ((ObservableEntityData)ed).addEntityComponentListener(listener);
+        }
+        if( data == null ) {
+            load();
+        }
+    }
+ 
+    protected final void load() {
+        // Collect the components    
+        for( int i = 0; i < components.length; i++ ) {
+            components[i] = ed.getComponent(id, types[i]);
         }
     }
     

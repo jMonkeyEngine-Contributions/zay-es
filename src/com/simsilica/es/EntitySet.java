@@ -59,6 +59,11 @@ public interface EntitySet extends Set<Entity> {
     public boolean containsId( EntityId id );
  
     /**
+     *  Returns all of the EntityIds currently in this set.
+     */
+    public Set<EntityId> getEntityIds();
+ 
+    /**
      *  Returns this set's version of the Entity for the specified
      *  ID or null if this set does not contain the specified entity.
      */
@@ -106,6 +111,11 @@ public interface EntitySet extends Set<Entity> {
      *  the last time it was called and returns true if there were
      *  changes.  Changes that caused an update (not an add or a remove)
      *  will be added to the supplied updates set.
+     *
+     *  @deprecated Changes collected this way are not accurate and this
+     *              method will be removed in the next version.  The 
+     *              signature is kept only for compile-time compatibility
+     *              as all of the implementations now ignore the updates argument.
      */
     public boolean applyChanges( Set<EntityChange> updates );
 
