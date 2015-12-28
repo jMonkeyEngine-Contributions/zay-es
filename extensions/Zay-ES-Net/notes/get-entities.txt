@@ -1,0 +1,107 @@
+
+
+------------------------------------------
+Sidetrack
+------------------------------------------
+While I'm looking at the change-propagation stuff, I noticed that currently 
+DefaultEntityData is manually loading the entity set the first time if it's unfiltered.
+I think it doesn't need to do this but I wanted a place to disect things
+a bit.
+
+In DefaultEntityData:
+
+    @Override
+    public EntitySet getEntities( Class... types ) {
+    
+        EntitySet results = createSet((ComponentFilter)null, types);
+         
+        Set<EntityId> first = getEntityIds(types[0]);
+        if( first.isEmpty() ) {
+            return results;
+        } 
+        Set<EntityId> and = new HashSet<EntityId>();
+        and.addAll(first); 
+            
+        for( int i = 1; i < types.length; i++ ) {
+            and.retainAll(getEntityIds(types[i]));
+        }
+                              
+        // Now we have the info needed to build the entity set
+        EntityComponent[] buffer = new EntityComponent[types.length]; 
+        for( EntityId id : and ) {
+            for( int i = 0; i < buffer.length; i++ ) {
+                buffer[i] = getComponent(id, types[i]);
+            }
+                
+            // Now create the entity
+            DefaultEntity e = new DefaultEntity(this, id, buffer.clone(), types);
+            results.add(e);
+        }
+            
+        return results;
+    }
+
+
+    @Override
+    public Set<EntityId> findEntities( ComponentFilter filter, Class... types ) {
+        if( types == null || types.length == 0 ) {
+            types = new Class[] { filter.getComponentType() };
+        }
+        
+        Set<EntityId> first = getEntityIds(types[0], forType(filter, types[0]));
+        if( first.isEmpty() ) {
+            return Collections.emptySet();
+        } 
+        Set<EntityId> and = new HashSet<EntityId>();
+        and.addAll(first); 
+            
+        for( int i = 1; i < types.length; i++ ) {
+            Set<EntityId> sub = getEntityIds(types[i], forType(filter, types[i]));
+            if( sub.isEmpty() ) {
+                return Collections.emptySet();
+            }  
+            and.retainAll(sub);
+        }
+        
+        return and;        
+    }
+
+Some notes before I move into the DefaultEntitySet.loadEntities() method.
+
+For all existing component handler implementations, getEntityIds(type) and
+getEntityIds(type, null) should be identical in performance.  So other than
+building the entity, those two calls are effectively performing the same
+logic.  findEntities() has a nice early-out that we don't do in getEntities().
+
+DefaultEntitySet.loadEntities() with comments stripped.
+
+    protected void loadEntities( boolean reload ) {
+    
+        Set<EntityId> idSet = ed.findEntities(mainFilter, types);
+        if( idSet.isEmpty() )
+            return;
+ 
+        EntityComponent[] buffer = new EntityComponent[types.length]; 
+        for( EntityId id : idSet ) {
+            if( reload && containsId(id) ) {
+                continue;
+            }
+                
+            for( int i = 0; i < buffer.length; i++ ) {
+                buffer[i] = ed.getComponent(id, types[i]);
+            }
+                
+            DefaultEntity e = new DefaultEntity(ed, id, buffer.clone(), types);
+            if( add(e) && reload ) {
+                addedEntities.add(e);
+            }
+        }
+    }     
+
+So essentially it seems to me that loadEntities() is already performing
+the exact same logic that DefaultEntityData.getEntities() is doing.  I suspect
+that I added loadEntities() after and never swung back.
+
+This is relevant because if we want to make a pass-through EntityData
+implementation then we need to beware of this sort of logic in DefaultEntityData.
+I think it can be removed.

@@ -1,0 +1,272 @@
+
+Trying to redesign how remote change propagation is done as
+it's got some holes that are not easily fixed.
+
+
+At the time of this writing, the networking layer takes advantage
+of the EntitySet.applyChanges() ability to add the change-causing
+update events to a supplied set.
+
+During transaction processing, the EntitySet goes through each
+pending EntityChange and roughly performs the following logic:
+
+    // Build the transaction
+
+        // Get the entity for the change
+        
+        // If it's new
+        
+            // Skip 'removed' components as we've never seen the entity
+               
+            // Skip 'filtered' components as we've never seen the entity
+        
+            // Create an entity to hold the change... we might remove
+            // it later if we can't complete it
+    
+        // Else if it's not new
+    
+            // Track it as a modified entity
+        
+        // If the component is filtered then don't add it to the updates set
+    
+        // Apply the value to the entity.  Track 'null' as a special 'remove'
+        // object so we don't reretrieve it later during post-processing.
+    
+        // (At this point, the updates set has a somewhat partial unordered
+        //  set of EntityChange objects that caused changes.  It does not
+        //  include any filtered values so the caller will not detect 
+        //  removal states if it is using this change set to sync.
+        //  Also, the 'un-ordered' part means it's possible attempting to
+        //  reprocess the changes will lead to bad state.) 
+    
+    
+    // Resolve the changes  (even though it doesn't affect the updates set I'll include it)
+    
+        // Go through the detected 'adds'
+    
+            // If we can't complete it then remove it
+        
+    
+        // Go through the mods
+    
+            // See if it's just a regular mod or a remove
+            // and adjust the change sets accordingly. 
+        
+        
+        
+As mentioned, resolving changes doesn't deal with the updates set but
+I've included it because it could be involved in at least one type of
+solution to an important problem.
+
+
+The problems that caused me to dive into this again are two-fold:
+1) If an entity is filtered on a different component than the one changing
+    then we still send the change.  However, we can't whole-entity filter at 
+    the time of change processing because we don't have all of the changes
+    yet.  In other words, we might ignore a change that later turns out to
+    be relevant.
+    
+    From the code, I wrote something up about it:
+    
+                    // || mainFilter.evaluate(e.get(mainFilter.getComponentType())) ) {
+                    //
+                    // The last condition above is proposed by user qxCsXO1
+                    // in this thread: http://hub.jmonkeyengine.org/t/zay-es-net-componentfilter-not-working/33196
+                    //
+                    // What it does is avoid adding updates for entities that don't
+                    // meet the main filter.  This comes up in cases where a player
+                    // is filtering by something like an OwnedBy component but is still
+                    // getting position changes for those entities.
+                    //
+                    // Unfortunately, the issue with the above change is it might
+                    // miss some changes.  We may not have applied the change yet that
+                    // lets e.get(mainFilter.getComponentType()) pass.  When we eventually
+                    // get to it then we've already missed the other updates.  If those
+                    // other changes happen infrequently then the client can be really
+                    // behind.
+                    // 
+                    // It could be that we have no choice but to make two passes through
+                    // the change events or go through the updates and remove the ones
+                    // for entities that aren't in the set anymore.  
+
+2) By filtering out the components that don't match a filter, we also
+    cause problems for the client as it will never know it needs to remove
+    the entity.
+    
+ 
+During digging, I discovered some other issues... the most significant
+is that changes are also unordered.  So if two changes to the same component
+come in the same 'frame' they might be applied in the wrong order.
+
+
+
+Possible solutions:
+======================
+
+
+Surgical: Timestamps and post filtering
+-----------------------------------------
+This solution involves solving both major problems separately.  To fix
+the ordering issue, we add timestamps to the EntityChange events and
+let users of the change sets decide how they want to order them.
+
+To fix the filtering issue, resolveChanges() would need to be involved
+in the updates set creation.  Either we track updates at the transaction
+level and then post-apply them to 'updates' if they meet current 
+criteria or we simply carve out inappropriate EntityChanges from 'updates' 
+during resolution.  I think the first has the potential to be the best
+peforming.  Track our own set and then go through those one by one and
+only add them to the 'updates' set if the referred entity is in the set
+or in the 'removed' pile.
+
+
+
+Radical Reconstruction: Let the caller track his own changes
+-------------------------------------------------------------
+In this case, we abandon all attempts to return relevant change events 
+from applyChanges(). (Same as if 'updates' was null.)  The caller is
+then required to keep a mirror of the data somehow and only forward 
+changes to the remote client if they are relevant.
+
+In this approach, we could even go a further step and gut the RemoteEntityData
+implementation to be a more direct mirror.
+
+Less-radical:
+HostedEntityData keeps copies of each tracked entity.  During sendUpdates()
+it goes through them to see if the components have changed and builds the
+appropriate list.
+
+Tricky potential issues: changes would have to be set-specific or we risk
+one slightly out-of-date set stomping on another one just because of how
+they are ordered.  ie: more traffic because we have to potentially send the
+same update more than once.
+
+It's less-radical because we get to keep most of the existing RemoteEntityData
+and RemoteEntitySet structures.
+
+
+More-radical:
+HostedEntityData keeps a snapshot of the watched entity data at the 
+EntityData level so that a subset mirror can be accurately transmitted to
+the client.
+
+It's more radical because RemoteEntityData and RemoteEntitySet completely
+change.  Actually, RemoteEntitySet could go away and default could come
+back.
+
+Doing this efficiently and accurately could be tricky but it instantly
+eliminates a lot of problems with ordering, set-specific stuff, redundant
+changes, etc..
+
+I think the trickiest part will be tracking what's relevant from 'frame'
+to 'frame' and extracting those changes.
+
+I think essentially what we end up with is a Map-based EntityData implementation
+similar to DefaultEntityData.  The difference is that we track usage
+counts for any (id, type) belonging to an EntitySet.  I think we can do it
+all based off of the EntityData-wide change event delivery.
+
+
+Benefits:
+-only relevant changes are sent
+-relevant changes are only sent once
+-could potentially handle non-entity set based 'interest'
+-client becomes simpler and potentially could more easily support
+    'local only' components (though I think it's bad practice)
+ 
+ 
+The hardest part is tracking 'usage'.  DefaultEntitySet and DefaultEntityData
+don't track this right now and so it might be necessary to post-update
+any tracking we do.  I'm not sure it's worth embedding this right into
+the core classes though it has other potential uses in federated architectures.
+
+Option 1: 
+Embed per-component usage counts right into DefaultEntityData ComponentHandlers.
+
+Option 2:
+On 'apply' iterate over all sets (which we do anyway now) and use the added and
+removed sets to adjust our tracking info.  Note: option 2 doesn't even require
+any special EntityData implementation on the server.  We keep that the same
+as we have it now with per-client entity sets.  The tracking map with its current
+values is a separate data structure.
+
+Option 2 is appealing for its non-invasiveness so lets drill in a little deeper.
+
+Clients register an EntityChangeListener.
+Clients grab regular old EntitySets from the server's EntityData.
+
+sendUpdates() then performs the following logic:
+...hmmm... I see a problem already.  We could have changes applied during
+EntitySet iteration that were not delivered as an event yet at the time
+we started.  Or, we see events after that would have effected entity
+sets.
+
+The changes need to be consistent or we run into issues.
+
+So, we could create a pass-through EntityData implementation that queued
+up changes from the master EntityData.  Things like getComponent() and
+setComponent() would pass through but we'd create our own entity sets
+and watched entities.
+
+So, EntityDataView (or perhaps SnapshotEntityData) would be registered as a 
+listener for event changes.  During sendUpdates() we'd apply all of the cached changes
+but also keep them in a list for ourselves.  
+
+EntitySets are just regular old DefaultEntitySet.  I guess we'd
+have to subclass them just to be able to direct call their loadEntities()
+method... if we don't extend DefaultEntityData to do our pass-through.
+(It's dangerous to build a pass-through that way because you can never
+be sure future changes won't bypass the pass-through.)
+
+Change collection is then a matter of updating all of the entity
+sets, going through the added, removed sets to adjust our 'interest'
+then post-filtering the changes.
+
+It sounds like a lot of processing to be doing in sendUpdates() but I 
+think it's a similar amount of work to what we do now... and it would
+be more accurate and we wouldn't send redundant data.
+
+
+During snapshot-apply, we could do something like:
+// Go through each queued change  
+
+    // Add it to the snapshot transaction list
+
+    // Mark the id + type as changed
+    
+    // Notify the listeners
+    
+Or, we call applySnapshot() and pass a list.  It just goes through the 
+changes, adds it to our list, and notifies the listeners.
+
+Then we go through all of the entity sets and watched entities and
+applyChanges().  Using the results of that we adjust our tracking
+data structure which is essentially a map of maps pointing to a
+usage count entry.
+
+Then we go through the snapshot list of changes.  For each change
+we pull the usage tracking info and if the usage count is 0
+we still send the change but now we remove the usage tracker.  If
+there is no usage tracker for the change then we don't send anything.
+
+Send the changes, clear the snapshot.
+
+
+Big giant note:
+Whenever we release an entity set or a watched entity, we need to
+adjust the usage counters.
+
+I wonder if it's better to actually just do a frame counter sweep.
+So instead of tracking a lot of BS... we apply changes everywhere
+and just set the current 'frame' for anything that's still used.
+
+Instead of checking usage count then we just check stale frames.
+
+TypeTracker {
+    setFrame(EntityId, Class, Long)
+    getFrame(EntityId, Class) : Long
+    removeFrame(EntityId, Class)
+    getAndExpire(EntityId, Class, Long currentFrame) : Long
+}
+
+   
