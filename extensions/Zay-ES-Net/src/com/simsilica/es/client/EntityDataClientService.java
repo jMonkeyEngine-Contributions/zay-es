@@ -38,6 +38,7 @@ package com.simsilica.es.client;
 
 import com.jme3.network.service.AbstractClientService;
 import com.jme3.network.service.ClientServiceManager;
+import com.simsilica.es.EntityData;
 
 
 /**
@@ -52,6 +53,10 @@ public class EntityDataClientService extends AbstractClientService {
     
     public EntityDataClientService( int channel ) {
         this.channel = channel;
+    }
+
+    public EntityData getEntityData() {
+        return ed;
     }
 
     @Override
