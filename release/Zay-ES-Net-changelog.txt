@@ -1,6 +1,7 @@
 
 Zay-ES-Net v???
 ------------------
+* Upgraded the project to be JDK 1.7 and source 1.7 based.
 * Added support for a TransientComponent tagging interface
     that can be used to avoid sending certain component types over the
     wire. (They go over as null.)  Note: the classes themselves still
@@ -14,6 +15,14 @@ Zay-ES-Net v???
     using getComponent().
 * Added EntityDataHostedService and EntityDataClientService implementations
     to take advantage of JME 3.1's new service model.
+* Server-side entity data services modified to require ObservableEntityData
+    implementations.
+* Completely reworked how entity updates are sent to clients.  The 
+    HostedEntityData.sendUpdates() method is entirely new and based on a new
+    approach.  In short: client interest is tracked in a mark-and-sweep data
+    structure and only relevant changes are sent after the data structures
+    have been updated.  This avoids sending out of order information as well
+    as redundant or hidden information.        
     
 
 Zay-ES-Net v1.1.1
