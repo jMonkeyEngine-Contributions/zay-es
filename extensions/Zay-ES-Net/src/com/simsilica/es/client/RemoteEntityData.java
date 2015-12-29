@@ -129,21 +129,21 @@ public class RemoteEntityData implements EntityData {
     /**
      *  Holds the blocked requests that are pending.
      */
-    private final Map<Integer,PendingRequest> pendingRequests = new ConcurrentHashMap<Integer,PendingRequest>();
+    private final Map<Integer,PendingRequest> pendingRequests = new ConcurrentHashMap<>();
     
     /**
      *  The active EntitySets that have been requested by the user
      *  but not yet released.  Incoming changes and updates are applied
      *  to these sets by setId.
      */
-    private final Map<Integer,RemoteEntitySet> activeSets = new ConcurrentHashMap<Integer,RemoteEntitySet>();
+    private final Map<Integer,RemoteEntitySet> activeSets = new ConcurrentHashMap<>();
 
     /** 
      *  The active watched entities.  We don't support 'observability' on the remote
      *  entity data at this point and I'd rather not make that decisions in haste.
      *  But WatchedEntities will need to be updated just the same.
      */
-    private final Map<Integer,RemoteWatchedEntity> watchedEntities = new ConcurrentHashMap<Integer,RemoteWatchedEntity>();     
+    private final Map<Integer,RemoteWatchedEntity> watchedEntities = new ConcurrentHashMap<>();     
 
     private final ObjectMessageDelegator messageHandler; 
 
@@ -338,7 +338,7 @@ log.info("getEntity(" + entityId + ", " + Arrays.asList(types) + ")", new Throwa
         // Now send the message.
         client.send(channel, msg);
  
-        Set<EntityId> result = new HashSet<EntityId>();               
+        Set<EntityId> result = new HashSet<>();               
         try {
             // Wait for the response           
             EntityId[] ids = request.getResult();
@@ -493,7 +493,7 @@ log.info("getEntity(" + entityId + ", " + Arrays.asList(types) + ")", new Throwa
     
         private final int setId;
         private final ConcurrentLinkedQueue<DefaultEntity> directAdds 
-                    = new ConcurrentLinkedQueue<DefaultEntity>();
+                    = new ConcurrentLinkedQueue<>();
         private long lastUpdate;                    
 
         public RemoteEntitySet( int setId, ComponentFilter filter, Class[] types ) {
@@ -746,7 +746,7 @@ log.info("getEntity(" + entityId + ", " + Arrays.asList(types) + ")", new Throwa
     
     protected abstract class PendingRequest<M, T> {
         protected Message request;
-        private final AtomicReference<T> result = new AtomicReference<T>();
+        private final AtomicReference<T> result = new AtomicReference<>();
         private final CountDownLatch received = new CountDownLatch(1);
  
         protected PendingRequest( Message request ) {
