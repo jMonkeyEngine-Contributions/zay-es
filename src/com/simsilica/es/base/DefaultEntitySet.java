@@ -59,7 +59,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      *  them from components that have yet to be filled in and prevents
      *  the values from being re-retrieved during transaction finalization.
      */
-    private static RemovedComponent REMOVED_COMPONENT = new RemovedComponent();     
+    protected static final RemovedComponent REMOVED_COMPONENT = new RemovedComponent();     
 
     // Concurrent hash map because the change set accumulation
     // checks the map for entity ID existence.
@@ -568,6 +568,79 @@ public class DefaultEntitySet extends AbstractSet<Entity>
         // Accumulate the change for the next update pass
         changes.add(change); 
     }
+
+    /**
+     *  Called by the Transaction object to fill in the missing
+     *  components for an entity if this is the first time it's
+     *  been seen by the set and may not have all of its components
+     *  yet.
+     */
+    protected boolean completeEntity( DefaultEntity e ) {
+    
+        // Try to make it complete if is isn't already.
+        // We need to recheck the components against the
+        // filters because we do no prefiltering on changes.
+        // Technically, we shouldn't get changes from components
+        // that don't match but it is better to be safe.
+        // For example, there is a "bug" at the moment where
+        // direct removes are happening before the transaction
+        // processing which means we see changes for an entity
+        // that has been forcefully removed and we think it is
+        // an add.  But because when we had the entity we accept
+        // all changes even if they didn't match (in case it
+        // would remove the entity) then we would add it again
+        // even though the components did not match.
+        EntityComponent[] array = e.getComponents();
+        for( int i = 0; i < types.length; i++ ) {
+            boolean rechecking = false;
+            if( array[i] == null ) {
+                // Fill it in 
+                if( log.isDebugEnabled() )
+                    log.debug("Pulling component type:" + types[i] + " for id:" + e.getId());
+                array[i] = ed.getComponent(e.getId(), types[i]);
+            
+                // If we get nothing back then this entity can't be completed
+                if( array[i] == null ) {
+                    if( log.isDebugEnabled() ) {
+                        log.debug("Entity " + e.getId() + " could not be completed for type:" + types[i]);
+                    }
+                    return false;
+                }
+            } else if( array[i] == REMOVED_COMPONENT ) {
+                // Set it back to null again just in case the caller
+                // is holding a reference... but otherwise it means this
+                // entity is 'dead'.
+                array[i] = null;
+                return false;
+            } else {
+                rechecking = true;
+            }
+            
+            // Now that we have a value, check the filters
+            
+            // If we have a filter and it doesn't match the filter then
+            // this whole entity doesn't match
+            if( filters == null || filters[i] == null ) {
+                continue;
+            }
+ 
+            if( !filters[i].evaluate(array[i]) ) {
+            
+                // Because we wasted a lot of time for something
+                // that should be filtered in most cases... usually
+                // it's a bug when it isn't.
+                //if( rechecking )
+                //    log.warn( "Non-matching component:" + array[i] + " for entity:" + e );
+                return false;
+            }                    
+        }
+        
+        // Just a safety net... can maybe be removed    
+        ((DefaultEntity)e).validate();
+                       
+        return true;                
+    }
+ 
  
     protected ConcurrentLinkedQueue<EntityChange> getChangeQueue() {
         return changes;    
@@ -601,7 +674,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      *  to temporarily mark a component as "removed".  This is different than
      *  null which could also indicate "unset".
      */
-    private static class RemovedComponent implements EntityComponent {
+    protected static class RemovedComponent implements EntityComponent {
     }
     
     /**
@@ -772,72 +845,6 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             //    own change tracking more accurately and sends them per entity set
             //    or something.
 
-        }
- 
-        protected boolean completeEntity( DefaultEntity e ) {
-        
-            // Try to make it complete if is isn't already.
-            // We need to recheck the components against the
-            // filters because we do no prefiltering on changes.
-            // Technically, we shouldn't get changes from components
-            // that don't match but it is better to be safe.
-            // For example, there is a "bug" at the moment where
-            // direct removes are happening before the transaction
-            // processing which means we see changes for an entity
-            // that has been forcefully removed and we think it is
-            // an add.  But because when we had the entity we accept
-            // all changes even if they didn't match (in case it
-            // would remove the entity) then we would add it again
-            // even though the components did not match.
-            EntityComponent[] array = e.getComponents();
-            for( int i = 0; i < types.length; i++ ) {
-                boolean rechecking = false;
-                if( array[i] == null ) {
-                    // Fill it in 
-                    if( log.isDebugEnabled() )
-                        log.debug("Pulling component type:" + types[i] + " for id:" + e.getId());
-                    array[i] = ed.getComponent(e.getId(), types[i]);
-                
-                    // If we get nothing back then this entity can't be completed
-                    if( array[i] == null ) {
-                        if( log.isDebugEnabled() ) {
-                            log.debug("Entity " + e.getId() + " could not be completed for type:" + types[i]);
-                        }
-                        return false;
-                    }
-                } else if( array[i] == REMOVED_COMPONENT ) {
-                    // Set it back to null again just in case the caller
-                    // is holding a reference... but otherwise it means this
-                    // entity is 'dead'.
-                    array[i] = null;
-                    return false;
-                } else {
-                    rechecking = true;
-                }
-                
-                // Now that we have a value, check the filters
-                
-                // If we have a filter and it doesn't match the filter then
-                // this whole entity doesn't match
-                if( filters == null || filters[i] == null ) {
-                    continue;
-                }
- 
-                if( !filters[i].evaluate(array[i]) ) {
-                
-                    // Because we wasted a lot of time for something
-                    // that should be filtered in most cases... usually
-                    // it's a bug when it isn't.
-                    //if( rechecking )
-                    //    log.warn( "Non-matching component:" + array[i] + " for entity:" + e );
-                    return false;
-                }                    
-            }
-            
-            // Just a safety net... can maybe be removed    
-            ((DefaultEntity)e).validate();
-                           
-            return true;                
         }
  
         public void resolveChanges() {
