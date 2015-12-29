@@ -23,6 +23,11 @@ Zay-ES-Net v???
     structure and only relevant changes are sent after the data structures
     have been updated.  This avoids sending out of order information as well
     as redundant or hidden information.        
+* RemoteEntityData's internal RemoteEntitySet now avoids resolving incomplete
+    entities.  In the latest code, if the entity is a member of the set then
+    it would already have received all of the necessary data.  A round trip
+    to the server to grab data that definitely won't be there is a wasteful
+    op, now avoided.    
     
 
 Zay-ES-Net v1.1.1

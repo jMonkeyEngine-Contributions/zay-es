@@ -14,7 +14,9 @@ Zay-ES Core (unreleased) v1.2.1
 * DefaultEntityData.getEntities() now delegates loading of the entities
     to the set instead of hand-rolling it. (The DefaultEntitySet was
     already capable of loading its own data.)
-         
+* DefaultEntitySet's Transaction.completeEntity() method was moved to
+    the outer class so that subclasses can override how incomplete entities
+    are resolved by the set.         
     
 
 Zay-ES Core v1.1.1
