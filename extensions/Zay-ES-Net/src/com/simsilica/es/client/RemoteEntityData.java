@@ -166,7 +166,19 @@ public class RemoteEntityData implements EntityData {
         if( log.isTraceEnabled() ) {
             log.trace("getComponent(" + entityId + ", " + type + ")");
         }
+        
+        // New note: 2015/12/28
+        // I'm seeing this called a lot to fill out an entity that shares
+        // a changing component with a different view.  For example, position + model
+        // and position + avatar.  As the player-character walks around, the client
+        // is constantly retrieving the model info to try to fill out the rest of the
+        // entity.  But it will never get that information.
+        // Given the new approach to network synching, I think that the client
+        // shouldn't even try to complete the entity.  It would already have been
+        // sent the elevant information it it were an add.  We potentially need to
+        // implement a RemoteEntitySet from scratch that is a thinner/dumber client. 
 
+System.out.println("RemoteEntityData.getComponent(" + entityId + ", " + type + ")");
         // This call can happen quite frequently as part of change processing
         // and in some cases it's wasteful.  For example, two EntitySets with
         // Position and ModelType components but one is filtering for a specific
@@ -239,9 +251,9 @@ public class RemoteEntityData implements EntityData {
     @Override
     public Entity getEntity( EntityId entityId, Class... types ) {
         if( log.isTraceEnabled() ) {
-            log.trace("getEntity(" + entityId + ", " + Arrays.asList(types) + ")");
+            log.trace("getEntity(" + entityId + ", " + Arrays.asList(types) + ")", new Throwable());
         }
-
+log.info("getEntity(" + entityId + ", " + Arrays.asList(types) + ")", new Throwable());
         // Ignore caching for the moment...
         
         // Need to fetch the entity
@@ -566,6 +578,37 @@ public class RemoteEntityData implements EntityData {
         
         protected void directAdd( DefaultEntity e ) {
             directAdds.add(e);
+        }
+        
+        @Override
+        protected boolean completeEntity( DefaultEntity e ) {
+ 
+            // In a remote situation, the server is (at least now) 
+            // always sending us what we need.  If the entity was
+            // newly added to this set then it sent us the full
+            // entity.  Else we've gotten every change we needed
+            // to keep it relevant.
+            //
+            // So all we need to do is check it for completion and
+            // not bother retrieving the values.
+ 
+            EntityComponent[] array = e.getComponents();
+            for( int i = 0; i < array.length; i++ ) {
+                if( array[i] == null || array[i] == REMOVED_COMPONENT ) {
+                    if( log.isTraceEnabled() ) {
+                        // Logging this because if the assumptions above ever
+                        // prove false then it would be nice to have some trace
+                        // logging to remind me of the optimization.  (It's a big
+                        // huge optimization so it's definitely worth having.)
+                        log.trace("Entity is missing type " + getTypes()[i] + " so is not complete for this set.");
+                    }
+                    return false;                     
+                } else {
+                    // Nothing to see here
+                }
+            }        
+            
+            return true;
         }
 
         @Override 
