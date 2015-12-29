@@ -63,21 +63,21 @@ public class DefaultEntitySet extends AbstractSet<Entity>
 
     // Concurrent hash map because the change set accumulation
     // checks the map for entity ID existence.
-    private Map<EntityId,Entity> entities = new HashMap<EntityId,Entity>();
+    private final Map<EntityId,Entity> entities = new HashMap<>();
  
-    private ConcurrentLinkedQueue<EntityChange> changes 
-                    = new ConcurrentLinkedQueue<EntityChange>(); 
+    private final ConcurrentLinkedQueue<EntityChange> changes 
+                    = new ConcurrentLinkedQueue<>(); 
     
-    private EntityData ed;
+    private final EntityData ed;
     private ComponentFilter mainFilter; // for now anyway
     private ComponentFilter[] filters;    
-    private Class[] types;
+    private final Class[] types;
     private boolean filtersChanged = false;      
  
     protected Transaction transaction = new Transaction();
-    private Set<Entity> addedEntities = new HashSet<Entity>();
-    private Set<Entity> changedEntities = new HashSet<Entity>();
-    private Set<Entity> removedEntities = new HashSet<Entity>();
+    private final Set<Entity> addedEntities = new HashSet<>();
+    private final Set<Entity> changedEntities = new HashSet<>();
+    private final Set<Entity> removedEntities = new HashSet<>();
 
     private boolean released = false;    
 
@@ -648,7 +648,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
     
     private class EntityIterator implements Iterator<Entity> {
     
-        private Iterator<Map.Entry<EntityId,Entity>> delegate = entities.entrySet().iterator();
+        private final Iterator<Map.Entry<EntityId,Entity>> delegate = entities.entrySet().iterator();
         
         public EntityIterator() {
         }
@@ -712,8 +712,8 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      */
     protected class Transaction {
     
-        Map<EntityId,DefaultEntity> adds = new HashMap<EntityId,DefaultEntity>();
-        Set<EntityId> mods = new HashSet<EntityId>();
+        final Map<EntityId,DefaultEntity> adds = new HashMap<>();
+        final Set<EntityId> mods = new HashSet<>();
  
         /**
          *  Called when we know (for whatever reason) that a full entity
