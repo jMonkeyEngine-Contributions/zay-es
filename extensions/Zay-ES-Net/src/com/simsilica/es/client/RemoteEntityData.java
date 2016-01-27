@@ -178,7 +178,7 @@ public class RemoteEntityData implements EntityData {
         // sent the elevant information it it were an add.  We potentially need to
         // implement a RemoteEntitySet from scratch that is a thinner/dumber client. 
 
-System.out.println("RemoteEntityData.getComponent(" + entityId + ", " + type + ")");
+//System.out.println("RemoteEntityData.getComponent(" + entityId + ", " + type + ")");
         // This call can happen quite frequently as part of change processing
         // and in some cases it's wasteful.  For example, two EntitySets with
         // Position and ModelType components but one is filtering for a specific
@@ -253,7 +253,7 @@ System.out.println("RemoteEntityData.getComponent(" + entityId + ", " + type + "
         if( log.isTraceEnabled() ) {
             log.trace("getEntity(" + entityId + ", " + Arrays.asList(types) + ")", new Throwable());
         }
-log.info("getEntity(" + entityId + ", " + Arrays.asList(types) + ")", new Throwable());
+//log.info("getEntity(" + entityId + ", " + Arrays.asList(types) + ")", new Throwable());
         // Ignore caching for the moment...
         
         // Need to fetch the entity
