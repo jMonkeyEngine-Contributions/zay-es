@@ -1,0 +1,8 @@
+
+// To declare projects as part of a multi-project build use the 'include' method
+include 'extensions:Zay-ES-Net'
+
+rootProject.name = 'zay-es'
+
+// More sensible sub-project names
+project(":extensions:Zay-ES-Net").name = "zay-es-net"
