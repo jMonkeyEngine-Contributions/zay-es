@@ -1,7 +1,5 @@
 apply plugin: 'java'
-apply plugin: 'maven' // for installing to maven local
 
-group='com.simsilica'
 version='1.2.1-SNAPSHOT'
 
 repositories {
@@ -14,19 +12,41 @@ dependencies {
 }
 
 
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
+// Common configuration for the root and all 'real' children.
+// The plan is to just keep maven-repo publishing related stuff
+// here so that the other build files can look as close to
+// regular java builds as possible.
+configure(allprojects.findAll {it.name != 'extensions'}) {
+
+    apply plugin: 'maven' // for installing to maven local
+
+    // Common group ID for all projects here
+    group='com.simsilica'
+
+
+    // Centralizing this bintray reference here so it's easier to
+    // remove when JME is in jcenter().
+    repositories {
+        // Temporary until JME jars are in jcenter()   
+        maven { url "http://dl.bintray.com/jmonkeyengine/org.jmonkeyengine" }    
+    }
+
+    // Configuration to produce maven-repo style -sources and -javadoc jars
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
     
-artifacts {
-    archives sourcesJar
-    archives javadocJar
+    artifacts {
+        archives sourcesJar
+        archives javadocJar
+    }
+    
 }
-
 
