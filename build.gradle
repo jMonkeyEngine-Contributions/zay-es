@@ -25,6 +25,12 @@ configure(allprojects.findAll {it.name != 'extensions'}) {
     group='com.simsilica'
 
 
+    // One non-maven thing in this block to keep us honest with respect to
+    // imports
+    configurations.all {
+        transitive = false
+    }    
+
     // Centralizing this bintray reference here so it's easier to
     // remove when JME is in jcenter().
     repositories {
@@ -32,6 +38,11 @@ configure(allprojects.findAll {it.name != 'extensions'}) {
         maven { url "http://dl.bintray.com/jmonkeyengine/org.jmonkeyengine" }    
     }
 
+    /*
+     *** For some reason, this can't be injected from the root project
+        or it picks up the root project sources instead of the subproject
+        and doesn't even produce main jars.
+        
     // Configuration to produce maven-repo style -sources and -javadoc jars
     task sourcesJar(type: Jar) {
         classifier = 'sources'
@@ -47,6 +58,7 @@ configure(allprojects.findAll {it.name != 'extensions'}) {
         archives sourcesJar
         archives javadocJar
     }
+    */
     
 }
 
