@@ -34,7 +34,6 @@
 
 package com.simsilica.es.client;
 
-import com.google.common.base.Objects;
 import com.jme3.network.Client;
 import com.jme3.network.Message;
 import com.simsilica.es.ComponentFilter;
@@ -54,6 +53,7 @@ import com.simsilica.es.net.EntityDataMessage;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -630,7 +630,7 @@ public class RemoteEntityData implements EntityData {
                 if( type != change.getComponentType() ) {
                     continue;
                 }
-                if( !Objects.equal(id, change.getEntityId() ) ) {
+                if( !Objects.equals(id, change.getEntityId() ) ) {
                     continue;
                 }
                 result = (T)change.getComponent();
