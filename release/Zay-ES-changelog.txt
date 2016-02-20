@@ -1,5 +1,5 @@
 
-Zay-ES Core (unreleased) v1.2.1
+Zay-ES Core v1.2.1
 -------------------
 * Upgraded the project to be JDK 1.7 and source 1.7 based.
 * Added the ability to get a WatchedEntity which acts like an entity

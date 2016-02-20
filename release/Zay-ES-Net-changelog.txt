@@ -1,5 +1,5 @@
 
-Zay-ES-Net v???
+Zay-ES-Net v1.2.1
 ------------------
 * Upgraded the project to be JDK 1.7 and source 1.7 based.
 * Added support for a TransientComponent tagging interface
