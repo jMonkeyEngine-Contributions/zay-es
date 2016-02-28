@@ -1,6 +1,30 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        // This sucks down a lot of stuff that 'normal' users wouldn't 
+        // have and won't need anyway.
+        if( project.hasProperty('releaseUser') ) {
+            classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
+        }
+    }
+}
+
+task buildScriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {
+    configurations = project.buildscript.configurations
+}
+
 apply plugin: 'java'
 
-version='1.3.1-SNAPSHOT'
+//version='1.3.1-SNAPSHOT'
+version='1.3.1-alpha1'
+
+ext {
+    bintrayLabels = ['jMonkeyEngine', 'gamedev', 'Entity System']
+    releaseDescription = "Zay-ES core ${project.version}"    
+    releaseVcsTag = "${project.name}-v${project.version}"    
+}
 
 repositories {
     jcenter()
@@ -22,6 +46,12 @@ configure(allprojects.findAll {it.name != 'extensions'}) {
     // Common group ID for all projects here
     group='com.simsilica'
 
+    ext {
+        websiteUrl = 'https://github.com/jMonkeyEngine-Contributions/zay-es'
+        vcsUrl = 'https://github.com/jMonkeyEngine-Contributions/zay-es.git'
+        githubRepo = 'jMonkeyEngine-Contributions/zay-es'
+        issueTrackerUrl = 'https://github.com/jMonkeyEngine-Contributions/zay-es/issues'
+    }
 
     // One non-maven thing in this block to keep us honest with respect to
     // imports
@@ -57,7 +87,16 @@ configure(allprojects.findAll {it.name != 'extensions'}) {
         archives javadocJar
     }
     */
-    
+
+    /*
+println "Project:" + rootProject
+
+    // Put this at the end or it won't pick up the project.version and stuff
+    if( project.hasProperty('releaseUser') ) {
+        apply plugin: 'com.jfrog.bintray'
+        apply from: rootProject.file('release.gradle')
+    }
+    */    
 }
 
 // *** For some reason, this can't be injected from the root project
@@ -80,5 +119,13 @@ artifacts {
     archives javadocJar
 }
 
+
+// Put this at the end or it won't pick up the project.version and stuff
+// ...thus it also can't be injected.  But that means we can also be selective
+// about the sub-projects that we release.
+if( project.hasProperty('releaseUser') ) {
+    apply plugin: 'com.jfrog.bintray'
+    apply from: rootProject.file('release.gradle')
+}
 
 
