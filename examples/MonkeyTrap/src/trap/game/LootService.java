@@ -153,14 +153,14 @@ public class LootService implements Service {
             }
             
             if( type == MonkeyTrapConstants.TYPE_BARRELS ) {
-                randomType(0).createObject(death.getTime(), pos.getLocation());
+                randomType(0).createObject(death.getTime(), pos == null? null : pos.getLocation());
             } else if( type == MonkeyTrapConstants.TYPE_OGRE ) {            
-                randomType(1).createObject(death.getTime(), pos.getLocation());
+                randomType(1).createObject(death.getTime(), pos == null? null : pos.getLocation());
             } else if( type == MonkeyTrapConstants.TYPE_CHEST ) {
-                randomType(2).createObject(death.getTime(), pos.getLocation());
+                randomType(2).createObject(death.getTime(), pos == null? null : pos.getLocation());
             } else if( type == MonkeyTrapConstants.TYPE_MONKEY ) {
                 // Really should be everything that the monkey was carrying
-                randomType(0).createObject(death.getTime(), pos.getLocation());
+                randomType(0).createObject(death.getTime(), pos == null? null : pos.getLocation());
             }
  
             // Remove the hitpoints completely from the object
