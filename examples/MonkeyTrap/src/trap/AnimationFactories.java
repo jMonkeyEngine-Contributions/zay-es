@@ -54,8 +54,11 @@ import static trap.anim.AnimInterpolators.*;
 public class AnimationFactories {
  
     private static AssetManager assets;
-    
-    public static void initialize( AssetManager assets ) {
+
+    private AnimationFactories() {
+    }
+
+    public static void initialize(AssetManager assets ) {
         AnimationFactories.assets = assets;
     }
 

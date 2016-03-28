@@ -47,8 +47,11 @@ import trap.task.Task;
  *  @author    Paul Speed
  */
 public class SpatialTaskFactories {
-    
-    public static SpatialTaskFactory singleton( Task task ) {
+
+    private SpatialTaskFactories() {
+    }
+
+    public static SpatialTaskFactory singleton(Task task ) {
         return new SingletonFactory(task);
     }
 

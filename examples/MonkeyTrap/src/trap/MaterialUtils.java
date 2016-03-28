@@ -47,7 +47,10 @@ import com.jme3.scene.Spatial;
  */
 public class MaterialUtils {
 
-    public static void setColor( Spatial s, String materialAssetName, String parm, ColorRGBA value ) {
+    private MaterialUtils() {
+    }
+
+    public static void setColor(Spatial s, String materialAssetName, String parm, ColorRGBA value ) {
         if( s instanceof Node ) {
             Node n = (Node)s;
             for( Spatial child : n.getChildren() ) {
