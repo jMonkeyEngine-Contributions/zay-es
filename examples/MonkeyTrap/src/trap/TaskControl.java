@@ -62,7 +62,7 @@ public class TaskControl extends AbstractControl {
     static Logger log = LoggerFactory.getLogger(TaskControl.class);
     
     private TimeProvider time;
-    private Map<String, SpatialTaskFactory> mappings = new HashMap<String, SpatialTaskFactory>();
+    private Map<String, SpatialTaskFactory> mappings = new HashMap<>();
 
     private String defaultTask = "Idle";
     private TaskTime current;

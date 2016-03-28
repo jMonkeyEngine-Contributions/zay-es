@@ -45,9 +45,9 @@ import com.simsilica.lemur.core.VersionedReference;
  */
 public class PanicPlayer {
 
-    private VersionedHolder<Integer> level = new VersionedHolder<Integer>(1);
-    private VersionedHolder<Integer> score = new VersionedHolder<Integer>(0);
-    private VersionedHolder<Integer> shipsRemaining = new VersionedHolder<Integer>(0);
+    private VersionedHolder<Integer> level = new VersionedHolder<>(1);
+    private VersionedHolder<Integer> score = new VersionedHolder<>(0);
+    private VersionedHolder<Integer> shipsRemaining = new VersionedHolder<>(0);
 
     private boolean invincible = true;
     private boolean dead = false;

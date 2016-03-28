@@ -81,7 +81,7 @@ public class MovementService implements Service {
         // in this frame so that we can cancel additional moves of
         // mobs into those spaces without having to constantly
         // recalculate from the maze service.
-        Set<Vector3f> occupied = new HashSet<Vector3f>();
+        Set<Vector3f> occupied = new HashSet<>();
  
         // The presumption is that the code setting the move to
         // already checked space availability at that time.  We

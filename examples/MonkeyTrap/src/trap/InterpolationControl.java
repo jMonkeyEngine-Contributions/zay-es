@@ -57,7 +57,7 @@ public class InterpolationControl extends AbstractControl {
     private long endTime;
 
     private TimeSpan current;
-    private LinkedList<TimeSpan> pending = new LinkedList<TimeSpan>();
+    private LinkedList<TimeSpan> pending = new LinkedList<>();
 
     public InterpolationControl( TimeProvider time ) {
         this.time = time;

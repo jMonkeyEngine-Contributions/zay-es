@@ -60,8 +60,8 @@ public class MazeIndex {
 
     private Logger log = LoggerFactory.getLogger(MazeIndex.class);
     
-    private Map<Vector3f, CellEntities> index = new HashMap<Vector3f, CellEntities>();
-    private Map<EntityId, Vector3f> lastPositions = new HashMap<EntityId, Vector3f>(); 
+    private Map<Vector3f, CellEntities> index = new HashMap<>();
+    private Map<EntityId, Vector3f> lastPositions = new HashMap<>(); 
     
     public MazeIndex() {
     }

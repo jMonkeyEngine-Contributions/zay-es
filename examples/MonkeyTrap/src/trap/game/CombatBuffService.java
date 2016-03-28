@@ -60,10 +60,10 @@ public class CombatBuffService implements Service {
     private EntitySet combatBuffs;
     private EntitySet armorBuffs;
        
-    private Map<EntityId, ActiveCombatBuff> activeCombatBuffs = new HashMap<EntityId, ActiveCombatBuff>();
-    private Set<Entity> delayedCombatBuffs = new HashSet<Entity>();
-    private Map<EntityId, ActiveArmorBuff> activeArmorBuffs = new HashMap<EntityId, ActiveArmorBuff>();
-    private Set<Entity> delayedArmorBuffs = new HashSet<Entity>();
+    private Map<EntityId, ActiveCombatBuff> activeCombatBuffs = new HashMap<>();
+    private Set<Entity> delayedCombatBuffs = new HashSet<>();
+    private Map<EntityId, ActiveArmorBuff> activeArmorBuffs = new HashMap<>();
+    private Set<Entity> delayedArmorBuffs = new HashSet<>();
        
     public CombatBuffService() {
     }
@@ -166,14 +166,14 @@ public class CombatBuffService implements Service {
     public void update( long gameTime ) {
         if( !delayedCombatBuffs.isEmpty() ) {
             // Not entirely efficient but easy to code
-            Set<Entity> temp = new HashSet<Entity>(delayedCombatBuffs);
+            Set<Entity> temp = new HashSet<>(delayedCombatBuffs);
             delayedCombatBuffs.clear();
             addCombatBuffs(temp, gameTime);
         }
         
         if( !delayedArmorBuffs.isEmpty() ) {
             // Not entirely efficient but easy to code
-            Set<Entity> temp = new HashSet<Entity>(delayedArmorBuffs);
+            Set<Entity> temp = new HashSet<>(delayedArmorBuffs);
             delayedArmorBuffs.clear();
             addArmorBuffs(temp, gameTime);
         }

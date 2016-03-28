@@ -67,7 +67,7 @@ public class ModelState extends BaseAppState {
 
     private EntityData ed;
     private EntitySet entities;
-    private Map<EntityId, Spatial> models = new HashMap<EntityId, Spatial>();
+    private Map<EntityId, Spatial> models = new HashMap<>();
     private Node modelRoot;
     private ModelFactory factory;
 

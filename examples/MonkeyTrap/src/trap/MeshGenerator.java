@@ -121,8 +121,8 @@ public class MeshGenerator
         int xSize = maze.getWidth();
         int ySize = maze.getHeight();    
  
-        List<Wall> walls = new ArrayList<Wall>();
-        List<Floor> floors = new ArrayList<Floor>();     
+        List<Wall> walls = new ArrayList<>();
+        List<Floor> floors = new ArrayList<>();     
  
         for( int x = 1; x < xSize - 1; x++ ) {
             for( int y = 1; y < ySize - 1; y++ ) {
@@ -262,8 +262,8 @@ public class MeshGenerator
         int xSize = maze.getWidth();
         int ySize = maze.getHeight();    
  
-        List<Wall> walls = new ArrayList<Wall>();
-        List<Floor> floors = new ArrayList<Floor>();     
+        List<Wall> walls = new ArrayList<>();
+        List<Floor> floors = new ArrayList<>();     
  
         for( int x = 1; x < xSize - 1; x++ ) {
             for( int y = 1; y < ySize - 1; y++ ) {
@@ -407,8 +407,8 @@ public class MeshGenerator
         int xSize = maze.getWidth();
         int ySize = maze.getHeight();    
  
-        List<Wall> walls = new ArrayList<Wall>();
-        List<Floor> floors = new ArrayList<Floor>();     
+        List<Wall> walls = new ArrayList<>();
+        List<Floor> floors = new ArrayList<>();     
  
         for( int x = 1; x < xSize - 1; x++ ) {
             for( int y = 1; y < ySize - 1; y++ ) {

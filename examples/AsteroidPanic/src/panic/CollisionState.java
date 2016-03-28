@@ -65,7 +65,7 @@ public class CollisionState extends BaseAppState {
     private EntityData ed;
     private EntitySet entities;
 
-    private SafeArrayList<Entity> colliders = new SafeArrayList<Entity>(Entity.class);
+    private SafeArrayList<Entity> colliders = new SafeArrayList<>(Entity.class);
 
     private ContactHandler contactHandler;
 
