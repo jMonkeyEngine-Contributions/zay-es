@@ -40,6 +40,13 @@ artifacts {
     archives javadocJar
 }
 
+if (JavaVersion.current().isJava8Compatible()) {
+    allprojects {
+        tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
+    }
+ }
 
 // Put this at the end or it won't pick up the project.version and stuff
 // ...thus it also can't be injected.  But that means we can also be selective
