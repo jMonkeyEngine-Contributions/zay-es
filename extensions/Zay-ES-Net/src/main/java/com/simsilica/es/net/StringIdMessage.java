@@ -44,7 +44,7 @@ import com.jme3.network.serializing.Serializable;
  *  Used for requesting StringIndex lookups or responding
  *  to them.  Whatever is filled out in this message is used
  *  to lookup the other value and reply.  We can get away with
- *  this because string ID lookups only go client->server.
+ *  this because string ID lookups only go client-&gt;server.
  *
  *  @author    Paul Speed
  */
