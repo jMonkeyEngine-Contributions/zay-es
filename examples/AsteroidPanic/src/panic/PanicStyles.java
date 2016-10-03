@@ -62,7 +62,7 @@ public class PanicStyles {
         // any style.
         Attributes title = styles.getSelector(TITLE_ID, null);
         title.set("fontSize", 48f);
-        title.set("textHAlignment", HAlignment.CENTER);
+        title.set("textHAlignment", HAlignment.Center);
 
         Attributes message = styles.getSelector(MESSAGE_ID, null);
         message.set("fontSize", 32f);
@@ -88,7 +88,7 @@ public class PanicStyles {
         border.setColor(ColorRGBA.Cyan);
         button.set("background", border.clone());
         button.set("insets", new Insets3f(1, 5, 10, 5));
-        button.set("textHAlignment", HAlignment.CENTER);
+        button.set("textHAlignment", HAlignment.Center);
         button.set("fontSize", 32f);
     }
 }
