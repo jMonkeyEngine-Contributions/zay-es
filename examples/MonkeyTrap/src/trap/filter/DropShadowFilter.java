@@ -61,6 +61,7 @@ import com.jme3.texture.Texture;
 import com.jme3.util.BufferUtils;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import com.jme3.shadow.ShadowUtil;
 
 
 /**
@@ -162,9 +163,10 @@ public class DropShadowFilter extends Filter
         shadowGeom.updateGeometricState();
 
         // Set our custom comparator for shadow casters
-        RenderQueue rq = vp.getQueue();
-        GeometryList casters = rq.getShadowQueueContent(ShadowMode.Cast);
-        casters.setComparator(new CasterComparator());
+        GeometryList casters =new GeometryList(new CasterComparator());
+        for (Spatial scene : vp.getScenes()) {
+            ShadowUtil.getGeometriesInCamFrustum(scene, vp.getCamera(), ShadowMode.Cast, casters);
+        }
     }
 
     @Override
@@ -176,8 +178,10 @@ public class DropShadowFilter extends Filter
     @Override
     protected void postFrame( RenderManager renderManager, ViewPort viewPort, FrameBuffer prevFilterBuffer, FrameBuffer sceneBuffer )
     {
-        RenderQueue rq = viewPort.getQueue();
-        GeometryList casters = rq.getShadowQueueContent(ShadowMode.Cast);
+        GeometryList casters =new GeometryList(new CasterComparator());
+        for (Spatial scene : viewPort.getScenes()) {
+            ShadowUtil.getGeometriesInCamFrustum(scene, viewPort.getCamera(), ShadowMode.Cast, casters);
+        }
         if( casters.size() == 0 )
             return;
 
