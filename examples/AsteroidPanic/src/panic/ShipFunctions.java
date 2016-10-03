@@ -83,7 +83,7 @@ public class ShipFunctions {
     public static void initializeDefaultMappings( InputMapper inputMapper ) {
         // Default key mappings
         inputMapper.map(F_TURN, KeyInput.KEY_A);
-        inputMapper.map(F_TURN, InputState.NEGATIVE, KeyInput.KEY_D);
+        inputMapper.map(F_TURN, InputState.Negative, KeyInput.KEY_D);
         inputMapper.map(F_THRUST, KeyInput.KEY_W);
         inputMapper.map(F_SHOOT, KeyInput.KEY_SPACE);
     }
