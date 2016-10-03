@@ -165,7 +165,7 @@ public class ShipControlState extends BaseAppState
 
     public void valueChanged( FunctionId func, InputState value, double tpf ) {
 
-        if( func == ShipFunctions.F_SHOOT && value == InputState.POSITIVE ) {
+        if( func == ShipFunctions.F_SHOOT && value == InputState.Positive ) {
 
             // See if the last bullet still exists
             if( lastBullet != null && ed.getComponent(lastBullet, Position.class) != null ) {
@@ -194,7 +194,7 @@ public class ShipControlState extends BaseAppState
             // Play the sound effect
             shoot.playInstance();
         } else if( func == ShipFunctions.F_THRUST ) {
-            if( value == InputState.POSITIVE ) {
+            if( value == InputState.Positive ) {
                 thrust.play();
             } else {
                 thrust.stop();
