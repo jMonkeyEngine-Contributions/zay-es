@@ -133,7 +133,7 @@ public class PanicHudState extends BaseAppState {
         hud = new Container(new BorderLayout());
 
         Container statsPanel = new Container(new SpringGridLayout(Axis.Y, Axis.X,
-                                                                  FillMode.EVEN, FillMode.FORCED_EVEN));
+                                                                  FillMode.Even, FillMode.ForcedEven));
         hud.addChild(statsPanel, BorderLayout.Position.North);
         statsPanel.setInsets(new Insets3f(2,5,0,5));
 
