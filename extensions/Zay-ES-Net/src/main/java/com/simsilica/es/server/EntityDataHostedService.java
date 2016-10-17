@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
  *  A HostedService that manages access to an EntityData instance
  *  for client connections.  When added to the service manager, this
  *  will handle the networking necessary to facilitate client-server
- *  EntityData access.  A reciprocal EntityClientService should be
+ *  EntityData access.  A reciprocal EntityDataClientService should be
  *  added to the Client's ClientServiceManager to complete the setup.
  *
  *  <p>It is up to the game server to periodically call sendUpdates()
