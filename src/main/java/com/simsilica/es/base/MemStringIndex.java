@@ -65,15 +65,15 @@ public class MemStringIndex implements StringIndex {
         lock.readLock().lock();
         try {
             Integer result = index.get(s);
-            if( result == null ) {
-                // Ok, so we need to convert to a write lock
+            if ( result == null && add ) {
                 lock.readLock().unlock();
+                // Ok, so we need to convert to a write lock
                 lock.writeLock().lock();
                 try {
                     // Check one more time in case another thread beat us to
                     // it.
                     result = index.get(s);
-                    if( result == null ) {
+                    if (result == null) {
                         // we still need to create it
                         result = nextId++;
                         index.put(s, result);
@@ -90,7 +90,7 @@ public class MemStringIndex implements StringIndex {
             return result;
         } finally {
             lock.readLock().unlock();
-        }   
+        }
         
     }
     
