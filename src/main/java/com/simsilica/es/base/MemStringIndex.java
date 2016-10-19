@@ -65,32 +65,34 @@ public class MemStringIndex implements StringIndex {
         lock.readLock().lock();
         try {
             Integer result = index.get(s);
-            if( result == null ) {
+            if (result == null) {
                 // Ok, so we need to convert to a write lock
                 lock.readLock().unlock();
-                lock.writeLock().lock();
-                try {
-                    // Check one more time in case another thread beat us to
-                    // it.
-                    result = index.get(s);
-                    if( result == null ) {
-                        // we still need to create it
-                        result = nextId++;
-                        index.put(s, result);
-                        strings.put(result, s);
+                if (add) {
+                    lock.writeLock().lock();
+                    try {
+                        // Check one more time in case another thread beat us to
+                        // it.
+                        result = index.get(s);
+                        if (result == null) {
+                            // we still need to create it
+                            result = nextId++;
+                            index.put(s, result);
+                            strings.put(result, s);
+                        }
+                    } finally {
+                        // Reverse the lock state... we don't 
+                        // technically need the read lock anymore but
+                        // it makes the logic easier
+                        lock.readLock().lock();
+                        lock.writeLock().unlock();
                     }
-                } finally {
-                    // Reverse the lock state... we don't 
-                    // technically need the read lock anymore but
-                    // it makes the logic easier
-                    lock.readLock().lock();
-                    lock.writeLock().unlock();
                 }
             }
             return result;
         } finally {
             lock.readLock().unlock();
-        }   
+        }
         
     }
     
