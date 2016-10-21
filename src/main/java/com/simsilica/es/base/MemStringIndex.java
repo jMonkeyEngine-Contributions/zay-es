@@ -65,7 +65,7 @@ public class MemStringIndex implements StringIndex {
         lock.readLock().lock();
         try {
             Integer result = index.get(s);
-            if( result == null ) {
+            if( result == null && add ) {
                 // Ok, so we need to convert to a write lock
                 lock.readLock().unlock();
                 lock.writeLock().lock();
