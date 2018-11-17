@@ -49,8 +49,11 @@ import com.simsilica.es.EntityId;
  */
 public class EntityFactories {
     private static EntityData ed;
- 
-    public static void initialize( EntityData ed ) {
+
+    private EntityFactories() {
+    }
+
+    public static void initialize(EntityData ed ) {
         EntityFactories.ed = ed;                
     }
     

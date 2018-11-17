@@ -51,6 +51,9 @@ import java.util.List;
  */
 public class MeshGenerator
 {
+    private MeshGenerator() {
+    }
+
     private static float[][] wallVerts = {
     
                 // North (facing south)

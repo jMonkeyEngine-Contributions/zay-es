@@ -48,6 +48,9 @@ import java.util.List;
  */
 public class Interpolators {
 
+    private Interpolators() {
+    }
+
     /**
      *  Composes a list of interpolators together such that they
      *  run in parallel.

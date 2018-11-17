@@ -50,7 +50,10 @@ import trap.task.Interpolator;
  */
 public class AnimInterpolators {
 
-    public static Interpolator move( Spatial s, Vector3f start, Vector3f end ) {
+    private AnimInterpolators() {
+    }
+
+    public static Interpolator move(Spatial s, Vector3f start, Vector3f end ) {
         return new MoveSpatial(s, start, end);
     }
 
