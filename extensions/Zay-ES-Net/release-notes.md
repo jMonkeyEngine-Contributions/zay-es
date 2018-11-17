@@ -1,6 +1,7 @@
 Zay-ES-Net v1.2.2 (unreleased)
 ------------------
 * Set sourceCompatibility to 1.7 and turned on detailed 'unchecked' warnings
+* Some javadoc formatting fixes.
 
 
 Zay-ES-Net v1.2.1
