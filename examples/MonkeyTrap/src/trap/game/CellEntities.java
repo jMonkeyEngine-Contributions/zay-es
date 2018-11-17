@@ -60,12 +60,12 @@ public class CellEntities implements Iterable<EntityId> {
     
     public boolean add( EntityId e, boolean isSolid ) {
         if( entities == null ) {
-            entities = new ArrayList<EntityId>();
+            entities = new ArrayList<>();
         }
         if( entities.add(e) ) {
             if( isSolid ) {                
                 if( solid == null ) {
-                    solid = new ArrayList<EntityId>();
+                    solid = new ArrayList<>();
                 }
                 solid.add(e);
             }

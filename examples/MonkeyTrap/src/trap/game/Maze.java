@@ -52,7 +52,7 @@ public class Maze
     private int ySeed;
  
     private transient Random random;   
-    private transient LinkedList<Move> pending = new LinkedList<Move>();
+    private transient LinkedList<Move> pending = new LinkedList<>();
  
     // Note: north = -y ... so we build from the bottom up
     // ...should get these from Direction now, really.   
@@ -264,7 +264,7 @@ public class Maze
         boolean[][] visited = new boolean[xSize][ySize];
                        
         // Start at the seed location
-        LinkedList<Move> pending = new LinkedList<Move>();
+        LinkedList<Move> pending = new LinkedList<>();
         pending.add(new Move(-1, 0, xSeed, ySeed));
  
         while( !pending.isEmpty() ) {

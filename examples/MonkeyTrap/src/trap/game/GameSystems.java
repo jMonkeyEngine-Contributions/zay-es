@@ -56,7 +56,7 @@ public class GameSystems {
     private ScheduledExecutorService executor;
     private ServiceRunnable serviceRunner;
     private TimeProvider gameTime;
-    private List<Service> services = new ArrayList<Service>();
+    private List<Service> services = new ArrayList<>();
     
     public GameSystems() {        
         // Setup the Monkey Trap services

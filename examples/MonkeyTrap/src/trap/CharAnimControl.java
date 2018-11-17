@@ -62,7 +62,7 @@ public class CharAnimControl extends AbstractControl {
     static Logger log = LoggerFactory.getLogger(CharAnimControl.class);
 
     private AnimControl anim;
-    private Map<String, List<Mapping>> mappings = new HashMap<String, List<Mapping>>();    
+    private Map<String, List<Mapping>> mappings = new HashMap<>();    
     private String defaultAnimation = "Idle";
     
     private String animation;

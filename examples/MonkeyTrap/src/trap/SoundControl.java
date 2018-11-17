@@ -58,7 +58,7 @@ import java.util.Map;
 public class SoundControl extends AbstractControl 
                           implements Cloneable {
 
-    private Map<String, AudioNode> sounds = new HashMap<String, AudioNode>();
+    private Map<String, AudioNode> sounds = new HashMap<>();
     private Listener listener;
     private float cutOff = 12;  // 6 blocks
     private float cutOffSq = cutOff * cutOff;

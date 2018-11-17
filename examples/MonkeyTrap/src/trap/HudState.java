@@ -68,8 +68,8 @@ public class HudState extends BaseAppState {
     private Label playerName;
     private Label health;
     private Container combatStats;
-    private List<IconComponent> statIcons = new ArrayList<IconComponent>();
-    private List<Label> stats = new ArrayList<Label>();
+    private List<IconComponent> statIcons = new ArrayList<>();
+    private List<Label> stats = new ArrayList<>();
     private IconComponent[] icons;
     
     private Entity player;

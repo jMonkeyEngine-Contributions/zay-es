@@ -73,7 +73,7 @@ import trap.game.TimeProvider;
  */
 public class SinglePlayerState extends BaseAppState
 {    
-    private List<AppState> gameStates = new ArrayList<AppState>();
+    private List<AppState> gameStates = new ArrayList<>();
 
     // Kept so we can keep its time up to date... actually
     // we will need to do this for multiplayer, too.

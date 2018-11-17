@@ -62,7 +62,7 @@ public class ColorControl extends AbstractControl {
 
     // Note: the map keys are really only valid during setup...   
     //       then just the values() are used.
-    private Map<ColorRGBA, ColorEntry> entryMap = new HashMap<ColorRGBA, ColorEntry>();
+    private Map<ColorRGBA, ColorEntry> entryMap = new HashMap<>();
 
     private ColorRGBA baseDiffuse;
     private ColorRGBA baseAmbient;

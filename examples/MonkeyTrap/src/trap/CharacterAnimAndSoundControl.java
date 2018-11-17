@@ -62,8 +62,8 @@ public class CharacterAnimAndSoundControl extends AbstractControl {
  
     private TimeProvider time;
     private AnimControl anim;
-    private Map<String, List<Mapping>> mappings = new HashMap<String, List<Mapping>>();
-    private Map<String, SoundMapping> sounds = new HashMap<String, SoundMapping>();
+    private Map<String, List<Mapping>> mappings = new HashMap<>();
+    private Map<String, SoundMapping> sounds = new HashMap<>();
     private String defaultAnimation = "Idle";
     private String animation;
     private AnimationTime current;
@@ -89,7 +89,7 @@ public class CharacterAnimAndSoundControl extends AbstractControl {
     protected List<Mapping> getMappings( String name, boolean create ) {
         List<Mapping> result = mappings.get(name);
         if( result == null && create ) {
-            result = new ArrayList<Mapping>();
+            result = new ArrayList<>();
             mappings.put(name, result);            
         }
         return result;

@@ -69,7 +69,7 @@ import trap.game.TimeProvider;
  *  @author    Paul Speed
  */
 public class GamePlayState extends BaseAppState {    
-    private List<AppState> gameStates = new ArrayList<AppState>();
+    private List<AppState> gameStates = new ArrayList<>();
 
     private GameClient client;
 
