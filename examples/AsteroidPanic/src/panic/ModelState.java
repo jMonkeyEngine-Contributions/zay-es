@@ -41,7 +41,7 @@ import com.simsilica.es.Entity;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntitySet;
-import com.simsilica.lemur.event.BaseAppState;
+import com.jme3.app.state.BaseAppState;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -154,7 +154,7 @@ public class ModelState extends BaseAppState {
     }
 
     @Override
-    protected void enable() {
+    protected void onEnable() {
         ((Main)getApplication()).getRootNode().attachChild(modelRoot);
 
         entities.applyChanges();
@@ -171,7 +171,7 @@ public class ModelState extends BaseAppState {
     }
 
     @Override
-    protected void disable() {
+    protected void onDisable() {
         modelRoot.removeFromParent();
         removeModels(entities);
     }
