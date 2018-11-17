@@ -603,8 +603,11 @@ public class RemoteEntityData implements EntityData {
                         log.trace("Entity is missing type " + getTypes()[i] + " so is not complete for this set.");
                     }
                     return false;                     
-                } else if (getMainFilter() != null && getMainFilter().getComponentType().equals(array[i].getClass())) {
-                    if (getMainFilter().evaluate(array[i])) {
+                } else if( getMainFilter() != null 
+                            && getMainFilter().getComponentType().equals(array[i].getClass()) ) {
+                    // Check added by PR #18
+                    // https://github.com/jMonkeyEngine-Contributions/zay-es/pull/18
+                    if( getMainFilter().evaluate(array[i]) ) {
                         return false;
                     }
                 } else {
