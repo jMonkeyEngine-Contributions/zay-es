@@ -603,6 +603,10 @@ public class RemoteEntityData implements EntityData {
                         log.trace("Entity is missing type " + getTypes()[i] + " so is not complete for this set.");
                     }
                     return false;                     
+                } else if (getMainFilter() != null && getMainFilter().getComponentType().equals(array[i].getClass())) {
+                    if (getMainFilter().evaluate(array[i])) {
+                        return false;
+                    }
                 } else {
                     // Nothing to see here
                 }
