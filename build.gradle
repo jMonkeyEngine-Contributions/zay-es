@@ -17,13 +17,18 @@ task buildScriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyRe
 
 apply plugin: 'java'
 
-//version='1.3.1-SNAPSHOT'
-version='1.3.1-alpha1'
+version='1.2.2-SNAPSHOT'
 
 ext {
     bintrayLabels = ['jMonkeyEngine', 'gamedev', 'Entity System']
     releaseDescription = "Zay-ES core ${project.version}"    
     releaseVcsTag = "${project.name}-v${project.version}"    
+}
+
+sourceCompatibility = 1.7
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 
 repositories {
@@ -58,13 +63,6 @@ configure(allprojects.findAll {it.name != 'extensions'}) {
     configurations {
         compile.transitive = false
     }    
-
-    // Centralizing this bintray reference here so it's easier to
-    // remove when JME is in jcenter().
-    repositories {
-        // Temporary until JME jars are in jcenter()   
-        maven { url "http://dl.bintray.com/jmonkeyengine/org.jmonkeyengine" }    
-    }
 
     /*
      *** For some reason, this can't be injected from the root project
@@ -125,7 +123,8 @@ artifacts {
 // about the sub-projects that we release.
 if( project.hasProperty('releaseUser') ) {
     apply plugin: 'com.jfrog.bintray'
-    apply from: rootProject.file('release.gradle')
+    //apply from: rootProject.file('release.gradle')
+    apply from: 'https://raw.githubusercontent.com/Simsilica/gradle-plugins/master/simtools-release.gradle'
 }
 
 

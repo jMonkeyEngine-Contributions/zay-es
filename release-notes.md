@@ -1,3 +1,7 @@
+Zay-ES Core v1.2.2 (unreleased)
+-------------------
+* Set sourceCompatibility to 1.7 and turned on detailed 'unchecked' warnings
+
 
 Zay-ES Core v1.2.1
 -------------------
