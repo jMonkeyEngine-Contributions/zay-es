@@ -36,17 +36,10 @@
 
 package com.simsilica.es.base;
 
-import com.simsilica.es.EntityChange;
-import com.simsilica.es.EntityComponent;
-import com.simsilica.es.EntityComponentListener;
-import com.simsilica.es.EntityData;
-import com.simsilica.es.EntityId;
-import com.simsilica.es.ObservableEntityData;
-import com.simsilica.es.WatchedEntity;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import com.simsilica.es.*;
 
 
 /**
@@ -69,22 +62,22 @@ public class DefaultWatchedEntity implements WatchedEntity {
     private final EntityData ed;
     private final EntityId id;
     private final EntityComponent[] components;
-    private final Class[] types;
-    private final Set<Class> typeSet;
+    private final Class<EntityComponent>[] types;
+    private final Set<Class<EntityComponent>> typeSet;
     private final ChangeProcessor listener;
     private final ConcurrentLinkedQueue<EntityChange> changes = new ConcurrentLinkedQueue<EntityChange>();
     private boolean released;
     
-    public DefaultWatchedEntity( EntityData ed, EntityId id, Class[] types ) {
+    public DefaultWatchedEntity( EntityData ed, EntityId id, Class<EntityComponent>[] types ) {
         this(ed, id, null, types);
     }
     
-    public DefaultWatchedEntity( EntityData ed, EntityId id, EntityComponent[] data, Class[] types ) {
+    public DefaultWatchedEntity( EntityData ed, EntityId id, EntityComponent[] data, Class<EntityComponent>[] types ) {
         this.ed = ed;
         this.id = id;
         this.components = data == null ? new EntityComponent[types.length] : data;
         this.types = types;
-        this.typeSet = new HashSet<Class>(Arrays.asList(types));
+        this.typeSet = new HashSet<>(Arrays.asList(types));
         this.listener = new ChangeProcessor();
         if( ed instanceof ObservableEntityData ) {
             ((ObservableEntityData)ed).addEntityComponentListener(listener);

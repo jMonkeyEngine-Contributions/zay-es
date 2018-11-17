@@ -49,22 +49,24 @@ import com.simsilica.es.EntityComponent;
 public class AndFilter<T extends EntityComponent> implements ComponentFilter<T> {
 
     private Class<T> type;
-    private ComponentFilter<? extends T>[] operands;
+    private ComponentFilter<? super T>[] operands;
     
     public AndFilter() {
     }
     
-    public AndFilter( Class<T> type, ComponentFilter<? extends T>... operands ) {
+    @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
+    public AndFilter( Class<T> type, ComponentFilter<? super T>... operands ) {
         this.type = type;
         this.operands = operands;
     }
 
+    @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
     public static <T extends EntityComponent> AndFilter<T> create( Class<T> type, 
-                                                                   ComponentFilter<? extends T>... operands ) {
+                                                                   ComponentFilter<? super T>... operands ) {
         return new AndFilter<T>(type, operands);
     }
 
-    public ComponentFilter<? extends T>[] getOperands() {
+    public ComponentFilter<? super T>[] getOperands() {
         return operands;
     }
 

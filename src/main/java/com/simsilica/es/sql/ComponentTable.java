@@ -34,25 +34,27 @@
 
 package com.simsilica.es.sql;
 
-import com.google.common.base.Joiner;
-import com.simsilica.es.filter.AndFilter;
-import com.simsilica.es.filter.FieldFilter;
-import com.simsilica.es.EntityId;
-import com.simsilica.es.EntityComponent;
-import com.simsilica.es.filter.OrFilter;
-import com.simsilica.es.ComponentFilter;
 import java.sql.*;
 import java.util.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
+
+import com.simsilica.es.ComponentFilter;
+import com.simsilica.es.EntityId;
+import com.simsilica.es.EntityComponent;
+import com.simsilica.es.filter.OrFilter;
+import com.simsilica.es.filter.AndFilter;
+import com.simsilica.es.filter.FieldFilter;
 
 
 /**
  *
  *  @author    Paul Speed
  */
-public class ComponentTable<T> {
+public class ComponentTable<T extends EntityComponent> {
 
     static Logger log = LoggerFactory.getLogger(ComponentTable.class);
     
@@ -87,7 +89,7 @@ public class ComponentTable<T> {
         FieldType[] array = new FieldType[types.size()];
         array = types.toArray(array);
         
-        ComponentTable<T> result = new ComponentTable(type, array);
+        ComponentTable<T> result = new ComponentTable<>(type, array);
         result.initialize(session);
         
         return result;

@@ -36,10 +36,13 @@
 
 package com.simsilica.es.net;
 
+import java.util.Arrays;
+
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
+
+import com.simsilica.es.EntityComponent;
 import com.simsilica.es.EntityId;
-import java.util.Arrays;
 
 /**
  *
@@ -52,11 +55,12 @@ public class WatchEntityMessage extends AbstractMessage {
     private int requestId;
     private int watchId;
     private EntityId entityId;
-    private Class[] componentTypes;
+    private Class<EntityComponent>[] componentTypes;
 
     public WatchEntityMessage() {
     }
     
+    @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
     public WatchEntityMessage( int requestId, int watchId, EntityId entityId, Class... components ) {
         this.requestId = requestId;
         this.watchId = watchId;
@@ -76,7 +80,7 @@ public class WatchEntityMessage extends AbstractMessage {
         return entityId;
     }
  
-    public Class[] getComponentTypes() {
+    public Class<EntityComponent>[] getComponentTypes() {
         return componentTypes;
     }
  

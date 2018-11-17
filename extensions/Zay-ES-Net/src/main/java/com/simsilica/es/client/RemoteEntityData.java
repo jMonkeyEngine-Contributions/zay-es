@@ -34,47 +34,26 @@
 
 package com.simsilica.es.client;
 
-import com.jme3.network.Client;
-import com.jme3.network.Message;
-import com.simsilica.es.ComponentFilter;
-import com.simsilica.es.Entity;
-import com.simsilica.es.EntityChange;
-import com.simsilica.es.EntityComponent;
-import com.simsilica.es.EntityData;
-import com.simsilica.es.EntityId;
-import com.simsilica.es.EntitySet;
-import com.simsilica.es.StringIndex;
-import com.simsilica.es.WatchedEntity;
-import com.simsilica.es.base.DefaultEntity;
-import com.simsilica.es.base.DefaultEntitySet;
-import com.simsilica.es.base.DefaultWatchedEntity;
-import com.simsilica.es.net.ComponentChangeMessage;
-import com.simsilica.es.net.EntityDataMessage;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jme3.network.Client;
+import com.jme3.network.Message;
+
+import com.simsilica.es.*;
+import com.simsilica.es.base.DefaultEntity;
+import com.simsilica.es.base.DefaultEntitySet;
+import com.simsilica.es.base.DefaultWatchedEntity;
+
+import com.simsilica.es.net.*;
 import com.simsilica.es.net.EntityDataMessage.ComponentData;
-import com.simsilica.es.net.EntityIdsMessage;
-import com.simsilica.es.net.FindEntitiesMessage;
-import com.simsilica.es.net.FindEntityMessage;
-import com.simsilica.es.net.GetComponentsMessage;
-import com.simsilica.es.net.GetEntitySetMessage;
-import com.simsilica.es.net.ObjectMessageDelegator;
-import com.simsilica.es.net.ReleaseEntitySetMessage;
-import com.simsilica.es.net.ReleaseWatchedEntityMessage;
-import com.simsilica.es.net.ResetEntitySetFilterMessage;
-import com.simsilica.es.net.ResultComponentsMessage;
-import com.simsilica.es.net.StringIdMessage;
-import com.simsilica.es.net.WatchEntityMessage;
 
 
 /**
@@ -145,7 +124,7 @@ public class RemoteEntityData implements EntityData {
      */
     private final Map<Integer,RemoteWatchedEntity> watchedEntities = new ConcurrentHashMap<>();     
 
-    private final ObjectMessageDelegator messageHandler; 
+    private final ObjectMessageDelegator<Client> messageHandler; 
 
     private final RemoteStringIndex strings = new RemoteStringIndex(this);
 
@@ -157,7 +136,7 @@ public class RemoteEntityData implements EntityData {
     public RemoteEntityData( Client client, int channel ) {
         this.client = client;
         this.channel = channel;
-        this.messageHandler = new ObjectMessageDelegator(new EntityMessageHandler(), true);
+        this.messageHandler = new ObjectMessageDelegator<>(new EntityMessageHandler(), true);
         client.addMessageListener(messageHandler, messageHandler.getMessageTypes());
     }
  
@@ -361,6 +340,7 @@ public class RemoteEntityData implements EntityData {
     }
 
     @Override
+    @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
     public EntitySet getEntities( ComponentFilter filter, Class... types ) {
         
         if( log.isTraceEnabled() ) {
@@ -496,7 +476,7 @@ public class RemoteEntityData implements EntityData {
                     = new ConcurrentLinkedQueue<>();
         private long lastUpdate;                    
 
-        public RemoteEntitySet( int setId, ComponentFilter filter, Class[] types ) {
+        public RemoteEntitySet( int setId, ComponentFilter filter, Class<EntityComponent>[] types ) {
             super(RemoteEntityData.this, filter, types);
             this.setId = setId;
         }
@@ -625,7 +605,7 @@ public class RemoteEntityData implements EntityData {
         }
         
         @Override
-        protected Class[] getTypes() {
+        protected Class<EntityComponent>[] getTypes() {
             return super.getTypes();
         }
  
@@ -640,7 +620,7 @@ public class RemoteEntityData implements EntityData {
                 if( !Objects.equals(id, change.getEntityId() ) ) {
                     continue;
                 }
-                result = (T)change.getComponent();
+                result = type.cast(change.getComponent());
             }
             return result;
         }
@@ -651,7 +631,7 @@ public class RemoteEntityData implements EntityData {
         private final int watchId;
 
         public RemoteWatchedEntity( EntityData ed, int watchId, EntityId id, 
-                                    EntityComponent[] components, Class[] types ) {
+                                    EntityComponent[] components, Class<EntityComponent>[] types ) {
             super(ed, id, components, types);
             this.watchId = watchId;
             watchedEntities.put(watchId, this);
@@ -684,6 +664,7 @@ public class RemoteEntityData implements EntityData {
  
     private class EntityMessageHandler {
 
+        @SuppressWarnings("unchecked")  
         public void entityComponents( ResultComponentsMessage msg ) {
             if( log.isTraceEnabled() ) {
                 log.trace("entityComponents(" + msg + ")");
@@ -724,6 +705,7 @@ public class RemoteEntityData implements EntityData {
             }
         }
         
+        @SuppressWarnings("unchecked")  
         public void entityIds( EntityIdsMessage msg ) {
             if( log.isTraceEnabled() ) {
                 log.trace("entityIds(" + msg + ")");
@@ -737,6 +719,7 @@ public class RemoteEntityData implements EntityData {
             request.dataReceived(msg);
         }
         
+        @SuppressWarnings("unchecked")  
         public void stringId( StringIdMessage msg ) {
             if( log.isTraceEnabled() ) {
                 log.trace("stringId(" + msg + ")");
@@ -808,6 +791,7 @@ public class RemoteEntityData implements EntityData {
         }        
 
         @Override
+        @SuppressWarnings("unchecked")  
         public void dataReceived( ResultComponentsMessage m ) {
  
             WatchedEntity e = new RemoteWatchedEntity(RemoteEntityData.this, 

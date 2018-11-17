@@ -34,12 +34,14 @@
 
 package com.simsilica.es.net;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 import com.jme3.network.serializing.Serializer;
+
 import com.simsilica.es.EntityChange;
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.EntityId;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 
 
 /**
@@ -59,12 +61,13 @@ public class EntityChangeSerializer extends Serializer {
         classSerializer = Serializer.getSerializer(Class.class, true);
     }
 
-    public EntityChange readObject( ByteBuffer data, Class c ) throws IOException {
+    @SuppressWarnings("unchecked") 
+    public <T> T readObject( ByteBuffer data, Class<T> c ) throws IOException {
         EntityId id = idSerializer.readObject(data, EntityId.class);
         Class type = classSerializer.readObject(data, Class.class);
         Object component = Serializer.readClassAndObject(data);
         
-        return new EntityChange(id, type, (EntityComponent)component);
+        return c.cast(new EntityChange(id, type, (EntityComponent)component));
     }
     
     public void writeObject( ByteBuffer buffer, Object object ) throws IOException {

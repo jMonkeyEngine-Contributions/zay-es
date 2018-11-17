@@ -61,7 +61,8 @@ public class Filters {
      *  at the first true filter.  Child filters are evaluated in the order
      *  provided.
      */
-    public static <T extends EntityComponent> ComponentFilter<T> or( Class<T> type, ComponentFilter<? extends T>... operands ) {
+    @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
+    public static <T extends EntityComponent> ComponentFilter<T> or( Class<T> type, ComponentFilter<? super T>... operands ) {
         return OrFilter.create( type, operands );
     }
 
@@ -71,7 +72,8 @@ public class Filters {
      *  at the first false filter.  Child filters are evaluated in the order
      *  provided.
      */
-    public static <T extends EntityComponent> ComponentFilter<T> and( Class<T> type, ComponentFilter<? extends T>... operands ) {
+    @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
+    public static <T extends EntityComponent> ComponentFilter<T> and( Class<T> type, ComponentFilter<? super T>... operands ) {
         return AndFilter.create( type, operands );    
     }    
 }

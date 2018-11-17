@@ -34,11 +34,12 @@
 
 package com.simsilica.es.net;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 import com.jme3.network.serializing.Serializer;
 import com.jme3.network.serializing.SerializerException;
 import com.jme3.network.serializing.SerializerRegistration;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 
 
 /**
@@ -50,7 +51,7 @@ import java.nio.ByteBuffer;
  */
 public class ClassSerializer extends Serializer {
 
-    public Class readObject( ByteBuffer data, Class c ) throws IOException {
+    public <T> T readObject( ByteBuffer data, Class<T> c ) throws IOException {
         // Use serializer's support for class reading/writing
         SerializerRegistration reg = readClass(data);
         if( reg == null ) {
@@ -61,7 +62,7 @@ public class ClassSerializer extends Serializer {
             return null;
         }
  
-        return reg.getType();      
+        return c.cast(reg.getType());      
     }
     
     public void writeObject( ByteBuffer buffer, Object object ) throws IOException {

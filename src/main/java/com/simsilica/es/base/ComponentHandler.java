@@ -34,11 +34,11 @@
 
 package com.simsilica.es.base;
 
+import java.util.Set;
+
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.ComponentFilter;
-import java.util.Set;
-
 
 /**
  *  Handles the management of a particular component type

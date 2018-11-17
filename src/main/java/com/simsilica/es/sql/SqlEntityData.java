@@ -34,14 +34,16 @@
 
 package com.simsilica.es.sql;
 
-import com.simsilica.es.base.ComponentHandler;
-import com.simsilica.es.PersistentComponent;
-import com.simsilica.es.base.DefaultEntityData;
 import java.io.File;
 import java.sql.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.simsilica.es.EntityComponent;
+import com.simsilica.es.PersistentComponent;
+import com.simsilica.es.base.ComponentHandler;
+import com.simsilica.es.base.DefaultEntityData;
 
 
 /**
@@ -114,9 +116,9 @@ public class SqlEntityData extends DefaultEntityData {
     } 
 
     @Override
-    protected ComponentHandler lookupDefaultHandler( Class type ) {
+    protected <T extends EntityComponent> ComponentHandler<T> lookupDefaultHandler( Class<T> type ) {
         if( PersistentComponent.class.isAssignableFrom(type) ) {
-            return new SqlComponentHandler(this, type);
+            return new SqlComponentHandler<T>(this, type);
         }
         return super.lookupDefaultHandler(type);
     }

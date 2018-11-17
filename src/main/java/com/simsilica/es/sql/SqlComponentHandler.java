@@ -34,12 +34,13 @@
 
 package com.simsilica.es.sql;
 
-import com.simsilica.es.base.ComponentHandler;
-import com.simsilica.es.EntityId;
-import com.simsilica.es.EntityComponent;
-import com.simsilica.es.ComponentFilter;
 import java.sql.*;
 import java.util.*;
+
+import com.simsilica.es.ComponentFilter;
+import com.simsilica.es.EntityId;
+import com.simsilica.es.EntityComponent;
+import com.simsilica.es.base.ComponentHandler;
 
 
 /**

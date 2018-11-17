@@ -36,11 +36,12 @@
 
 package com.simsilica.es.client;
 
-import com.simsilica.es.StringIndex;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import com.simsilica.es.StringIndex;
 
 /**
  *  A client implementation of the StringIndex interface.

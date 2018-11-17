@@ -1,7 +1,9 @@
-Zay-ES Core v1.2.2 (unreleased)
+Zay-ES Core v1.3.0 (unreleased)
 -------------------
 * MemStringIndex fixed to consider the boolean 'add' parameter.
 * Set sourceCompatibility to 1.7 and turned on detailed 'unchecked' warnings
+* Fixed a ton of 'unchecked' related issues.  Many of the generic method signatures
+    have changed.
 * Some javadoc formatting fixes.
 
 

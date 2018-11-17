@@ -34,12 +34,13 @@
 
 package com.simsilica.es.base;
 
-import com.simsilica.es.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.simsilica.es.*;
 
 
 /**
@@ -71,7 +72,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
     private final EntityData ed;
     private ComponentFilter mainFilter; // for now anyway
     private ComponentFilter[] filters;    
-    private final Class[] types;
+    private final Class<EntityComponent>[] types;
     private boolean filtersChanged = false;      
  
     protected Transaction transaction = new Transaction();
@@ -82,13 +83,13 @@ public class DefaultEntitySet extends AbstractSet<Entity>
     private boolean released = false;    
 
     
-    public DefaultEntitySet( EntityData ed, ComponentFilter filter, Class[] types ) {
+    public DefaultEntitySet( EntityData ed, ComponentFilter filter, Class<EntityComponent>[] types ) {
         this.ed = ed;
         this.types = types;
         setMainFilter(filter);
     }
 
-    protected Class[] getTypes() {
+    protected Class<EntityComponent>[] getTypes() {
         return types;
     }
 
@@ -351,6 +352,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      *  will be added to the supplied updates set.
      */
     @Override
+    @Deprecated 
     public boolean applyChanges( Set<EntityChange> updates ) {
         //if( updates != null ) {
         //    throw new UnsupportedOperationException("The applyChanges(Set<EntityChange>) is deprecated and no longer operates.  It will be removed soon.");

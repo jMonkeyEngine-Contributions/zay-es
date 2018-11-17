@@ -34,21 +34,13 @@
 
 package com.simsilica.es.base;
 
-import com.simsilica.es.ComponentFilter;
-import com.simsilica.es.Entity;
-import com.simsilica.es.EntityChange;
-import com.simsilica.es.EntityComponent;
-import com.simsilica.es.EntityComponentListener;
-import com.simsilica.es.EntityId;
-import com.simsilica.es.EntitySet;
-import com.simsilica.es.ObservableEntityData;
-import com.simsilica.es.StringIndex;
-import com.simsilica.es.WatchedEntity;
 import java.util.*;
 import java.util.concurrent.*;
 
 import com.simsilica.util.ReportSystem;
 import com.simsilica.util.Reporter;
+
+import com.simsilica.es.*;
 
 /**
  *
@@ -56,7 +48,7 @@ import com.simsilica.util.Reporter;
  */
 public class DefaultEntityData implements ObservableEntityData {
 
-    private final Map<Class, ComponentHandler> handlers = new ConcurrentHashMap<Class, ComponentHandler>();    
+    private final Map<Class<? extends EntityComponent>, ComponentHandler> handlers = new ConcurrentHashMap<>();
     private EntityIdGenerator idGenerator;
     private StringIndex stringIndex;
 
@@ -64,8 +56,8 @@ public class DefaultEntityData implements ObservableEntityData {
      *  Keeps the unreleased entity sets so that we can give
      *  them the change updates relevant to them.
      */
-    private final List<DefaultEntitySet> entitySets = new CopyOnWriteArrayList<DefaultEntitySet>();         
-    private final List<EntityComponentListener> entityListeners = new CopyOnWriteArrayList<EntityComponentListener>();      
+    private final List<DefaultEntitySet> entitySets = new CopyOnWriteArrayList<>();         
+    private final List<EntityComponentListener> entityListeners = new CopyOnWriteArrayList<>();      
     
     public DefaultEntityData() {
         this(new DefaultEntityIdGenerator());
@@ -90,7 +82,7 @@ public class DefaultEntityData implements ObservableEntityData {
         this.stringIndex = stringIndex;
     }
 
-    protected void registerComponentHandler( Class type, ComponentHandler handler ) {
+    protected <T extends EntityComponent> void registerComponentHandler( Class<T> type, ComponentHandler<T> handler ) {
         handlers.put(type, handler);
     }
  
@@ -122,7 +114,7 @@ public class DefaultEntityData implements ObservableEntityData {
         // probably specifically be given types someday.  FIXME
     
         // Remove all of its components
-        for( Class c : handlers.keySet() ) {
+        for( Class<? extends EntityComponent> c : handlers.keySet() ) {
             removeComponent(entityId, c);
         }
     }
@@ -137,11 +129,12 @@ public class DefaultEntityData implements ObservableEntityData {
      *  find an appropriate handler.  Default implementation returns
      *  a new MapComponentHandler.
      */
-    protected ComponentHandler lookupDefaultHandler( Class type ) {
-        return new MapComponentHandler();
+    protected <T extends EntityComponent> ComponentHandler<T> lookupDefaultHandler( Class<T> type ) {
+        return new MapComponentHandler<T>();
     }
  
-    protected ComponentHandler getHandler( Class type ) {
+    @SuppressWarnings("unchecked")
+    protected <T extends EntityComponent> ComponentHandler<T> getHandler( Class type ) {
     
         ComponentHandler result = handlers.get(type);
         if( result == null ) {
@@ -155,7 +148,7 @@ public class DefaultEntityData implements ObservableEntityData {
                 }
             }
         }
-        return result;             
+        return (ComponentHandler<T>)result;             
     }
 
     @Override
@@ -163,16 +156,16 @@ public class DefaultEntityData implements ObservableEntityData {
         if( entityId == null ) {
             throw new IllegalArgumentException("EntityId cannot be null.");
         }
-        ComponentHandler handler = getHandler(type);
-        return (T)handler.getComponent(entityId);
+        ComponentHandler<T> handler = getHandler(type);
+        return handler.getComponent(entityId);
     }
     
     @Override
-    public void setComponent( EntityId entityId, EntityComponent component ) {
+    public <T extends EntityComponent> void setComponent( EntityId entityId, T component ) {
         if( entityId == null ) {
             throw new IllegalArgumentException("EntityId cannot be null.");
         }
-        ComponentHandler handler = getHandler(component.getClass());
+        ComponentHandler<T> handler = getHandler(component.getClass());
         handler.setComponent(entityId, component);
         
         // Can now update the entity sets that care
@@ -180,7 +173,7 @@ public class DefaultEntityData implements ObservableEntityData {
     }
     
     @Override
-    public boolean removeComponent( EntityId entityId, Class type ) {
+    public <T extends EntityComponent> boolean removeComponent( EntityId entityId, Class<T> type ) {
         if( entityId == null ) {
             throw new IllegalArgumentException("EntityId cannot be null.");
         }
@@ -205,6 +198,7 @@ public class DefaultEntityData implements ObservableEntityData {
         return getHandler(type).getEntities(filter);
     }
 
+    @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
     protected DefaultEntitySet createSet( ComponentFilter filter, Class... types ) {
         DefaultEntitySet set = new DefaultEntitySet(this, filter, types);
         entitySets.add(set);
@@ -223,10 +217,11 @@ public class DefaultEntityData implements ObservableEntityData {
     }
  
     @Override
+    @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
     public Entity getEntity( EntityId entityId, Class... types ) {
         EntityComponent[] values = new EntityComponent[types.length]; 
         for( int i = 0; i < values.length; i++ ) {
-            values[i] = getComponent( entityId, types[i] );
+            values[i] = getComponent(entityId, types[i]);
         }
         return new DefaultEntity( this, entityId, values, types );            
     }
@@ -329,6 +324,7 @@ public class DefaultEntityData implements ObservableEntityData {
     }
 
     @Override
+    @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
     public WatchedEntity watchEntity( EntityId id, Class... types ) {
 
         // Collect the components    

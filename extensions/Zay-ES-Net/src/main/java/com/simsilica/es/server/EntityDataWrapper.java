@@ -36,23 +36,14 @@
 
 package com.simsilica.es.server;
 
-import com.simsilica.es.ComponentFilter;
-import com.simsilica.es.Entity;
-import com.simsilica.es.EntityChange;
-import com.simsilica.es.EntityComponent;
-import com.simsilica.es.EntityComponentListener;
-import com.simsilica.es.EntityData;
-import com.simsilica.es.EntityId;
-import com.simsilica.es.EntitySet;
-import com.simsilica.es.ObservableEntityData;
-import com.simsilica.es.StringIndex;
-import com.simsilica.es.WatchedEntity;
-import com.simsilica.es.base.DefaultEntitySet;
-import com.simsilica.es.base.DefaultWatchedEntity;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import com.simsilica.es.*;
+import com.simsilica.es.base.DefaultEntitySet;
+import com.simsilica.es.base.DefaultWatchedEntity;
 
 
 /**
@@ -89,7 +80,7 @@ public class EntityDataWrapper implements ObservableEntityData {
      *  Provides direct access to a set's type list to allow efficient mark/sweep
      *  iteration.
      */
-    public Class[] getTypes( EntitySet set ) {
+    public Class<EntityComponent>[] getTypes( EntitySet set ) {
         return ((LocalEntitySet)set).getTypes();
     }      
 
@@ -114,7 +105,7 @@ public class EntityDataWrapper implements ObservableEntityData {
     }
 
     @Override
-    public boolean removeComponent( EntityId entityId, Class type ) {
+    public <T extends EntityComponent> boolean removeComponent( EntityId entityId, Class<T> type ) {
         return delegate.removeComponent(entityId, type);
     }
 
@@ -135,7 +126,7 @@ public class EntityDataWrapper implements ObservableEntityData {
     }
 
     @Override
-    public Set<EntityId> findEntities(ComponentFilter filter, Class... types) {
+    public Set<EntityId> findEntities( ComponentFilter filter, Class... types ) {
         return delegate.findEntities(filter, types);
     }
 
@@ -145,6 +136,7 @@ public class EntityDataWrapper implements ObservableEntityData {
     }
 
     @Override
+    @SuppressWarnings("unchecked") // because Java doesn't like generic varargs
     public EntitySet getEntities( ComponentFilter filter, Class... types ) {
         LocalEntitySet result = new LocalEntitySet(this, filter, types);
         result.loadEntities(false);
@@ -153,6 +145,7 @@ public class EntityDataWrapper implements ObservableEntityData {
     }
 
     @Override
+    @SuppressWarnings("unchecked") // because Java doesn't like generic varargs
     public WatchedEntity watchEntity( EntityId entityId, Class... types ) {
         return new DefaultWatchedEntity(this, entityId, types);
     }
@@ -217,7 +210,7 @@ public class EntityDataWrapper implements ObservableEntityData {
      */   
     protected class LocalEntitySet extends DefaultEntitySet {
 
-        public LocalEntitySet( EntityData ed, ComponentFilter filter, Class[] types ) {
+        public LocalEntitySet( EntityData ed, ComponentFilter filter, Class<EntityComponent>[] types ) {
             super(ed, filter, types);
         }
  
@@ -225,7 +218,7 @@ public class EntityDataWrapper implements ObservableEntityData {
          *  Overridden just for local access.
          */
         @Override
-        protected Class[] getTypes() {
+        protected Class<EntityComponent>[] getTypes() {
             return super.getTypes();
         }
 

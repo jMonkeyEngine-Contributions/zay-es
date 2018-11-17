@@ -49,9 +49,9 @@ public class EntityChange {
 
     private EntityId entityId;
     private EntityComponent component;
-    private Class type;
+    private Class<? extends EntityComponent> type;
         
-    public EntityChange( EntityId entityId, Class type, EntityComponent component ) {
+    public EntityChange( EntityId entityId, Class<? extends EntityComponent> type, EntityComponent component ) {
         this.entityId = entityId;
         this.type = component == null ? type : component.getClass();
         this.component = component;
@@ -61,7 +61,7 @@ public class EntityChange {
         this(entityId, null, component);
     }
         
-    public EntityChange( EntityId entityId, Class type ) {
+    public EntityChange( EntityId entityId, Class<? extends EntityComponent> type ) {
         this( entityId, type, null );
     }
         
@@ -69,7 +69,7 @@ public class EntityChange {
         return entityId;
     }
  
-    public Class getComponentType() {
+    public Class<? extends EntityComponent> getComponentType() {
         return type;
     }
         

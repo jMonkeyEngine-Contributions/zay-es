@@ -34,12 +34,13 @@
 
 package com.simsilica.es.net;
 
-import com.jme3.network.serializing.Serializer;
-import com.jme3.network.serializing.SerializerRegistration;
-import com.jme3.network.serializing.serializers.StringSerializer;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
+
+import com.jme3.network.serializing.Serializer;
+import com.jme3.network.serializing.SerializerRegistration;
+import com.jme3.network.serializing.serializers.StringSerializer;
 
 
 /**
@@ -53,7 +54,8 @@ public class ClassFieldSerializer extends Serializer {
 
     private StringSerializer delegate = new StringSerializer();
 
-    public Field readObject( ByteBuffer data, Class c ) throws IOException {
+    @Override
+    public <T> T readObject( ByteBuffer data, Class<T> c ) throws IOException {
         // Use serializer's support for class reading/writing
         SerializerRegistration reg = readClass(data);
         if( reg == null || reg.getType() == Void.class ) { 
@@ -65,7 +67,7 @@ public class ClassFieldSerializer extends Serializer {
         
         try {
             Field result = type.getDeclaredField(name);
-            return result;
+            return c.cast(result);
         } catch( NoSuchFieldException e ) {
             throw new IOException( "Error resolving field:" + name + " on:" + type, e );
         }

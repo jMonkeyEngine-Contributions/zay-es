@@ -34,37 +34,20 @@
 
 package com.simsilica.es.server;
 
-import com.jme3.network.HostedConnection;
-import com.simsilica.es.Entity;
-import com.simsilica.es.EntityChange;
-import com.simsilica.es.EntityId;
-import com.simsilica.es.EntitySet;
-import com.simsilica.es.ObservableEntityData;
-import com.simsilica.es.WatchedEntity;
-import com.simsilica.es.net.ComponentChangeMessage;
-import com.simsilica.es.net.EntityDataMessage;
-import com.simsilica.es.net.EntityDataMessage.ComponentData;
-import com.simsilica.es.net.EntityIdsMessage;
-import com.simsilica.es.net.FindEntitiesMessage;
-import com.simsilica.es.net.FindEntityMessage;
-import com.simsilica.es.net.GetComponentsMessage;
-import com.simsilica.es.net.GetEntitySetMessage;
-import com.simsilica.es.net.ReleaseEntitySetMessage;
-import com.simsilica.es.net.ReleaseWatchedEntityMessage;
-import com.simsilica.es.net.ResetEntitySetFilterMessage;
-import com.simsilica.es.net.ResultComponentsMessage;
-import com.simsilica.es.net.StringIdMessage;
-import com.simsilica.es.net.WatchEntityMessage;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jme3.network.HostedConnection;
+
+import com.simsilica.es.*;
+import com.simsilica.es.net.*;
+import com.simsilica.es.net.EntityDataMessage.ComponentData;
 
 
 /**
@@ -436,8 +419,8 @@ public class HostedEntityData {
                 set.clearChangeSets();  // we don't need them
  
                 // Step 3: 'mark' usage in the tracker
-                Class[] types = ed.getTypes(set);
-                for( Class type : types ) {
+                Class<EntityComponent>[] types = ed.getTypes(set);
+                for( Class<EntityComponent> type : types ) {
                     tracker.set(set.getEntityIds(), type, frame);
                 }
             }            
@@ -447,7 +430,7 @@ public class HostedEntityData {
         
         // Step 3.5: Now mark the watched entities
         for( EntityInfo e : activeEntities.values() ) {
-            for( Class type : e.types ) {
+            for( Class<EntityComponent> type : e.types ) {
                 tracker.set(e.id, type, frame);
             }            
         }
@@ -589,9 +572,9 @@ if( !set.getRemovedEntities().isEmpty() ) {
     
     private static class EntityInfo {
         EntityId id;
-        Class[] types;
+        Class<EntityComponent>[] types;
         
-        public EntityInfo( EntityId id, Class[] types ) {
+        public EntityInfo( EntityId id, Class<EntityComponent>[] types ) {
             this.id = id;
             this.types = types;
         }
