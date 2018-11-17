@@ -2,7 +2,8 @@ Zay-ES-Net v1.2.2 (unreleased)
 ------------------
 * RemoteEntityData.completeEntity() modified to check the components against
     the filter to fix the case where two entity sets share the same components
-    but not the same filter.  See PR #18 
+    but not the same filter.  See PR #18
+* Fix NPE in RemoteStringIndex when asking for a non-existant string. See Issue: #14
 * Set sourceCompatibility to 1.7 and turned on detailed 'unchecked' warnings
 * Some javadoc formatting fixes.
 

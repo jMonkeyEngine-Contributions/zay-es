@@ -98,8 +98,9 @@ public class RemoteStringIndex implements StringIndex {
             if( result != null ) {
                 idIndex.put(s, result);
                 stringIndex.put(result, s);
+                return result;
             }
-            return result;                   
+            return -1;
         } finally {
             indexLock.writeLock().unlock();
         }               
