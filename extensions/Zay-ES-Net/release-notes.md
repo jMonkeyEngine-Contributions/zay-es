@@ -1,3 +1,9 @@
+Zay-ES-Net v1.3.1 (unreleased)
+------------------
+* Fixed a bug introduced in PR #18 where the filter check in RemoteEntityData
+    completeEntity() was inverted.
+    
+
 Zay-ES-Net v1.3.0 (latest)
 ------------------
 * RemoteEntityData.completeEntity() modified to check the components against

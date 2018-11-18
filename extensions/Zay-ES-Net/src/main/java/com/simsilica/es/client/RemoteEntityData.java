@@ -584,10 +584,10 @@ public class RemoteEntityData implements EntityData {
                     }
                     return false;                     
                 } else if( getMainFilter() != null 
-                            && getMainFilter().getComponentType().equals(array[i].getClass()) ) {
+                            && getMainFilter().getComponentType() == array[i].getClass() ) {
                     // Check added by PR #18
                     // https://github.com/jMonkeyEngine-Contributions/zay-es/pull/18
-                    if( getMainFilter().evaluate(array[i]) ) {
+                    if( !getMainFilter().evaluate(array[i]) ) {
                         return false;
                     }
                 } else {
