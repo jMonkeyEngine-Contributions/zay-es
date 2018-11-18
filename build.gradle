@@ -6,7 +6,7 @@ buildscript {
         // This sucks down a lot of stuff that 'normal' users wouldn't 
         // have and won't need anyway.
         if( project.hasProperty('releaseUser') ) {
-            classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
+            classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.+'
         }
     }
 }
