@@ -1,10 +1,10 @@
-Zay-ES-Net v1.3.1 (unreleased)
+Zay-ES-Net v1.3.1 (latest)
 ------------------
 * Fixed a bug introduced in PR #18 where the filter check in RemoteEntityData
     completeEntity() was inverted.
     
 
-Zay-ES-Net v1.3.0 (latest)
+Zay-ES-Net v1.3.0 
 ------------------
 * RemoteEntityData.completeEntity() modified to check the components against
     the filter to fix the case where two entity sets share the same components
