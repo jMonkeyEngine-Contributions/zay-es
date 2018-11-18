@@ -1,4 +1,4 @@
-Zay-ES Core v1.3.0 (unreleased)
+Zay-ES Core v1.3.0 (latest)
 -------------------
 * MemStringIndex fixed to consider the boolean 'add' parameter.
 * Set sourceCompatibility to 1.7 and turned on detailed 'unchecked' warnings
