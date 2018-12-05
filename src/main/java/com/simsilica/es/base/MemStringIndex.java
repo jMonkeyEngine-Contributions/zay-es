@@ -87,7 +87,7 @@ public class MemStringIndex implements StringIndex {
                     lock.writeLock().unlock();
                 }
             }
-            return result;
+            return result != null ? result : -1;
         } finally {
             lock.readLock().unlock();
         }   
