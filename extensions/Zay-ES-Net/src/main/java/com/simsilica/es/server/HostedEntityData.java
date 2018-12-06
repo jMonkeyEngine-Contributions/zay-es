@@ -326,8 +326,9 @@ public class HostedEntityData {
             source.send(new StringIdMessage(msg.getRequestId(), 
                                             ed.getStrings().getString(msg.getId())));   
         } else if( msg.getString() != null ) {
+            int stringId = ed.getStrings().getStringId(msg.getString(), false);
             source.send(new StringIdMessage(msg.getRequestId(), 
-                                            ed.getStrings().getStringId(msg.getString(), false)));   
+                                            stringId != -1 ? stringId : null));   
         } else {
             throw new RuntimeException("Bad StringIdMessage:" + msg);
         }
