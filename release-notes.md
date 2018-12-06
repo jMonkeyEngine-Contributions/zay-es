@@ -1,3 +1,7 @@
+Zay-ES Core v1.3.1 (unreleased)
+-------------------
+
+
 Zay-ES Core v1.3.0 (latest)
 -------------------
 * MemStringIndex fixed to consider the boolean 'add' parameter.

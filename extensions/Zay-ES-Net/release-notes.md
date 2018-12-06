@@ -1,3 +1,7 @@
+Zay-ES-Net v1.3.2 (unreleased)
+------------------
+
+
 Zay-ES-Net v1.3.1 (latest)
 ------------------
 * Fixed a bug introduced in PR #18 where the filter check in RemoteEntityData
