@@ -35,10 +35,10 @@
 package panic;
 
 import com.jme3.app.Application;
+import com.jme3.app.state.BaseAppState;
 import com.simsilica.es.Entity;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntitySet;
-import com.simsilica.lemur.event.BaseAppState;
 
 
 /**
@@ -66,11 +66,11 @@ public class DecayState extends BaseAppState {
     }
 
     @Override
-    protected void enable() {
+    protected void onEnable() {
     }
 
     @Override
-    protected void disable() {
+    protected void onDisable() {
     }
 
     @Override
@@ -84,6 +84,7 @@ public class DecayState extends BaseAppState {
             }
         }
     }
+
 }
 
 
