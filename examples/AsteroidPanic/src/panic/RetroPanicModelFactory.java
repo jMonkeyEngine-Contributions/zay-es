@@ -39,7 +39,6 @@ import com.jme3.material.Material;
 import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.scene.shape.Box;
@@ -72,6 +71,7 @@ public class RetroPanicModelFactory implements ModelFactory {
 
     private static final float cellSize = 128f/1024f;
 
+    @Override
     public void setState( ModelState state ) {
         this.state = state;
         this.assets = state.getApplication().getAssetManager();
@@ -112,6 +112,7 @@ public class RetroPanicModelFactory implements ModelFactory {
         return geom;
     }
 
+    @Override
     public Spatial createModel( Entity e ) {
 
         ModelType type = e.get(ModelType.class);
