@@ -67,12 +67,14 @@ public class PanicModelFactory implements ModelFactory {
     private AssetManager assets;
     private EntityData ed;
 
+    @Override
     public void setState( ModelState state ) {
         this.state = state;
         this.assets = state.getApplication().getAssetManager();
         this.ed = state.getApplication().getStateManager().getState(EntityDataState.class).getEntityData();
     }
 
+    @Override
     public Spatial createModel( Entity e ) {
 
         ModelType type = e.get(ModelType.class);
