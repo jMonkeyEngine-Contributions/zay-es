@@ -35,13 +35,14 @@
 package panic;
 
 import com.jme3.app.Application;
+import com.jme3.app.state.BaseAppState;
+import com.jme3.audio.AudioData.DataType;
 import com.jme3.audio.AudioNode;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
 import com.simsilica.lemur.GuiGlobals;
-import com.simsilica.lemur.event.BaseAppState;
 import com.simsilica.lemur.input.AnalogFunctionListener;
 import com.simsilica.lemur.input.FunctionId;
 import com.simsilica.lemur.input.InputMapper;
@@ -98,9 +99,9 @@ public class ShipControlState extends BaseAppState
                                      ShipFunctions.F_THRUST,
                                      ShipFunctions.F_SHOOT);
 
-        shoot = new AudioNode(app.getAssetManager(), "Sounds/shoot.ogg", false);
+        shoot = new AudioNode(app.getAssetManager(), "Sounds/shoot.ogg", DataType.Buffer);
         shoot.setReverbEnabled(false);
-        thrust = new AudioNode(app.getAssetManager(), "Sounds/thrust.ogg", false);
+        thrust = new AudioNode(app.getAssetManager(), "Sounds/thrust.ogg", DataType.Buffer);
         thrust.setReverbEnabled(false);
         thrust.setLooping(true);
     }
@@ -117,7 +118,7 @@ public class ShipControlState extends BaseAppState
     }
 
     @Override
-    protected void enable() {
+    protected void onEnable() {
         lastFrame = System.nanoTime();
 
         InputMapper inputMapper = GuiGlobals.getInstance().getInputMapper();
@@ -125,11 +126,12 @@ public class ShipControlState extends BaseAppState
     }
 
     @Override
-    protected void disable() {
+    protected void onDisable() {
         InputMapper inputMapper = GuiGlobals.getInstance().getInputMapper();
         inputMapper.deactivateGroup(ShipFunctions.GROUP);
     }
 
+    @Override
     public void valueActive( FunctionId func, double value, double tpf ) {
         if( func == ShipFunctions.F_TURN ) {
 
@@ -163,6 +165,7 @@ public class ShipControlState extends BaseAppState
         }
     }
 
+    @Override
     public void valueChanged( FunctionId func, InputState value, double tpf ) {
 
         if( func == ShipFunctions.F_SHOOT && value == InputState.Positive ) {
