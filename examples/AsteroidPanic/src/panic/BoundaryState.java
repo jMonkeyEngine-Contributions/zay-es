@@ -35,13 +35,13 @@
 package panic;
 
 import com.jme3.app.Application;
+import com.jme3.app.state.BaseAppState;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.simsilica.es.Entity;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntitySet;
-import com.simsilica.lemur.event.BaseAppState;
 
 
 /**
@@ -86,12 +86,13 @@ public class BoundaryState extends BaseAppState {
         entities = null;
     }
 
+
     @Override
-    protected void enable() {
+    protected void onEnable() {
     }
 
     @Override
-    protected void disable() {
+    protected void onDisable() {
     }
 
     @Override
@@ -126,4 +127,5 @@ public class BoundaryState extends BaseAppState {
             }
         }
     }
+
 }
