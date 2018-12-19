@@ -35,12 +35,12 @@
 package panic;
 
 import com.jme3.app.Application;
+import com.jme3.app.state.BaseAppState;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.simsilica.es.Entity;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntitySet;
-import com.simsilica.lemur.event.BaseAppState;
 
 
 /**
@@ -72,12 +72,12 @@ public class PhysicsState extends BaseAppState {
     }
 
     @Override
-    protected void enable() {
+    protected void onEnable() {
         lastFrame = System.nanoTime();
     }
 
     @Override
-    protected void disable() {
+    protected void onDisable() {
     }
 
     private Quaternion addScaledVector( Quaternion orientation, Vector3f v, double scale ) {
