@@ -55,6 +55,7 @@ public class ModelType implements EntityComponent {
         return type;
     }
 
+    @Override
     public String toString() {
         return "ModelType[" + type + "]";
     }
