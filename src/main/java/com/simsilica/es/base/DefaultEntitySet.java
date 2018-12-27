@@ -119,13 +119,14 @@ public class DefaultEntitySet extends AbstractSet<Entity>
     /**
      *  Called to have the entity set load its initial set of 
      *  data.  This is called during creation (but not construction)
-     *  and when the filter is reset.  
+     *  and when the filter is reset.   
      */
     protected void loadEntities( boolean reload ) {
 
         Set<EntityId> idSet = ed.findEntities(mainFilter, types);
-        if( idSet.isEmpty() )
+        if( idSet.isEmpty() ) {
             return;
+        }
  
         // Note: we do a full component loop here just to
         // reuse the EntityComponent[] buffer.  We could have
@@ -158,7 +159,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
         // about threading and stuff.  But the EntityChange events
         // are getting queued and as long as they aren't rejected
         // out of hand (which would be a bug) then we don't care if
-        // they come in while we build the entity set.        
+        // they come in while we build the entity set. 
     }     
 
     /**
@@ -176,7 +177,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             }                 
         }
     }
- 
+    
     /**
      *  Swaps out the current main filter for a new one.  Returns
      *  true if the entity set was changed during this process.
