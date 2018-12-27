@@ -76,7 +76,7 @@ public class HostedEntityData {
     private final AtomicBoolean closing = new AtomicBoolean(false);
     private final Map<Integer, EntitySet> activeSets = new ConcurrentHashMap<>();
     private final Map<Integer, EntityInfo> activeEntities = new ConcurrentHashMap<>();
- 
+
     /**
      *  Used to lock against sending updates in specific cases where
      *  the EntitySet updates would cause issues for other code.  So far
@@ -136,7 +136,11 @@ public class HostedEntityData {
         this.conn = conn;
         log.trace("Created HostedEntityData:" + this);    
     }
-    
+ 
+    public void registerComponentVisibility( ComponentVisibility visibility ) {
+        ed.registerComponentVisibility(visibility);
+    }
+ 
     public void close() {
         if( !closing.compareAndSet(false, true) ) {
             return;
@@ -263,10 +267,9 @@ public class HostedEntityData {
         
         if( log.isTraceEnabled() ) {
             log.trace("Creating set for ID:" + msg.getSetId());
-        }
-            
+        } 
         set = ed.getEntities(msg.getFilter(), msg.getComponentTypes());
-        
+
         int batchMax = settings.getMaxEntityBatchSize();
         List<ComponentData> data = new ArrayList<>();
         for( Entity e : set ) {
@@ -292,8 +295,9 @@ public class HostedEntityData {
     }
  
     public void resetEntitySetFilter( HostedConnection source, ResetEntitySetFilterMessage msg ) {
-        if( log.isTraceEnabled() )
+        if( log.isTraceEnabled() ) {
             log.trace( "resetEntitySetFilter:" + msg );
+        }
         
         // Note: we could avoid the lock by queuing a command that applies
         //       the filter in sendUpdates() but we don't really avoid much
@@ -394,15 +398,36 @@ public class HostedEntityData {
         // They can afford to wait.
         updateLock.lock();        
         try {
+            log.trace("Updating entity sets");
+            
             // Step 2 and 3: update the entity sets and mark usage
             for( Map.Entry<Integer,EntitySet> e : activeSets.entrySet() ) {
                 EntitySet set = e.getValue();
  
+                if( log.isTraceEnabled() ) {
+                    log.trace("Updating set for types:" + Arrays.asList(ed.getTypes(set)));
+                }
+
                 // Step 2: apply the changes
                 if( set.applyChanges() ) {
+                    if( log.isTraceEnabled() ) {
+                        for( Entity entity : set.getRemovedEntities() ) {
+                            log.trace("should be removed:" + entity.getId());
+                        }
+                        for( Entity entity : set.getChangedEntities() ) {
+                            log.trace("should be updated:" + entity.getId());
+                        }
+                        for( Entity entity : set.getAddedEntities() ) {
+                            log.trace("should be added:" + entity.getId());
+                        }
+                    }
+                
                     // For adds, we still need to send the whole entity or
                     // the client won't get it.
                     for( Entity entity : set.getAddedEntities() ) {
+                        if( log.isTraceEnabled() ) {
+                            log.trace("Sending new entity:" + entity.getId() + " to set:" + e.getKey());
+                        }                    
                         // Note: we could technically be smarter about this
                         // and send only the components we know that the client
                         // doesn't know about.  We track interest, so we know.
@@ -412,10 +437,18 @@ public class HostedEntityData {
                         }
                     }
                     
+                    // Note: 2018-12-15 - since I just had to reteach myself, I'm
+                    // leaving a comment.  The reason that we don't see set.getRemovedEntities()
+                    // or set.getChangedEntities() is because we are going to send all of the
+                    // relevant EntityChange events in a later loop and that will take care
+                    // of that.  We specifically process added entities here so that we can send
+                    // the full component list for that entity.  I guess one of those is
+                    // probably redundant with a change we'll send later but so be it.                    
+                    
                     // Follow up with anything remaining in the buffer 
                     if( !entityBuffer.isEmpty() ) {
                         sendAndClear(e.getKey(), entityBuffer);
-                    } 
+                    }
                 }
                 set.clearChangeSets();  // we don't need them
  
@@ -426,6 +459,7 @@ public class HostedEntityData {
                 }
             }            
         } finally {
+            log.trace("Done updating entity sets");        
             updateLock.unlock();
         }
         
@@ -452,7 +486,7 @@ public class HostedEntityData {
                 // Skip it as we don't track this particular ID + type combo
                 continue;
             }
-            
+
             // Buffer the updates            
             changeList.add(change);
             if( changeList.size() > changeMax ) {

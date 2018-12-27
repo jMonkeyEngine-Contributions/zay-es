@@ -5,6 +5,10 @@ Zay-ES-Net v1.3.2 (unreleased)
     null won't be.
 * Added EntityDataHostedServer.getHostedEntityData() for setting up connection
     specific entity stuff from other services.
+* Added support for client-specific ComponentVisibility filters that can be used to
+    limit the clients' views of certain component values, e.g.: based on permissions,
+    local object visibility, etc..
+* Added lots of additional trace logging in support of the above.
     
 
 Zay-ES-Net v1.3.1 (latest)
