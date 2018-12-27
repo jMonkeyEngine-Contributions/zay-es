@@ -141,6 +141,14 @@ public class EntityDataHostedService extends AbstractHostedService
         hc.setAttribute(HostedEntityData.ATTRIBUTE_NAME, null);
         hed.close();
     }
+
+    /**
+     *  Returns the HostedEntityData for the specified connection.  This
+     *  can be used to setup connection-specific entity data setup.
+     */
+    public HostedEntityData getHostedEntityData( HostedConnection hc ) {
+        return hc.getAttribute(HostedEntityData.ATTRIBUTE_NAME); 
+    }
  
     /**
      *  Sets the maximum number of entities that will be sent back

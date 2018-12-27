@@ -3,6 +3,8 @@ Zay-ES-Net v1.3.2 (unreleased)
 * Fixed HostedEntityData.getStringInfo() to send back a null if the ID doesn't exist
     for the string rather than sending back -1.  A -1 would have been cached but a
     null won't be.
+* Added EntityDataHostedServer.getHostedEntityData() for setting up connection
+    specific entity stuff from other services.
     
 
 Zay-ES-Net v1.3.1 (latest)
