@@ -9,6 +9,9 @@ Zay-ES-Net v1.3.2 (unreleased)
     limit the clients' views of certain component values, e.g.: based on permissions,
     local object visibility, etc..
 * Added lots of additional trace logging in support of the above.
+* Fixed HostedEntityData.getEntitySet() to force the next sendUpdates() to make 
+    at least one pass through the entity sets.  Else some components won't be
+    properly tracked.
     
 
 Zay-ES-Net v1.3.1 (latest)

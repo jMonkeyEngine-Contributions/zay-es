@@ -130,6 +130,7 @@ public class HostedEntityData {
      */
     private final List<EntityChange> changeList = new ArrayList<>();
     
+    
     public HostedEntityData( EntityHostSettings settings, HostedConnection conn, ObservableEntityData ed ) {
         this.settings = settings;
         this.ed = new EntityDataWrapper(ed);
@@ -292,6 +293,15 @@ public class HostedEntityData {
         // (except with filter resets which will be dealt with 
         //  using a short-lived lock for that case.)
         activeSets.put(setId, set);
+        
+        // Pretend that a filter has been reset so that the sendUpdates() loop
+        // will make one pass through the sets and mark the tracker for this new
+        // entity set.  Without this, sets retrieved won't see their removes if
+        // there are no other entity updates between set retrieval and entity removal.
+        // Reusing this flag is a bit of a hack... but technically it's not wrong.
+        // "Why can't we just update tracker here?"... because it's not thread safe
+        // to do so.
+        filtersReset.set(true);
     }
  
     public void resetEntitySetFilter( HostedConnection source, ResetEntitySetFilterMessage msg ) {
@@ -391,7 +401,7 @@ public class HostedEntityData {
             // Hey, no change... we can early out (a nice optimization over the
             // old version)
             return;
-        } 
+        }
 
         // One lock per update is better than locking per entity set
         // even if it makes message handling methods wait a little longer.
@@ -452,10 +462,13 @@ public class HostedEntityData {
                 }
                 set.clearChangeSets();  // we don't need them
  
-                // Step 3: 'mark' usage in the tracker
-                Class<EntityComponent>[] types = ed.getTypes(set);
-                for( Class<EntityComponent> type : types ) {
-                    tracker.set(set.getEntityIds(), type, frame);
+                // Step 3: 'mark' usage in the tracker if there are entities
+                // in the set at all
+                if( !set.isEmpty() ) {
+                    Class<EntityComponent>[] types = ed.getTypes(set);
+                    for( Class<EntityComponent> type : types ) {
+                        tracker.set(set.getEntityIds(), type, frame);
+                    }
                 }
             }            
         } finally {
