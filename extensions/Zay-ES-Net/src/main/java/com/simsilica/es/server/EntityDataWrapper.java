@@ -152,7 +152,7 @@ public class EntityDataWrapper implements ObservableEntityData {
     @Override
     public EntityId findEntity( ComponentFilter filter, Class... types ) {
         if( log.isTraceEnabled() ) {
-            log.info("findEntity(" + filter + ", " + Arrays.asList(types) + ")");
+            log.trace("findEntity(" + filter + ", " + Arrays.asList(types) + ")");
         }
         // FIXME: reimplement in terms of findEntities() or using a similar
         // technique to pay attention to component visility.    

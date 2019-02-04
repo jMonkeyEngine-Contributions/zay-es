@@ -2,6 +2,8 @@ Zay-ES Core v1.3.1 (unreleased)
 -------------------
 * Fixed MemStringIndex.getStringId(string, false) to return -1 instead of throwing
     an NPE if the string has no ID.
+* Modified DefaultEntityData.addEntityComponentListener() to throw an IllegalArgumentException
+    for null listeners.
 
 
 Zay-ES Core v1.3.0 (latest)

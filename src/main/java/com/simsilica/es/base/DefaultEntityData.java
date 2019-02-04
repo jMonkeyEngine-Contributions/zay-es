@@ -88,6 +88,9 @@ public class DefaultEntityData implements ObservableEntityData {
  
     @Override
     public void addEntityComponentListener( EntityComponentListener l ) {
+        if( l == null ) {
+            throw new IllegalArgumentException("Listener cannot be null");
+        }
         entityListeners.add(l);
     }
     
