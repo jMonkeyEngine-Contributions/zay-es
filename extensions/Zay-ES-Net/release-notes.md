@@ -1,3 +1,7 @@
+Zay-ES-Net v1.4.1 (unreleased)
+------------------
+
+
 Zay-ES-Net v1.4.0 (latest)
 ------------------
 * Fixed HostedEntityData.getStringInfo() to send back a null if the ID doesn't exist
@@ -9,18 +13,18 @@ Zay-ES-Net v1.4.0 (latest)
     limit the clients' views of certain component values, e.g.: based on permissions,
     local object visibility, etc..
 * Added lots of additional trace logging in support of the above.
-* Fixed HostedEntityData.getEntitySet() to force the next sendUpdates() to make 
+* Fixed HostedEntityData.getEntitySet() to force the next sendUpdates() to make
     at least one pass through the entity sets.  Else some components won't be
     properly tracked.
-    
 
-Zay-ES-Net v1.3.1 
+
+Zay-ES-Net v1.3.1
 ------------------
 * Fixed a bug introduced in PR #18 where the filter check in RemoteEntityData
     completeEntity() was inverted.
-    
 
-Zay-ES-Net v1.3.0 
+
+Zay-ES-Net v1.3.0
 ------------------
 * RemoteEntityData.completeEntity() modified to check the components against
     the filter to fix the case where two entity sets share the same components
@@ -50,18 +54,18 @@ Zay-ES-Net v1.2.1
     to take advantage of JME 3.1's new service model.
 * Server-side entity data services modified to require ObservableEntityData
     implementations.
-* Completely reworked how entity updates are sent to clients.  The 
+* Completely reworked how entity updates are sent to clients.  The
     HostedEntityData.sendUpdates() method is entirely new and based on a new
     approach.  In short: client interest is tracked in a mark-and-sweep data
     structure and only relevant changes are sent after the data structures
     have been updated.  This avoids sending out of order information as well
-    as redundant or hidden information.        
+    as redundant or hidden information.
 * RemoteEntityData's internal RemoteEntitySet now avoids resolving incomplete
     entities.  In the latest code, if the entity is a member of the set then
     it would already have received all of the necessary data.  A round trip
     to the server to grab data that definitely won't be there is a wasteful
-    op, now avoided.    
-    
+    op, now avoided.
+
 
 Zay-ES-Net v1.1.1
 ------------------

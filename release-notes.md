@@ -1,3 +1,7 @@
+Zay-ES Core v1.3.2 (unreleased)
+-------------------
+
+
 Zay-ES Core v1.3.1 (latest)
 -------------------
 * Fixed MemStringIndex.getStringId(string, false) to return -1 instead of throwing
@@ -6,7 +10,7 @@ Zay-ES Core v1.3.1 (latest)
     for null listeners.
 
 
-Zay-ES Core v1.3.0 (latest)
+Zay-ES Core v1.3.0
 -------------------
 * MemStringIndex fixed to consider the boolean 'add' parameter.
 * Set sourceCompatibility to 1.7 and turned on detailed 'unchecked' warnings
@@ -32,17 +36,17 @@ Zay-ES Core v1.2.1
     already capable of loading its own data.)
 * DefaultEntitySet's Transaction.completeEntity() method was moved to
     the outer class so that subclasses can override how incomplete entities
-    are resolved by the set.         
-    
+    are resolved by the set.
+
 
 Zay-ES Core v1.1.1
 -------------------
 * Fixed the DefaultEntitySet logger to log to the appropriate category.
-* Added some defensive entityId parameter checks to DefaultEntityData 
+* Added some defensive entityId parameter checks to DefaultEntityData
     getComponent and setComponent.
 * Added an in-memory StringIndex implementation and include it by default
     in DefaultEntityData if it hasn't been extended.
-    
+
 
 Zay-ES Core r1202
 ------------------
@@ -58,7 +62,7 @@ Zay-ES Core r1200
 * Added a protected isReleased() method to DefaultEntitySet so subclasses
     can check released state.
 * Added a protected method for accessing the change queue.
-* Added a method to DefaultEntitySet.Transaction for directly injecting 
+* Added a method to DefaultEntitySet.Transaction for directly injecting
     added entities.  (Useful for when entities are loaded asynchronously.)
 * Added an internal optimization to DefaultEntitySet that avoids attempting
     to re-retrieve a component that was removed.
