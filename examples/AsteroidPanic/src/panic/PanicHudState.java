@@ -35,6 +35,7 @@
 package panic;
 
 import com.jme3.app.Application;
+import com.jme3.app.state.BaseAppState;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.simsilica.lemur.Axis;
@@ -46,7 +47,6 @@ import com.simsilica.lemur.component.BorderLayout;
 import com.simsilica.lemur.component.DynamicInsetsComponent;
 import com.simsilica.lemur.component.SpringGridLayout;
 import com.simsilica.lemur.core.VersionedReference;
-import com.simsilica.lemur.event.BaseAppState;
 import com.simsilica.lemur.style.ElementId;
 
 
@@ -178,13 +178,13 @@ public class PanicHudState extends BaseAppState {
     }
 
     @Override
-    protected void enable() {
+    protected void onEnable() {
         Main main = (Main)getApplication();
         main.getGuiNode().attachChild(hud);
     }
 
     @Override
-    protected void disable() {
+    protected void onDisable() {
         hud.removeFromParent();
     }
 }

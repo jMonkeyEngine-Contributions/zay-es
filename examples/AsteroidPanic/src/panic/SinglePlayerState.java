@@ -35,7 +35,9 @@
 package panic;
 
 import com.jme3.app.Application;
+import com.jme3.app.state.BaseAppState;
 import com.jme3.asset.AssetManager;
+import com.jme3.audio.AudioData.DataType;
 import com.jme3.audio.AudioNode;
 import com.jme3.audio.AudioSource;
 import com.jme3.math.Quaternion;
@@ -45,7 +47,6 @@ import com.simsilica.es.EntityData;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntitySet;
 import com.simsilica.es.Filters;
-import com.simsilica.lemur.event.BaseAppState;
 
 
 /**
@@ -279,7 +280,7 @@ public class SinglePlayerState extends BaseAppState {
     protected void startMusic() {
         if( music == null || music.getStatus() == AudioSource.Status.Stopped ) {
             AssetManager assets = getApplication().getAssetManager();
-            music = new AudioNode(assets, "Sounds/panic-ambient.ogg", true);
+            music = new AudioNode(assets, "Sounds/panic-ambient.ogg", DataType.Stream);
             music.setReverbEnabled(false);
             music.setPositional(false);
             music.setVolume(0.6f);
@@ -339,10 +340,10 @@ public class SinglePlayerState extends BaseAppState {
     }
 
     @Override
-    protected void enable() {
+    protected void onEnable() {
     }
 
     @Override
-    protected void disable() {
+    protected void onDisable() {
     }
 }

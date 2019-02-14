@@ -35,12 +35,12 @@
 package panic;
 
 import com.jme3.app.Application;
+import com.jme3.app.state.BaseAppState;
 import com.jme3.math.Vector3f;
 import com.jme3.util.SafeArrayList;
 import com.simsilica.es.Entity;
 import com.simsilica.es.EntityData;
 import com.simsilica.es.EntitySet;
-import com.simsilica.lemur.event.BaseAppState;
 import java.util.Set;
 
 
@@ -166,13 +166,13 @@ public class CollisionState extends BaseAppState {
     }
 
     @Override
-    protected void enable() {
+    protected void onEnable() {
         entities.applyChanges();
         addColliders(entities);
     }
 
     @Override
-    protected void disable() {
+    protected void onDisable() {
         removeColliders(entities);
     }
 

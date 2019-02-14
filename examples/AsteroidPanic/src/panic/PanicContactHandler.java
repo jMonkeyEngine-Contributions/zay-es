@@ -35,6 +35,7 @@
 package panic;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.audio.AudioData.DataType;
 import com.jme3.audio.AudioNode;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
@@ -87,13 +88,13 @@ public class PanicContactHandler implements ContactHandler {
         this.ed = state.getApplication().getStateManager().getState(EntityDataState.class).getEntityData();
 
         AssetManager assets = state.getApplication().getAssetManager();
-        bump1 = new AudioNode(assets, "Sounds/low-bang.ogg", false);
+        bump1 = new AudioNode(assets, "Sounds/low-bang.ogg", DataType.Buffer);
         bump1.setReverbEnabled(false);
-        bump2 = new AudioNode(assets, "Sounds/high-bang.ogg", false);
+        bump2 = new AudioNode(assets, "Sounds/high-bang.ogg", DataType.Buffer);
         bump2.setReverbEnabled(false);
-        boom1 = new AudioNode(assets, "Sounds/boom1.ogg", false);
+        boom1 = new AudioNode(assets, "Sounds/boom1.ogg", DataType.Buffer);
         boom1.setReverbEnabled(false);
-        boom2 = new AudioNode(assets, "Sounds/boom2.ogg", false);
+        boom2 = new AudioNode(assets, "Sounds/boom2.ogg", DataType.Buffer);
         boom2.setReverbEnabled(false);
     }
 
@@ -281,6 +282,7 @@ public class PanicContactHandler implements ContactHandler {
         boom2.playInstance();
     }
 
+    @Override
     public void handleContact( Entity e1, Entity e2, Vector3f cp, Vector3f cn, float penetration )
     {
         resolveCollision(e1, e2, cp, cn, penetration);

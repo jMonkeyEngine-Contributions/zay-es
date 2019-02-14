@@ -35,7 +35,9 @@
 package panic;
 
 import com.jme3.app.Application;
+import com.jme3.app.state.BaseAppState;
 import com.jme3.asset.AssetManager;
+import com.jme3.audio.AudioData.DataType;
 import com.jme3.audio.AudioNode;
 import com.jme3.audio.AudioSource;
 import com.jme3.math.Vector3f;
@@ -45,7 +47,6 @@ import com.simsilica.lemur.Command;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
 import com.simsilica.lemur.component.SpringGridLayout;
-import com.simsilica.lemur.event.BaseAppState;
 import com.simsilica.lemur.style.ElementId;
 
 
@@ -93,13 +94,13 @@ public class MainMenuState extends BaseAppState {
         menu.setLocalScale(menuScale);
 
         AssetManager assets = app.getAssetManager();
-        selectUp = new AudioNode(assets, "Sounds/select-up.ogg", false);
+        selectUp = new AudioNode(assets, "Sounds/select-up.ogg", DataType.Buffer);
         selectUp.setReverbEnabled(false);
         selectUp.setPositional(false);
-        selectDown = new AudioNode(assets, "Sounds/select-down.ogg", false);
+        selectDown = new AudioNode(assets, "Sounds/select-down.ogg", DataType.Buffer);
         selectDown.setReverbEnabled(false);
         selectDown.setPositional(false);
-        selectNeutral = new AudioNode(assets, "Sounds/select-neutral.ogg", false);
+        selectNeutral = new AudioNode(assets, "Sounds/select-neutral.ogg", DataType.Buffer);
         selectNeutral.setReverbEnabled(false);
         selectNeutral.setPositional(false);
 
@@ -117,7 +118,7 @@ public class MainMenuState extends BaseAppState {
     protected void startMusic() {
         if( music == null || music.getStatus() == AudioSource.Status.Stopped ) {
             AssetManager assets = getApplication().getAssetManager();
-            music = new AudioNode(assets, "Sounds/panic-menu-theme.ogg", true);
+            music = new AudioNode(assets, "Sounds/panic-menu-theme.ogg", DataType.Stream);
             music.setReverbEnabled(false);
             music.setPositional(false);
             music.play();
@@ -132,25 +133,27 @@ public class MainMenuState extends BaseAppState {
     }
 
     @Override
-    protected void enable() {
+    protected void onEnable() {
         Main main = (Main)getApplication();
         main.getGuiNode().attachChild(menu);
         startMusic();
     }
 
     @Override
-    protected void disable() {
+    protected void onDisable() {
         menu.removeFromParent();
         stopMusic();
     }
 
     private class Highlight implements Command<Button> {
+        @Override
         public void execute( Button source ) {
             selectNeutral.playInstance();
         }
     }
 
     private class Start implements Command<Button> {
+        @Override
         public void execute( Button source ) {
             selectUp.playInstance();
             getStateManager().attach(new SinglePlayerState());
@@ -159,6 +162,7 @@ public class MainMenuState extends BaseAppState {
     }
 
     private class Exit implements Command<Button> {
+        @Override
         public void execute( Button source ) {
             selectDown.playInstance();
             getApplication().stop();

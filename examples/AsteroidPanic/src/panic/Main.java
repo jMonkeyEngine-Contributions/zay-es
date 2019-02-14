@@ -35,13 +35,8 @@
 package panic;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.math.ColorRGBA;
 import com.jme3.renderer.RenderManager;
 import com.simsilica.lemur.GuiGlobals;
-import com.simsilica.lemur.HAlignment;
-import com.simsilica.lemur.Insets3f;
-import com.simsilica.lemur.component.TbtQuadBackgroundComponent;
-import com.simsilica.lemur.style.Attributes;
 import com.simsilica.lemur.style.Styles;
 
 /**
