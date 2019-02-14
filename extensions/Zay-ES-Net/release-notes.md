@@ -1,4 +1,4 @@
-Zay-ES-Net v1.3.2 (unreleased)
+Zay-ES-Net v1.4.0 (latest)
 ------------------
 * Fixed HostedEntityData.getStringInfo() to send back a null if the ID doesn't exist
     for the string rather than sending back -1.  A -1 would have been cached but a
@@ -14,7 +14,7 @@ Zay-ES-Net v1.3.2 (unreleased)
     properly tracked.
     
 
-Zay-ES-Net v1.3.1 (latest)
+Zay-ES-Net v1.3.1 
 ------------------
 * Fixed a bug introduced in PR #18 where the filter check in RemoteEntityData
     completeEntity() was inverted.
