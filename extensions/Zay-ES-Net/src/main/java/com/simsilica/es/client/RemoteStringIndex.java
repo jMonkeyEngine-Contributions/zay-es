@@ -139,7 +139,7 @@ public class RemoteStringIndex implements StringIndex {
             
             // Else ask remote
             result = remote.getString(id);
-            if( result != null ) {
+            if( result != null && result > 0 ) {
                 idIndex.put(result, id);
                 stringIndex.put(id, result);
             }
