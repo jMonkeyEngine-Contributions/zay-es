@@ -1,5 +1,8 @@
 Zay-ES-Net v1.4.1 (unreleased)
 ------------------
+* Refixed the HostedEntityData.getStringInfo() to send back a -1 if the ID doesn't
+    exist so that the client side has the proper information to handle it as a 
+    non-cacheable miss.  (Previous fix still threw NPEs.)
 
 
 Zay-ES-Net v1.4.0 (latest)
