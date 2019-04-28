@@ -1,3 +1,7 @@
+Zay-ES-Net v1.4.2 (unreleased)
+------------------
+
+
 Zay-ES-Net v1.4.1 (latest)
 ------------------
 * Refixed the HostedEntityData.getStringInfo() to send back a -1 if the ID doesn't
