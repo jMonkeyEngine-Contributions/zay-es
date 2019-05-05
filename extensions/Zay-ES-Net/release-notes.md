@@ -1,5 +1,7 @@
 Zay-ES-Net v1.4.2 (unreleased)
 ------------------
+* Fixed a bug in RemoteStringIndex where id=0 was being converted to id=-1
+    as if the item wasn't mapped.
 
 
 Zay-ES-Net v1.4.1 (latest)
