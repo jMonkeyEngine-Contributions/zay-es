@@ -1,10 +1,10 @@
-Zay-ES-Net v1.4.2 (unreleased)
+Zay-ES-Net v1.4.2 (latest)
 ------------------
 * Fixed a bug in RemoteStringIndex where id=0 was being converted to id=-1
     as if the item wasn't mapped.
 
 
-Zay-ES-Net v1.4.1 (latest)
+Zay-ES-Net v1.4.1 
 ------------------
 * Refixed the HostedEntityData.getStringInfo() to send back a -1 if the ID doesn't
     exist so that the client side has the proper information to handle it as a 
