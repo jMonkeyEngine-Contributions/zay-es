@@ -1,9 +1,9 @@
-Zay-ES Core v1.3.2 (unreleased)
+Zay-ES Core v1.3.2 (latest)
 -------------------
 * Updated StringIndex javadoc to provide more information.
 
 
-Zay-ES Core v1.3.1 (latest)
+Zay-ES Core v1.3.1
 -------------------
 * Fixed MemStringIndex.getStringId(string, false) to return -1 instead of throwing
     an NPE if the string has no ID.
