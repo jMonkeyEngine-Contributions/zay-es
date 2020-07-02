@@ -39,9 +39,43 @@ package com.simsilica.es;
  *  Uniquely identifies strings by int id in a persistent
  *  way that can be stored in components.
  *
+ *  <p>It is often the case where it is desirable to map some commonly
+ *  used set of strings to integer IDs for transfer over the network or 
+ *  for database storage.  These are cases where the code wants the flexibility
+ *  of strings, has a limited number of values, and wants to keep storage or
+ *  transfer space compact.  For example, object type names, shape names, 
+ *  etc..  The number is finite but not necessarily known ahead of time.  In
+ *  these cases, static constants can be clumsy and don't play nice with debug
+ *  logs.  Enums are limited to a hard-coded set of values.  Neither of these
+ *  are quite as flexible as strings for some use-cases.</p>  
+ *
+ *  <p>Because the number of strings is finite, sending full strings over the wire 
+ *  and/or storing them in a database is wasteful. String index lets you convert 
+ *  them to/from unique integer IDs that are safely stored in the ES... and safely
+ *  transferred over the network in a Zay-ES-net setup.</p>
+ *
+ *  <pre>
+ *  int myId = stringIndex.getStringId("My String", true);
+ *  ...
+ *  String s = stringIndex.getString(myId);
+ *  s.equals("My String") == true
+ *  </pre>
+ *
+ *  <p>And in the getString() case, it could have been called on a remote client
+ *  and still find the string.</p>
+ *
  *  @author    Paul Speed
  */
 public interface StringIndex {
+    /**
+     *  Returns an existing integer ID mapped to the specified string or if 'add' is
+     *  true then it will create one if it doesn't already exist.
+     *  Returns -1 if add=false and the string has not been previously mapped.
+     */
     public int getStringId(String s, boolean add);
+    
+    /**
+     *  Returns the string value for a previously registered string.  
+     */
     public String getString(int id);    
 }

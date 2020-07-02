@@ -1,5 +1,6 @@
 Zay-ES Core v1.3.2 (unreleased)
 -------------------
+* Updated StringIndex javadoc to provide more information.
 
 
 Zay-ES Core v1.3.1 (latest)
