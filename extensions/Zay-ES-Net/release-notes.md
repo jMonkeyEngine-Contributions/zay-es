@@ -2,6 +2,8 @@ Zay-ES-Net v1.4.2 (latest)
 ------------------
 * Fixed a bug in RemoteStringIndex where id=0 was being converted to id=-1
     as if the item wasn't mapped.
+* Fixed an NPE in RemoteEntityData (presumably) when an entity set has been
+    closed while messages from the server are still pending.    
 
 
 Zay-ES-Net v1.4.1 

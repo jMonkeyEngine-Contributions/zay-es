@@ -683,6 +683,13 @@ public class RemoteEntityData implements EntityData {
                 log.trace("entityData(" + msg + ")");
             }                         
             RemoteEntitySet set = activeSets.get(msg.getSetId());
+            if( set == null ) {
+                // Probably it was released before we got this message... ships
+                // passing in the night.  Just in case, we'll log a warning at 
+                // least.
+                log.warn("Set not found for ID:" + msg.getSetId() + "  May have been released.");
+                return; 
+            }
  
             for( ComponentData d : msg.getData() ) {
                 if( log.isTraceEnabled() ) {
