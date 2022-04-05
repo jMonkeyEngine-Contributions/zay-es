@@ -19,6 +19,8 @@ apply plugin: 'java'
 
 version='1.3.3-SNAPSHOT'
 
+ext.slf4jVersion = '1.7.32'
+
 ext {
     bintrayLabels = ['jMonkeyEngine', 'gamedev', 'Entity System']
     releaseDescription = "Zay-ES core ${project.version}"
@@ -42,7 +44,7 @@ repositories {
 
 dependencies {
     compile 'com.google.guava:guava:19.0'
-    compile 'org.slf4j:slf4j-api:1.7.13'
+    compile "org.slf4j:slf4j-api:$slf4jVersion"
 }
 
 // Common configuration for the root and all 'real' children.
