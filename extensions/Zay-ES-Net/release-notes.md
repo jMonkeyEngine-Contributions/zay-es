@@ -1,10 +1,10 @@
-Zay-ES-Net v1.5.0 (unreleased)
+Zay-ES-Net v1.5.0 (latest)
 ------------------
 * Upgraded the build to use gradle 7.4.2
 * Migrated publishing to maven central instead of jcenter
 
 
-Zay-ES-Net v1.4.3 (latest)
+Zay-ES-Net v1.4.3
 ------------------
 * Fixed an NPE in RemoteEntityData (presumably) when an entity set has been
     closed while messages from the server are still pending.

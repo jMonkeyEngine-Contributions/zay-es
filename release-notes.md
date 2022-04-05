@@ -1,10 +1,10 @@
-Zay-ES Core v1.4.0 (unreleased)
+Zay-ES Core v1.4.0 (latest)
 -------------------
 * Upgraded the build to use gradle 7.4.2
 * Migrated publishing to maven central instead of jcenter
 
 
-Zay-ES Core v1.3.2 (latest)
+Zay-ES Core v1.3.2
 -------------------
 * Updated StringIndex javadoc to provide more information.
 
