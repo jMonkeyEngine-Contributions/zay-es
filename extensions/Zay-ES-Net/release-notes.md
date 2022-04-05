@@ -1,5 +1,7 @@
-Zay-ES-Net v1.4.4 (unreleased)
+Zay-ES-Net v1.5.0 (unreleased)
 ------------------
+* Upgraded the build to use gradle 7.4.2
+* Migrated publishing to maven central instead of jcenter
 
 
 Zay-ES-Net v1.4.3 (latest)

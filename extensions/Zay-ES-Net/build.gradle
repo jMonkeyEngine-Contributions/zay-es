@@ -1,66 +1,25 @@
-apply plugin: 'java'
+/**
+ *  Root-level Zay-es build script for the core library.
+ */
 
-version='1.4.4-SNAPSHOT'
+plugins {
+    id 'zay-es.published-library'
+}
+
+version='1.5.0-SNAPSHOT'
 
 ext.jmeVersion='3.1.0-stable'
 ext.slf4jVersion = '1.7.32'
 
-ext {
-    bintrayLabels = ['jMonkeyEngine', 'gamedev', 'Entity System', 'networking']
-    releaseDescription = "Zay-ES Net ${project.version}"
-    releaseVcsTag = "${project.name}-v${project.version}"
-}
-
-sourceCompatibility = 1.7
-compileJava {
-    options.encoding = 'UTF-8'
-    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-}
-
-repositories {
-    if( JavaVersion.current() == JavaVersion.VERSION_1_7 ) {
-        // Fallback for JDK 7 that can no longer connect to jcenter with https
-        maven { url "http://jcenter.bintray.com" }
-    } else {
-        jcenter()
-    }
+// Set this module's maven pom description
+publishing.publications.library(MavenPublication).pom {
+    description = 'Network support for the Zay-ES entity component system library.'
 }
 
 dependencies {
-    compile rootProject
-    compile "org.jmonkeyengine:jme3-networking:${jmeVersion}"
-    compile "org.slf4j:slf4j-api:$slf4jVersion"
-}
-
-
-
-// *** For some reason, this can't be injected from the root project
-//     or it picks up the root project sources instead of the subproject
-//     and doesn't even produce main jars.
-// Configuration to produce maven-repo style -sources and -javadoc jars
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-    exclude '**/.backups'
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives sourcesJar
-    archives javadocJar
-}
-
-
-// Put this at the end or it won't pick up the project.version and stuff
-// ...thus it also can't be injected.  But that means we can also be selective
-// about the sub-projects that we release.
-if( project.hasProperty('releaseUser') ) {
-    apply plugin: 'com.jfrog.bintray'
-    apply from: 'https://raw.githubusercontent.com/Simsilica/gradle-plugins/master/simtools-release.gradle'
+    api rootProject
+    api "org.jmonkeyengine:jme3-networking:${jmeVersion}"
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
 }
 
 

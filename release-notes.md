@@ -1,5 +1,7 @@
-Zay-ES Core v1.3.3 (unreleased)
+Zay-ES Core v1.4.0 (unreleased)
 -------------------
+* Upgraded the build to use gradle 7.4.2
+* Migrated publishing to maven central instead of jcenter
 
 
 Zay-ES Core v1.3.2 (latest)
