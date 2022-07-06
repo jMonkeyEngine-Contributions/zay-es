@@ -1,3 +1,9 @@
+Zay-ES Core v1.4.1 (unreleased)
+--------------------
+* Added some trace logging to DefaultEntityData.removeEntity()
+    and DefaultEntityData.removeComponent()
+
+
 Zay-ES Core v1.4.0 (latest)
 -------------------
 * Upgraded the build to use gradle 7.4.2

@@ -6,7 +6,7 @@ plugins {
     id 'zay-es.published-library'
 }
 
-version='1.4.0'
+version='1.4.1-SNAPSHOT'
 
 ext.guavaVersion='19.0'
 ext.slf4jVersion = '1.7.32'
