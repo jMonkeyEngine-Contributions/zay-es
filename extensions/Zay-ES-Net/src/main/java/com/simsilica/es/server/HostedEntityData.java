@@ -155,7 +155,7 @@ public class HostedEntityData {
             set.release();
         }
         activeSets.clear();
-        
+
         // Release all of the active entities
         /*
         Nothing to release anymore as we don't track real ones here
@@ -167,7 +167,7 @@ public class HostedEntityData {
         
         // And release our local view (which technically kind of does all of the
         // above anyway)
-        ed.close();    
+        ed.close();
     }    
     
     public void getComponents( HostedConnection source, GetComponentsMessage msg ) {
@@ -326,12 +326,31 @@ public class HostedEntityData {
         if( log.isTraceEnabled() ) {
             log.trace("releaseEntitySet:" + msg);
         }
-        
+
         // Releasing an entity set is (currently) a safe operation
         // to perform even if the set is in use at the time.  The client
         // already has to deal with the race condition of continuing to
         // get updates for a (from their perspective) released set anyway.        
         EntitySet set = activeSets.remove(msg.getSetId());
+        if( set == null ) {
+            // 2022-08-14 - I've seen an NPE here during shutdown that I think
+            // is because of a small race condition where we compete with close().
+            // It's very timing sensitive and I don't think it's a threading
+            // problem.
+            // Hypothesis: under certain conditions, releaseEntitySet() and close()
+            // come in so close together that close() gets to run first but 
+            // releaseEntitySet() also gets to run right after it.
+            // In testing, I've never been able to make them overlap start/start/finish/finish.
+            // Always start/finish/start/finish.  And if I try to expand times to make
+            // the error more prevalent then it doesn't happen at all (suggesting
+            // that SpiderMonkey is properly gating access across threads and detecting
+            // the close... but we somehow slip in before the close detection.)
+            // Either way, I'll add a warning here just in case.  During normal operation
+            // this should never ever happend and if we see it a lot then we might
+            // want some more close-state tracking. 
+            log.warn("null set in releaseEntitySet(" + msg + ")");
+            return;
+        }
         set.release();            
     }
     
