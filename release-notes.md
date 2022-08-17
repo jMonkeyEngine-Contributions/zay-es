@@ -9,7 +9,9 @@ Zay-ES Core v1.4.1 (unreleased)
     a component should be persistent even if it doesn't implement the
     PersistentComponent interface.  Sometimes a library component's persistability
     is not black and white between one codebase and another and requiring
-    interface implementation was too restrictive.    
+    interface implementation was too restrictive.
+* Modified the sql ComponentTable class to work with non-public type
+    constructors.
 
 
 Zay-ES Core v1.4.0 (latest)

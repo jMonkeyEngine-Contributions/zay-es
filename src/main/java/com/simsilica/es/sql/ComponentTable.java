@@ -34,6 +34,8 @@
 
 package com.simsilica.es.sql;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.*;
 
@@ -60,6 +62,7 @@ public class ComponentTable<T extends EntityComponent> {
     
     private boolean cached = true;
     private Class<T> type;
+    private Constructor<T> ctor;
     private FieldType[] fields;
     private String tableName;
     private String[] dbFieldNames;
@@ -67,8 +70,9 @@ public class ComponentTable<T extends EntityComponent> {
     private String insertSql;
     private String updateSql;
 
-    protected ComponentTable( Class<T> type, FieldType[] fields ) {
+    protected ComponentTable( Constructor<T> ctor, Class<T> type, FieldType[] fields ) {
         this.type = type;
+        this.ctor = ctor;
         this.fields = fields;
         this.tableName = type.getSimpleName().toUpperCase();
 
@@ -88,8 +92,20 @@ public class ComponentTable<T extends EntityComponent> {
         List<FieldType> types = FieldTypes.getFieldTypes(type);
         FieldType[] array = new FieldType[types.size()];
         array = types.toArray(array);
+
+        // Look up a no-arg constructor so that we can make sure it
+        // is accessible similar to fields
+        Constructor<T> ctor;
+        try {
+            ctor = type.getDeclaredConstructor();
+            
+            // Make sure it is accessible
+            ctor.setAccessible(true);
+        } catch( NoSuchMethodException e ) {
+            throw new IllegalArgumentException("Type does not have a no-arg constructor:" + type, e);
+        }
         
-        ComponentTable<T> result = new ComponentTable<>(type, array);
+        ComponentTable<T> result = new ComponentTable<>(ctor, type, array);
         result.initialize(session);
         
         return result;
@@ -142,8 +158,6 @@ public class ComponentTable<T extends EntityComponent> {
         ResultSet rs = md.getColumns(null, "PUBLIC", tableName, null);
         Map<String,Integer> dbFields = new HashMap<String,Integer>();
         try {
-            //if( rs.next() )
-            //    return;
             while( rs.next() ) {
                 if( log.isTraceEnabled() ) {
                     log.trace(rs.getString("TABLE_NAME") + " :" + rs.getString("COLUMN_NAME"));
@@ -151,7 +165,7 @@ public class ComponentTable<T extends EntityComponent> {
                 dbFields.put(rs.getString("COLUMN_NAME"), rs.getInt("DATA_TYPE"));
             }
             
-            dbFields.remove( "ENTITYID" );                
+            dbFields.remove("ENTITYID");                
         } finally {
             rs.close();
         }
@@ -311,7 +325,7 @@ public class ComponentTable<T extends EntityComponent> {
         try {
             if( rs.next() ) {
                 int index = 1;
-                T target = type.newInstance();
+                T target = ctor.newInstance(); 
                 for( FieldType t : fields ) {
                     index = t.load(target, rs, index);
                 }
@@ -319,9 +333,7 @@ public class ComponentTable<T extends EntityComponent> {
                 return target;               
             }
             return null;
-        } catch( InstantiationException e ) {
-            throw new RuntimeException("Error in table mapping", e);
-        } catch( IllegalAccessException e ) {
+        } catch( InvocationTargetException | InstantiationException | IllegalAccessException e ) {
             throw new RuntimeException("Error in table mapping", e);
         } finally {
             rs.close();
@@ -529,7 +541,7 @@ public class ComponentTable<T extends EntityComponent> {
         try {
             while( rs.next() ) {
                 int index = 1;
-                T target = type.newInstance();
+                T target = ctor.newInstance();
                 for( FieldType t : fields ) {
                     index = t.load(target, rs, index);
                 }
@@ -538,9 +550,7 @@ public class ComponentTable<T extends EntityComponent> {
                 
                 results.add(new ComponentReference<T>(new EntityId(entityId), target)); 
             }
-        } catch( InstantiationException e ) {
-            throw new RuntimeException("Error in table mapping", e);
-        } catch( IllegalAccessException e ) {
+        } catch( InvocationTargetException | InstantiationException | IllegalAccessException e ) {
             throw new RuntimeException("Error in table mapping", e);
         } finally {
             rs.close();
