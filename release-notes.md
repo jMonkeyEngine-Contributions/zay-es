@@ -2,6 +2,14 @@ Zay-ES Core v1.4.1 (unreleased)
 --------------------
 * Added some trace logging to DefaultEntityData.removeEntity()
     and DefaultEntityData.removeComponent()
+* Added the PersistentEntityData interface to allow EntityData implementations
+    to implement persistence-specific methods.
+* Modified SqlEntityData to implement the PersistentEntityData interface.
+* Added PersistentEntityData.markPersistentType() for indicating that
+    a component should be persistent even if it doesn't implement the
+    PersistentComponent interface.  Sometimes a library component's persistability
+    is not black and white between one codebase and another and requiring
+    interface implementation was too restrictive.    
 
 
 Zay-ES Core v1.4.0 (latest)

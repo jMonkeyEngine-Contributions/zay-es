@@ -36,12 +36,14 @@ package com.simsilica.es.sql;
 
 import java.io.File;
 import java.sql.*;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.PersistentComponent;
+import com.simsilica.es.PersistentEntityData;
 import com.simsilica.es.base.ComponentHandler;
 import com.simsilica.es.base.DefaultEntityData;
 
@@ -52,12 +54,13 @@ import com.simsilica.es.base.DefaultEntityData;
  *
  *  @author    Paul Speed
  */
-public class SqlEntityData extends DefaultEntityData {
+public class SqlEntityData extends DefaultEntityData implements PersistentEntityData {
 
     static Logger log = LoggerFactory.getLogger(SqlEntityData.class);
     
     private String dbPath;
     private ThreadLocal<SqlSession> cachedSession = new ThreadLocal<SqlSession>();
+    private Set<Class> persistentTypes = new HashSet<>();
  
     public SqlEntityData( File dbPath, long writeDelay ) throws SQLException {
         this(dbPath.toURI().toString(), writeDelay);
@@ -83,6 +86,14 @@ public class SqlEntityData extends DefaultEntityData {
                
         setIdGenerator(PersistentEntityIdGenerator.create( this )); 
         setStringIndex(new SqlStringIndex( this, 100 )); 
+    }
+ 
+    @Override
+    public <T extends EntityComponent> void markPersistentType( Class<T> type ) {
+        if( hasHandler(type) ) {
+            throw new IllegalStateException("Handler already initialized for type:" + type);
+        }   
+        persistentTypes.add(type);
     }
  
     protected void execute( String statement ) throws SQLException {
@@ -117,7 +128,7 @@ public class SqlEntityData extends DefaultEntityData {
 
     @Override
     protected <T extends EntityComponent> ComponentHandler<T> lookupDefaultHandler( Class<T> type ) {
-        if( PersistentComponent.class.isAssignableFrom(type) ) {
+        if( PersistentComponent.class.isAssignableFrom(type) || persistentTypes.contains(type) ) {
             return new SqlComponentHandler<T>(this, type);
         }
         return super.lookupDefaultHandler(type);
