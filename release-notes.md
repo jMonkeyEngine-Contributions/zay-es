@@ -12,6 +12,7 @@ Zay-ES Core v1.4.1 (unreleased)
     interface implementation was too restrictive.
 * Modified the sql ComponentTable class to work with non-public type
     constructors.
+* Fixed sql ComponentTable to handle components with no fields.     
 
 
 Zay-ES Core v1.4.0 (latest)

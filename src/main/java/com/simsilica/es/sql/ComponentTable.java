@@ -164,8 +164,9 @@ public class ComponentTable<T extends EntityComponent> {
                 }
                 dbFields.put(rs.getString("COLUMN_NAME"), rs.getInt("DATA_TYPE"));
             }
-            
-            dbFields.remove("ENTITYID");                
+ 
+            // 2022-08-16 Leave this in so we know we found a table at all           
+            //dbFields.remove("ENTITYID");                
         } finally {
             rs.close();
         }
@@ -176,6 +177,11 @@ public class ComponentTable<T extends EntityComponent> {
         }
 
         if( !dbFields.isEmpty() ) {
+            // 2022-08-16 The object fields won't have an entityID so we
+            // remove it before the structure check.  In today's light, if we wanted
+            // to be 100% correct then we would still make sure we had it but this
+            // is fine.  
+            dbFields.remove("ENTITYID");                        
             checkStructure(defs, dbFields);
             return;
         }
@@ -314,8 +320,15 @@ public class ComponentTable<T extends EntityComponent> {
  
     public T getComponent( SqlSession session, EntityId entityId ) throws SQLException {
     
-        StringBuilder sql = new StringBuilder("SELECT ");       
-        Joiner.on(", ").appendTo(sql, dbFieldNames);
+        StringBuilder sql = new StringBuilder("SELECT ");
+        if( dbFieldNames.length > 0 ) {       
+            Joiner.on(", ").appendTo(sql, dbFieldNames);
+        } else {
+            // 2022-08-16 We need 'some' field just to make the SQL work in
+            // the case of no other fields.  Since we will ignore it anyway
+            // then it doesn't really matter but this seems better than '*'
+            sql.append("entityId");
+        }
         sql.append(" FROM " + tableName);
         sql.append(" WHERE entityId=?");
 
@@ -531,9 +544,14 @@ public class ComponentTable<T extends EntityComponent> {
         // Just grab them all for now
         List<Map.Entry<EntityId,T>> results = new ArrayList<Map.Entry<EntityId,T>>();
  
-        StringBuilder sql = new StringBuilder("SELECT ");       
-        Joiner.on(", ").appendTo(sql, dbFieldNames);
-        sql.append(", entityId");       
+        StringBuilder sql = new StringBuilder("SELECT ");
+        if( dbFieldNames.length > 0 ) {       
+            Joiner.on(", ").appendTo(sql, dbFieldNames);
+            sql.append(", entityId");
+        } else {
+            // 2022-08-16 For components with no fields, just the entityID is all we need
+            sql.append("entityId");
+        }       
         sql.append(" FROM " + tableName);        
  
         PreparedStatement st = session.prepareStatement(sql.toString());
