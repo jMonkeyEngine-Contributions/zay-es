@@ -142,6 +142,14 @@ public class DefaultEntityData implements ObservableEntityData {
     protected <T extends EntityComponent> ComponentHandler<T> lookupDefaultHandler( Class<T> type ) {
         return new MapComponentHandler<T>();
     }
+
+    /**
+     *  Returns true if a handler has already been resolved for the specified
+     *  type.
+     */
+    protected <T extends EntityComponent> boolean hasHandler( Class<T> type ) {
+        return handlers.containsKey(type);
+    }
  
     @SuppressWarnings("unchecked")
     protected <T extends EntityComponent> ComponentHandler<T> getHandler( Class type ) {
