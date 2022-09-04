@@ -13,6 +13,7 @@ Zay-ES Core v1.4.1 (unreleased)
 * Modified the sql ComponentTable class to work with non-public type
     constructors.
 * Fixed sql ComponentTable to handle components with no fields.     
+* Added a proper toString() method to DefaultWatchedEntity.
 
 
 Zay-ES Core v1.4.0 (latest)

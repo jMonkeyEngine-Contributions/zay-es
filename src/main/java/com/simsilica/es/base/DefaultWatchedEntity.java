@@ -221,6 +221,11 @@ public class DefaultWatchedEntity implements WatchedEntity {
         changes.add(change);
     }
 
+    @Override
+    public String toString() {
+        return "WatchedEntity[" + id + ", values=" + Arrays.asList(components) + "]";
+    }
+
     private class ChangeProcessor implements EntityComponentListener {
     
         public ChangeProcessor() {
