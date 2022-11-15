@@ -201,8 +201,15 @@ public class DefaultEntityData implements ObservableEntityData {
         ComponentHandler handler = getHandler(type);
         boolean result = handler.removeComponent(entityId);
         
-        // Can now update the entity sets that care
-        entityChange(new EntityChange(entityId, type));
+        // 2022-11-06 - Adding a check based on problem report #27 which
+        // indicates that we end up adding an EntityChange for every component type
+        // when calling removeEntity().  As long as we trust handler.removeComponent()
+        // to return a proper true/false then we should avoid sendind the entity
+        // change on false.  At best it's redundant.
+        if( result ) {
+            // Can now update the entity sets that care
+            entityChange(new EntityChange(entityId, type));
+        }
         
         return result; 
     }

@@ -14,6 +14,8 @@ Zay-ES Core v1.4.1 (unreleased)
     constructors.
 * Fixed sql ComponentTable to handle components with no fields.     
 * Added a proper toString() method to DefaultWatchedEntity.
+* Fixed redundant EntityChange events from being sent if EntityData.removeEntity()
+    is used.
 
 
 Zay-ES Core v1.4.0 (latest)
