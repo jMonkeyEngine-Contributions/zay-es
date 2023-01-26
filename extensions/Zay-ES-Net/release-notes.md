@@ -1,10 +1,10 @@
-Zay-ES-Net v1.5.1 (unreleased)
+Zay-ES-Net v1.5.1 (latest)
 ------------------
 * Fixed a NPE caused by rare race condition during connection teardown when 
     active entity sets are still present.
      
 
-Zay-ES-Net v1.5.0 (latest)
+Zay-ES-Net v1.5.0 
 ------------------
 * Upgraded the build to use gradle 7.4.2
 * Migrated publishing to maven central instead of jcenter
