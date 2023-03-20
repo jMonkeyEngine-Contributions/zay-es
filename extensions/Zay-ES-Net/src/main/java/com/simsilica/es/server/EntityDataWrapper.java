@@ -128,6 +128,13 @@ public class EntityDataWrapper implements ObservableEntityData {
     }
 
     @Override
+    public <T extends EntityComponent> void removeComponents( EntityId entityId, Class<T>... types ) {
+        for (Class<T> type : types) {
+            delegate.removeComponent(entityId, type);
+        }
+    }
+
+    @Override
     public <T extends EntityComponent> T getComponent( EntityId entityId, Class<T> type ) {
         if( log.isTraceEnabled() ) {
             log.trace("getComponent(" + entityId + ", " + type + ")");

@@ -457,8 +457,13 @@ public class RemoteEntityData implements EntityData {
     public boolean removeComponent( EntityId entityId, Class type ) {
         throw new UnsupportedOperationException("RemoteEntityData is read-only.");
     }
- 
-    protected void entityChange( EntityChange change ) {
+
+    @Override
+    public <T extends EntityComponent> void removeComponents( EntityId entityId, Class<T>... types ) {
+        throw new UnsupportedOperationException("RemoteEntityData is read-only.");
+    }
+
+    protected void entityChange(EntityChange change ) {
     
         for( RemoteEntitySet set : activeSets.values() ) {
             set.entityChange(change);
