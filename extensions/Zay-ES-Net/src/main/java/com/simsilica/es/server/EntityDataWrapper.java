@@ -128,7 +128,7 @@ public class EntityDataWrapper implements ObservableEntityData {
     }
 
     @Override
-    public <T extends EntityComponent> void removeComponents( EntityId entityId, Class<T>... types ) {
+    public void removeComponents( EntityId entityId, Class<? extends EntityComponent>... types ) {
         delegate.removeComponents(entityId, types);
     }
 

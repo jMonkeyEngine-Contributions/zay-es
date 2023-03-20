@@ -459,7 +459,7 @@ public class RemoteEntityData implements EntityData {
     }
 
     @Override
-    public <T extends EntityComponent> void removeComponents( EntityId entityId, Class<T>... types ) {
+    public void removeComponents( EntityId entityId, Class<? extends EntityComponent>... types ) {
         throw new UnsupportedOperationException("RemoteEntityData is read-only.");
     }
 
