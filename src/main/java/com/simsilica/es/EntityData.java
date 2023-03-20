@@ -50,7 +50,13 @@ public interface EntityData {
     public <T extends EntityComponent> void setComponent( EntityId entityId, T component );
     public void setComponents( EntityId entityId, EntityComponent... components );
     public <T extends EntityComponent> boolean removeComponent( EntityId entityId, Class<T> type );
-    
+
+    public default <T extends EntityComponent> void removeComponents(EntityId entityId, Class<T>... types) {
+        for (Class<T> type : types) {
+            removeComponent(entityId, type);
+        }
+    }
+
     public <T extends EntityComponent> T getComponent( EntityId entityId, Class<T> type );
     
     public Entity getEntity( EntityId entityId, Class... types );
