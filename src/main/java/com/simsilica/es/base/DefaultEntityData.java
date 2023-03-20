@@ -215,8 +215,8 @@ public class DefaultEntityData implements ObservableEntityData {
     }
 
     @Override
-    public void removeComponents( EntityId entityId, Class<? extends EntityComponent>... types ) {
-        for (Class<? extends EntityComponent> type : types) {
+    public void removeComponents( EntityId entityId, Class... types ) {
+        for (Class type : types) {
             removeComponent(entityId, type);
         }
     }
