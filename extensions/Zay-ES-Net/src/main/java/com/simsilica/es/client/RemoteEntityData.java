@@ -463,7 +463,7 @@ public class RemoteEntityData implements EntityData {
         throw new UnsupportedOperationException("RemoteEntityData is read-only.");
     }
 
-    protected void entityChange(EntityChange change ) {
+    protected void entityChange( EntityChange change ) {
     
         for( RemoteEntitySet set : activeSets.values() ) {
             set.entityChange(change);
