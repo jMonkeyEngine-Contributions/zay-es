@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright (c) 2011-2013 jMonkeyEngine
+ * Copyright (c) 2011-2023 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,30 +34,53 @@
 
 package com.simsilica.es.sql;
 
-import java.sql.*;
-import java.util.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 
 /**
- *
- *  @author    Paul Speed
+ * @author Ali-RS
  */
-public interface FieldType {
+public class DefaultComponentFactory<T> implements SqlComponentFactory<T> {
 
-    public String getFieldName();
-    
-    public Class getType();
- 
-    public String getDbType();
+    private final FieldType[] fields;
+    private final Constructor<T> ctor;
 
-    public void addFieldDefinitions( String prefix, Map<String,FieldType> defs );
-    
-    public void addFields( String prefix, List<String> fields );
- 
-    public Object toDbValue( Object o );
-    
-    public int store( Object object, PreparedStatement ps, int index ) throws SQLException;
-    
-    public int load( Object target, ResultSet rs, int index ) throws SQLException;
+    public DefaultComponentFactory(Class<T> type) {
+        List<FieldType> types = FieldTypes.getFieldTypes(type);
+        this.fields = types.toArray(new FieldType[types.size()]);
 
-    public int readIntoArray( Object[] store, int storeIndex, ResultSet rs, int columnIndex ) throws SQLException;
+        // Look up a no-arg constructor so that we can make sure it
+        // is accessible similar to fields
+        try {
+            ctor = type.getDeclaredConstructor();
+
+            // Make sure it is accessible
+            ctor.setAccessible(true);
+        } catch( NoSuchMethodException e ) {
+            throw new IllegalArgumentException("Type does not have a no-arg constructor:" + type, e);
+        }
+    }
+
+    @Override
+    public FieldType[] getFieldTypes() {
+        return fields;
+    }
+
+    @Override
+    public T createComponent(ResultSet rs) throws SQLException {
+        try {
+            int index = 1;
+            T target = ctor.newInstance();
+            for (FieldType t : fields) {
+                index = t.load(target, rs, index);
+            }
+
+            return target;
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException("Error in table mapping", e);
+        }
+    }
 }

@@ -63,6 +63,17 @@ public class SqlComponentHandler<T extends EntityComponent> implements Component
             throw new RuntimeException("Error creating table for component type:" + type, e);
         }
     }
+
+    public SqlComponentHandler( SqlEntityData parent, Class<T> type, SqlComponentFactory<T> factory ) {
+        this.parent = parent;
+        this.type = type;
+        try {
+            this.table = new ComponentTable<>(type, factory);
+            table.initialize(parent.getSession());
+        } catch( SQLException e ) {
+            throw new RuntimeException("Error creating table for component type:" + type, e);
+        }
+    }
     
     protected SqlSession getSession() throws SQLException {
         return parent.getSession();

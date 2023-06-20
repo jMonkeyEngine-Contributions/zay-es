@@ -196,7 +196,19 @@ public class FieldTypes {
                 throw new RuntimeException("Error in field mapping", e);
             }
         }
-        
+
+        @Override
+        public int readIntoArray(Object[] store, int storeIndex, ResultSet rs, int columnIndex) throws SQLException {
+            Number value = (Number)rs.getObject(columnIndex++);
+
+            if( value != null ) {
+                store[storeIndex] = new EntityId(value.longValue());
+            } else {
+                store[storeIndex] = null;
+            }
+            return columnIndex;
+        }
+
         @Override
         public String toString() {
             if( dbFieldName != name ) {
@@ -282,6 +294,12 @@ public class FieldTypes {
             }
         }
         
+        @Override
+        public int readIntoArray(Object[] store, int storeIndex, ResultSet rs, int columnIndex) throws SQLException {
+            store[storeIndex] = rs.getObject(columnIndex++);
+            return columnIndex;
+        }
+
         @Override
         public String toString() {
             if( dbFieldName != name ) {
@@ -375,6 +393,22 @@ public class FieldTypes {
             }
         }
         
+        @Override
+        public int readIntoArray(Object[] store, int storeIndex, ResultSet rs, int columnIndex) throws SQLException {
+            try {
+                Object subValue = field.getType().newInstance();
+
+                for( FieldType t : fields ) {
+                    columnIndex = t.load(subValue, rs, columnIndex);
+                }
+
+                store[storeIndex] = subValue;
+                return columnIndex;
+            } catch(InstantiationException | IllegalAccessException e ) {
+                throw new RuntimeException("Error in field mapping", e);
+            }
+        }
+
         @Override
         public String toString() {
             return getFieldName() + ":" + getType() + "{" + Arrays.asList(fields) + "}";
@@ -473,7 +507,19 @@ public class FieldTypes {
                 throw new RuntimeException("Error in field mapping", e);
             }
         }
-        
+
+        @Override
+        public int readIntoArray(Object[] store, int storeIndex, ResultSet rs, int columnIndex) throws SQLException {
+            Object value = rs.getObject(columnIndex++);
+
+            if( value instanceof Number ) {
+                value = cast((Number)value, getType());
+            }
+
+            store[storeIndex] = value;
+            return columnIndex;
+        }
+
         @Override
         public String toString() {
             if( dbFieldName != name ) {

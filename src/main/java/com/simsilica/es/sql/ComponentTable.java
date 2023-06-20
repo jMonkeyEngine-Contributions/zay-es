@@ -34,8 +34,6 @@
 
 package com.simsilica.es.sql;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.*;
 
@@ -60,20 +58,18 @@ public class ComponentTable<T extends EntityComponent> {
 
     static Logger log = LoggerFactory.getLogger(ComponentTable.class);
     
-    private boolean cached = true;
-    private Class<T> type;
-    private Constructor<T> ctor;
-    private FieldType[] fields;
-    private String tableName;
+    private final boolean cached = true;
+    private final SqlComponentFactory<T>  componentFactory;
+    private final FieldType[] fields;
+    private final String tableName;
     private String[] dbFieldNames;
     
-    private String insertSql;
-    private String updateSql;
+    private final String insertSql;
+    private final String updateSql;
 
-    protected ComponentTable( Constructor<T> ctor, Class<T> type, FieldType[] fields ) {
-        this.type = type;
-        this.ctor = ctor;
-        this.fields = fields;
+    protected ComponentTable( Class<T> type, SqlComponentFactory<T> factory ) {
+        this.componentFactory = factory;
+        this.fields = factory.getFieldTypes();
         this.tableName = type.getSimpleName().toUpperCase();
 
         List<String> names = new ArrayList<String>();        
@@ -89,23 +85,7 @@ public class ComponentTable<T extends EntityComponent> {
 
     public static <T extends EntityComponent> ComponentTable<T> create( SqlSession session, 
                                                                         Class<T> type ) throws SQLException {
-        List<FieldType> types = FieldTypes.getFieldTypes(type);
-        FieldType[] array = new FieldType[types.size()];
-        array = types.toArray(array);
-
-        // Look up a no-arg constructor so that we can make sure it
-        // is accessible similar to fields
-        Constructor<T> ctor;
-        try {
-            ctor = type.getDeclaredConstructor();
-            
-            // Make sure it is accessible
-            ctor.setAccessible(true);
-        } catch( NoSuchMethodException e ) {
-            throw new IllegalArgumentException("Type does not have a no-arg constructor:" + type, e);
-        }
-        
-        ComponentTable<T> result = new ComponentTable<>(ctor, type, array);
+        ComponentTable<T> result = new ComponentTable<>(type, new DefaultComponentFactory<>(type));
         result.initialize(session);
         
         return result;
@@ -337,17 +317,9 @@ public class ComponentTable<T extends EntityComponent> {
         ResultSet rs = st.executeQuery();
         try {
             if( rs.next() ) {
-                int index = 1;
-                T target = ctor.newInstance(); 
-                for( FieldType t : fields ) {
-                    index = t.load(target, rs, index);
-                }
-                    
-                return target;               
+                return componentFactory.createComponent(rs);
             }
             return null;
-        } catch( InvocationTargetException | InstantiationException | IllegalAccessException e ) {
-            throw new RuntimeException("Error in table mapping", e);
         } finally {
             rs.close();
         }            
@@ -558,18 +530,12 @@ public class ComponentTable<T extends EntityComponent> {
         ResultSet rs = st.executeQuery();
         try {
             while( rs.next() ) {
-                int index = 1;
-                T target = ctor.newInstance();
-                for( FieldType t : fields ) {
-                    index = t.load(target, rs, index);
-                }
-                    
-                Long entityId = rs.getLong(index);
+                T target = componentFactory.createComponent(rs);
+
+                Long entityId = rs.getLong("entityId");
                 
-                results.add(new ComponentReference<T>(new EntityId(entityId), target)); 
+                results.add(new ComponentReference<T>(new EntityId(entityId), target));
             }
-        } catch( InvocationTargetException | InstantiationException | IllegalAccessException e ) {
-            throw new RuntimeException("Error in table mapping", e);
         } finally {
             rs.close();
         }                    
