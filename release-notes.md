@@ -1,3 +1,11 @@
+Zay-ES Core v1.6.0 (unrelease)
+--------------------
+* Modified SqlEntityData to allowing specifying the max string size
+    for the StringIndex (default is still 50 characters)
+* Modified StringTable to automatically upgrade the table if the
+    specified max size is larger than the current column size.
+    
+
 Zay-ES Core v1.5.0 (latest)
 --------------------
 * Added some trace logging to DefaultEntityData.removeEntity()

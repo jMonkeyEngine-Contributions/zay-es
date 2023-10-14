@@ -65,9 +65,19 @@ public class SqlEntityData extends DefaultEntityData implements PersistentEntity
     public SqlEntityData( File dbPath, long writeDelay ) throws SQLException {
         this(dbPath.toURI().toString(), writeDelay);
     }
-    
+
+    public SqlEntityData( File dbPath, long writeDelay, int maxIndexedStringSize ) throws SQLException {
+        this(dbPath.toURI().toString(), writeDelay, maxIndexedStringSize);
+    }
+
     public SqlEntityData( String dbPath, long writeDelay ) throws SQLException {
+        // max string size = 50 was the old default so this is an attempt
+        // to not change behavior for anyone already using a database.
+        // The code is setup to auto-upgrade the table but that's not 0 risk.
+        this(dbPath, writeDelay, 50);
+    }    
     
+    public SqlEntityData( String dbPath, long writeDelay, int maxIndexedStringSize ) throws SQLException {    
         super(null);
         
         this.dbPath = dbPath;
@@ -85,7 +95,7 @@ public class SqlEntityData extends DefaultEntityData implements PersistentEntity
         execute("SET FILES DEFRAG 50");
                
         setIdGenerator(PersistentEntityIdGenerator.create( this )); 
-        setStringIndex(new SqlStringIndex( this, 100 )); 
+        setStringIndex(new SqlStringIndex(this, maxIndexedStringSize, 100)); 
     }
  
     @Override

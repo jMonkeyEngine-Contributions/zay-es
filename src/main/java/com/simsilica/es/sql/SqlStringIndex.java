@@ -52,9 +52,9 @@ public class SqlStringIndex implements StringIndex {
     private SqlEntityData parent;
     private StringTable stringTable;
     private Cache<Integer,String> idToString;      
-    private Cache<String,Integer> stringToId;      
+    private Cache<String,Integer> stringToId;
  
-    public SqlStringIndex( SqlEntityData parent, int cacheSize ) {
+    public SqlStringIndex( SqlEntityData parent, int maxIndexedStringSize, int cacheSize ) {
         this.parent = parent;
     
         this.idToString = CacheBuilder.newBuilder().maximumSize(cacheSize).build();
@@ -63,7 +63,7 @@ public class SqlStringIndex implements StringIndex {
         ReportSystem.registerCacheReporter(new CacheReporter());
         
         try {
-            this.stringTable = StringTable.create(parent.getSession()); 
+            this.stringTable = StringTable.create(parent.getSession(), maxIndexedStringSize); 
         } catch( SQLException e ) {
             throw new RuntimeException("Error creating string table", e);
         }
