@@ -6,7 +6,7 @@ plugins {
     id 'zay-es.published-library'
 }
 
-version='1.5.2'
+version='1.5.3-SNAPSHOT'
 
 ext.jmeVersion='3.1.0-stable'
 ext.slf4jVersion = '1.7.32'

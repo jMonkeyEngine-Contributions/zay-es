@@ -38,8 +38,10 @@ package com.simsilica.es.server;
 
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.EntityId;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -55,6 +57,7 @@ import java.util.Map;
 public class ComponentUsageTracker {
     
     private final Map<Class<? extends EntityComponent>, Map<EntityId, Long>> map = new HashMap<>();
+    private final List<PendingClean> pending = new ArrayList<>();
     
     public ComponentUsageTracker() {
     }
@@ -68,11 +71,18 @@ public class ComponentUsageTracker {
         return result; 
     }
  
+    protected void checkPending() {
+        if( !pending.isEmpty() ) {
+            throw new IllegalStateException("Cannot update frame tracking while expirations are pending.  Call sweep() first.");
+        }
+    }
+ 
     /**
      *  Sets the current frame counter for the specified EntityId and component
      *  type combination. 
      */
     public Long set( EntityId id, Class<? extends EntityComponent> type, Long frame ) {
+        checkPending();
         return getFrameMap(type, true).put(id, frame);
     }
 
@@ -81,6 +91,7 @@ public class ComponentUsageTracker {
      *  type combination. 
      */
     public void set( Collection<EntityId> ids, Class<? extends EntityComponent> type, Long frame ) {
+        checkPending();
         Map<EntityId, Long> frames = getFrameMap(type, true);
         for( EntityId id : ids ) {
             frames.put(id, frame);
@@ -107,17 +118,49 @@ public class ComponentUsageTracker {
         }
         
         // Else we need to remove the entry
-        frames.remove(id);
-        
-        // We will clear the type entry if it is empty only because 
-        // it lets the potentially-expanded internal storage of the
-        // hashmap get GC'ed.  Generally, though, I'd expect these maps
-        // to be long-living and relatively stable in size.
-        if( frames.isEmpty() ) {
-            map.remove(type);
-        }
+        //frames.remove(id);
+        //
+        //// We will clear the type entry if it is empty only because 
+        //// it lets the potentially-expanded internal storage of the
+        //// hashmap get GC'ed.  Generally, though, I'd expect these maps
+        //// to be long-living and relatively stable in size.
+        //if( frames.isEmpty() ) {
+        //    map.remove(type);
+        //}
+        // 2023-10-15 - when a component changes multiple times since the
+        // last frame, we would only send the first EntityChange because this
+        // method would remove all tracking upon encountering that first EntityChange.
+        // This is especially problematic if the component was changed then removed
+        // or removed then changed... entity sets on the client would then be inconsistent
+        // with the real entity sets.  I know for sure this is happening if the component
+        // was changed in the same actual game systems update.  I assume it would happen
+        // if the same component changed between HostedEntityData sweeps but I dit not
+        // prove it.
+        // Note: it is true that we add duplicate PendingCleans in this case but
+        // I think the simpler data structure is still better for something this
+        // is (clearly) pretty rare (since we're only just now finding it).
+        pending.add(new PendingClean(id, type, frames));
+
+        // Mmm... if we update the frame to current then we avoid adding extra
+        // cleans and it's technically more accurate.
+        // Honestly, from today's perspective, I can't think why else we'd be keeping
+        // the frame except to handle cases like this.
+        frames.put(id, current);        
  
         return last;       
+    }
+ 
+    /**
+     *  Sweeps the pending expirations from the internal book-keeping.
+     */
+    public void sweep() {
+        if( pending.isEmpty() ) {
+            return;
+        }
+        for( PendingClean clean : pending ) {
+            clean.clean();
+        }
+        pending.clear();
     }
  
     /** 
@@ -130,5 +173,29 @@ public class ComponentUsageTracker {
             return null;
         }
         return frames.get(id);
+    }
+    
+    private class PendingClean {
+        private EntityId id;
+        private Class<? extends EntityComponent> type; 
+        private Map<EntityId, Long> frames;        
+ 
+        public PendingClean( EntityId id, Class<? extends EntityComponent> type, Map<EntityId, Long> frames ) {
+            this.id = id;
+            this.type = type;
+            this.frames = frames;
+        }  
+        
+        public void clean() {
+            frames.remove(id);
+        
+            // We will clear the type entry if it is empty only because 
+            // it lets the potentially-expanded internal storage of the
+            // hashmap get GC'ed.  Generally, though, I'd expect these maps
+            // to be long-living and relatively stable in size.
+            if( frames.isEmpty() ) {
+                map.remove(type);
+            }
+        }
     }     
 }

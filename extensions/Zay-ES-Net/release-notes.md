@@ -1,3 +1,10 @@
+Zay-ES-Net v1.5.3 (unreleased)
+------------------
+* Fixed a bug where only the first EntityChange was being sent if
+    multiple changes happened for the same entity + component type.
+* Added a bunch of trace logging to HostedEntityData.
+
+
 Zay-ES-Net v1.5.2 (latest)
 ------------------
 * Removed some debug code from the release.

@@ -372,6 +372,11 @@ public class HostedEntityData {
     }
  
     protected void sendAndClear( List<EntityChange> buffer ) {
+        if( log.isTraceEnabled() ) {
+            for( EntityChange change : buffer ) {
+                log.trace("sending:" + change);
+            }
+        }
         conn.send(settings.getChannel(), new ComponentChangeMessage(buffer));
         buffer.clear(); 
     }
@@ -419,6 +424,11 @@ public class HostedEntityData {
             // Hey, no change... we can early out (a nice optimization over the
             // old version)
             return;
+        }
+        if( log.isTraceEnabled() && !frameChanges.isEmpty() ) {
+            for( EntityChange change : frameChanges ) {
+                log.trace("frame:" + frame + " change:" + change);
+            }
         }
 
         // One lock per update is better than locking per entity set
@@ -485,6 +495,9 @@ public class HostedEntityData {
                 if( !set.isEmpty() ) {
                     Class<EntityComponent>[] types = ed.getTypes(set);
                     for( Class<EntityComponent> type : types ) {
+                        if( log.isTraceEnabled() ) {
+                            log.trace("EntitySet tracker.set(" + set.getEntityIds() + ", " + type + ", " + frame + ")");
+                        }
                         tracker.set(set.getEntityIds(), type, frame);
                     }
                 }
@@ -497,6 +510,9 @@ public class HostedEntityData {
         // Step 3.5: Now mark the watched entities
         for( EntityInfo e : activeEntities.values() ) {
             for( Class<EntityComponent> type : e.types ) {
+                if( log.isTraceEnabled() ) {
+                    log.trace("WatchedEntity tracker.set(" + e.id + ", " + type + ", " + frame + ")");
+                }
                 tracker.set(e.id, type, frame);
             }            
         }
@@ -507,6 +523,9 @@ public class HostedEntityData {
             
             Long last = tracker.getAndExpire(change.getEntityId(), change.getComponentType(),
                                              frame);
+            if( log.isTraceEnabled() ) {
+                log.trace("tracker change:" + change + "  frame:" + frame + "  last:" + last);
+            }
             
             // Three cases:
             // a) last and frame are the same and we need to send the change
@@ -529,6 +548,12 @@ public class HostedEntityData {
         if( !changeList.isEmpty() ) {             
             sendAndClear(changeList);
         }
+        
+        // Clean up pending expirations
+        // 2023-10-15 - to fix a bug where multiple changes to the same entity+component
+        // were collapsing to just the first, we queue up the expirations and must sweep
+        // them at the end.  This is different than the ancient comment below.         
+        tracker.sweep();
         
         // Periodically we should do a more thorough sweep to catch the
         // stuff we aren't watching and also hasn't changed.  Could keep a
