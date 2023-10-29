@@ -214,6 +214,13 @@ public class DefaultEntityData implements ObservableEntityData {
         return result; 
     }
 
+    @Override
+    public void removeComponents( EntityId entityId, Class... types ) {
+        for (Class type : types) {
+            removeComponent(entityId, type);
+        }
+    }
+
     protected EntityId findSingleEntity( ComponentFilter filter ) {
         return getHandler(filter.getComponentType()).findEntity(filter);
     }
