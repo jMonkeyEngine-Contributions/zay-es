@@ -4,6 +4,13 @@ Zay-ES Core v1.6.0 (unrelease)
     for the StringIndex (default is still 50 characters)
 * Modified StringTable to automatically upgrade the table if the
     specified max size is larger than the current column size.
+* Added EntityData.removeComponents() and implementations to various
+    default implementations.  Allows removing more than one component
+    at a time similar to the way setComponents() can set more than one
+    at a time.
+* Added SqlComponentFactory and refactored the SqlEntityData classes to
+    use it.  This allows overriding the default result set -> component
+    creation to customize it for different object types.     
     
 
 Zay-ES Core v1.5.0 (latest)
