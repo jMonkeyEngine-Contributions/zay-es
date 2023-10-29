@@ -150,9 +150,7 @@ public class LootService implements Service {
             Position pos = ed.getComponent(e.getId(), Position.class);
             if( type == null || pos == null ) {
                 log.warn( "Entity:" + e + " is missing type or position, type:" + type + ", pos:" + pos);
-            }
-            
-            if( type == MonkeyTrapConstants.TYPE_BARRELS ) {
+            } else if( type == MonkeyTrapConstants.TYPE_BARRELS ) {
                 randomType(0).createObject(death.getTime(), pos.getLocation());
             } else if( type == MonkeyTrapConstants.TYPE_OGRE ) {            
                 randomType(1).createObject(death.getTime(), pos.getLocation());
