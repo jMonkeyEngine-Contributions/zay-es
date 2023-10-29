@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright (c) 2011-2013 jMonkeyEngine
+ * Copyright (c) 2011-2023 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,30 +34,15 @@
 
 package com.simsilica.es.sql;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
- *
- *  @author    Paul Speed
+ * @author Ali-RS
  */
-public interface FieldType {
+public interface SqlComponentFactory<T> {
 
-    public String getFieldName();
-    
-    public Class getType();
- 
-    public String getDbType();
+    public FieldType[] getFieldTypes();
 
-    public void addFieldDefinitions( String prefix, Map<String,FieldType> defs );
-    
-    public void addFields( String prefix, List<String> fields );
- 
-    public Object toDbValue( Object o );
-    
-    public int store( Object object, PreparedStatement ps, int index ) throws SQLException;
-    
-    public int load( Object target, ResultSet rs, int index ) throws SQLException;
-
-    public int readIntoArray( Object[] store, int storeIndex, ResultSet rs, int columnIndex ) throws SQLException;
+    public T createComponent(ResultSet rs) throws SQLException;
 }

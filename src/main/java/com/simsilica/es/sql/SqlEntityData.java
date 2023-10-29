@@ -105,6 +105,12 @@ public class SqlEntityData extends DefaultEntityData implements PersistentEntity
         }   
         persistentTypes.add(type);
     }
+
+    public <T extends EntityComponent> void markPersistentType( Class<T> type, SqlComponentFactory<T> factory ) {
+        markPersistentType(type);
+
+        super.registerComponentHandler(type, new SqlComponentHandler<>(this, type, factory));
+    }
  
     protected void execute( String statement ) throws SQLException {
         SqlSession session = getSession();
@@ -139,9 +145,13 @@ public class SqlEntityData extends DefaultEntityData implements PersistentEntity
     @Override
     protected <T extends EntityComponent> ComponentHandler<T> lookupDefaultHandler( Class<T> type ) {
         if( PersistentComponent.class.isAssignableFrom(type) || persistentTypes.contains(type) ) {
-            return new SqlComponentHandler<T>(this, type);
+            return new SqlComponentHandler<T>(this, type, lookupDefaultFactory(type));
         }
         return super.lookupDefaultHandler(type);
+    }
+
+    protected <T extends EntityComponent> SqlComponentFactory<T> lookupDefaultFactory( Class<T> type ) {
+        return new DefaultComponentFactory<>(type);
     }
  
     @Override
