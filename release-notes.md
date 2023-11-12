@@ -10,7 +10,10 @@ Zay-ES Core v1.6.0 (unrelease)
     at a time.
 * Added SqlComponentFactory and refactored the SqlEntityData classes to
     use it.  This allows overriding the default result set -> component
-    creation to customize it for different object types.     
+    creation to customize it for different object types.
+* Modified Name to be able to auto-truncate if the name exceeds the     
+    storage limit (80 characters), else it will throw an illegal argument
+    exception.         
     
 
 Zay-ES Core v1.5.0 (latest)
