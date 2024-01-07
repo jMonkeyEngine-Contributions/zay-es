@@ -50,18 +50,18 @@ public class AndFilter<T extends EntityComponent> implements ComponentFilter<T> 
 
     private Class<T> type;
     private ComponentFilter<? super T>[] operands;
-    
+
     public AndFilter() {
     }
-    
-    @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
+
+    @SafeVarargs
     public AndFilter( Class<T> type, ComponentFilter<? super T>... operands ) {
         this.type = type;
         this.operands = operands;
     }
 
-    @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
-    public static <T extends EntityComponent> AndFilter<T> create( Class<T> type, 
+    @SafeVarargs
+    public static <T extends EntityComponent> AndFilter<T> create( Class<T> type,
                                                                    ComponentFilter<? super T>... operands ) {
         return new AndFilter<T>(type, operands);
     }
@@ -74,7 +74,7 @@ public class AndFilter<T extends EntityComponent> implements ComponentFilter<T> 
     public Class<T> getComponentType() {
         return type;
     }
-    
+
     @Override
     public boolean evaluate( EntityComponent c ) {
         if( !type.isInstance(c) ) {
@@ -83,15 +83,15 @@ public class AndFilter<T extends EntityComponent> implements ComponentFilter<T> 
         if( operands == null ) {
             return true;
         }
- 
+
         for( ComponentFilter f : operands ) {
             if( !f.evaluate(c) ) {
                 return false;
             }
         }
-        return true;                    
+        return true;
     }
-    
+
     @Override
     public String toString() {
         return "AndFilter[" + Arrays.asList(operands) + "]";

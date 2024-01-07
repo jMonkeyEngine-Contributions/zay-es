@@ -11,10 +11,11 @@ Zay-ES Core v1.6.0 (unrelease)
 * Added SqlComponentFactory and refactored the SqlEntityData classes to
     use it.  This allows overriding the default result set -> component
     creation to customize it for different object types.
-* Modified Name to be able to auto-truncate if the name exceeds the     
+* Modified Name to be able to auto-truncate if the name exceeds the
     storage limit (80 characters), else it will throw an illegal argument
-    exception.         
-    
+    exception.
+* Switched some SuppressWarnings("unchecked") with SafeVarargs.
+
 
 Zay-ES Core v1.5.0 (latest)
 --------------------
@@ -30,13 +31,13 @@ Zay-ES Core v1.5.0 (latest)
     interface implementation was too restrictive.
 * Modified the sql ComponentTable class to work with non-public type
     constructors.
-* Fixed sql ComponentTable to handle components with no fields.     
+* Fixed sql ComponentTable to handle components with no fields.
 * Added a proper toString() method to DefaultWatchedEntity.
 * Fixed redundant EntityChange events from being sent if EntityData.removeEntity()
     is used.
 
 
-Zay-ES Core v1.4.0 
+Zay-ES Core v1.4.0
 -------------------
 * Upgraded the build to use gradle 7.4.2
 * Migrated publishing to maven central instead of jcenter

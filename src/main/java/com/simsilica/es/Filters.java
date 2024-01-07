@@ -38,7 +38,7 @@ import com.simsilica.es.filter.*;
 
 
 /**
- *  Static utility methods pertaining to ComponentFilter instances. 
+ *  Static utility methods pertaining to ComponentFilter instances.
  *
  *  @author    Paul Speed
  */
@@ -52,28 +52,28 @@ public class Filters {
      *  The value comparison is done with .equals().  Two null values are considered equal.
      */
     public static <T extends EntityComponent> ComponentFilter<T> fieldEquals( Class<T> type, String field, Object value ) {
-        return FieldFilter.create( type, field, value );    
+        return FieldFilter.create(type, field, value);
     }
 
     /**
-     *  Creates a ComponentFilter that returns true if any of the 
+     *  Creates a ComponentFilter that returns true if any of the
      *  supplied filters are true.  The OR filter will early out and stop
      *  at the first true filter.  Child filters are evaluated in the order
      *  provided.
      */
-    @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
+    @SafeVarargs
     public static <T extends EntityComponent> ComponentFilter<T> or( Class<T> type, ComponentFilter<? super T>... operands ) {
-        return OrFilter.create( type, operands );
+        return OrFilter.create(type, operands);
     }
 
     /**
-     *  Creates a ComponentFilter that returns true if all of the 
+     *  Creates a ComponentFilter that returns true if all of the
      *  supplied filters are true.  The AND filter will early out and stop
      *  at the first false filter.  Child filters are evaluated in the order
      *  provided.
      */
-    @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
+    @SafeVarargs
     public static <T extends EntityComponent> ComponentFilter<T> and( Class<T> type, ComponentFilter<? super T>... operands ) {
-        return AndFilter.create( type, operands );    
-    }    
+        return AndFilter.create(type, operands);
+    }
 }
