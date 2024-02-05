@@ -43,15 +43,19 @@ package com.simsilica.es;
 public class CreatedBy implements EntityComponent, PersistentComponent {
 
     private EntityId creatorId;
-    
+
     public CreatedBy() {
-        this(EntityId.NULL_ID); 
+        this(EntityId.NULL_ID);
     }
-    
-    public CreatedBy( EntityId creatorId ) {   
+
+    public CreatedBy( EntityId creatorId ) {
         this.creatorId = creatorId;
     }
-    
+
+    public static ComponentFilter<CreatedBy> filter( EntityId creatorId ) {
+        return Filters.fieldEquals(CreatedBy.class, "creatorId", creatorId);
+    }
+
     public EntityId getCreatorId() {
         return creatorId;
     }
@@ -59,6 +63,6 @@ public class CreatedBy implements EntityComponent, PersistentComponent {
     @Override
     public String toString() {
         return "CreatedBy[" + creatorId + "]";
-    }      
+    }
 }
 

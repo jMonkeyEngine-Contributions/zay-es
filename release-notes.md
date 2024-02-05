@@ -15,6 +15,9 @@ Zay-ES Core v1.6.0 (unrelease)
     storage limit (80 characters), else it will throw an illegal argument
     exception.
 * Switched some SuppressWarnings("unchecked") with SafeVarargs.
+* Added CreatedBy.filter() for easily creating a ComponentFilter for
+    createdBy.
+
 
 
 Zay-ES Core v1.5.0 (latest)
