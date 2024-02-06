@@ -17,7 +17,10 @@ Zay-ES Core v1.6.0 (unrelease)
 * Switched some SuppressWarnings("unchecked") with SafeVarargs.
 * Added CreatedBy.filter() for easily creating a ComponentFilter for
     createdBy.
-
+* Added an IndexedField annotation to mark fields that should use indexing
+    when available.
+* Updated the es.sql code to look for IndexedField and create
+    indexes for types with IndexedField fields.
 
 
 Zay-ES Core v1.5.0 (latest)

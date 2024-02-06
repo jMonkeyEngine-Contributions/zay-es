@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright (c) 2011-2013 jMonkeyEngine
+ * Copyright (c) 2024 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,34 +32,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.simsilica.es.sql;
+package com.simsilica.es;
 
-import java.sql.*;
-import java.util.*;
+import java.lang.annotation.*;
 
 /**
+ *  Identifies a field that should be indexed when indexing is
+ *  available.  This is a hint provided to persistence layers as
+ *  to how to store the particular component field.
  *
  *  @author    Paul Speed
  */
-public interface FieldType {
-
-    public String getFieldName();
-
-    public Class getType();
-
-    public String getDbType();
-
-    public boolean isIndexed();
-
-    public void addFieldDefinitions( String prefix, Map<String,FieldType> defs );
-
-    public void addFields( String prefix, List<String> fields );
-
-    public Object toDbValue( Object o );
-
-    public int store( Object object, PreparedStatement ps, int index ) throws SQLException;
-
-    public int load( Object target, ResultSet rs, int index ) throws SQLException;
-
-    public int readIntoArray( Object[] store, int storeIndex, ResultSet rs, int columnIndex ) throws SQLException;
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface IndexedField {
 }
