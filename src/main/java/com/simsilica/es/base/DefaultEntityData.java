@@ -49,7 +49,7 @@ import com.simsilica.es.*;
  *  @author    Paul Speed
  */
 public class DefaultEntityData implements ObservableEntityData {
-    
+
     static Logger log = LoggerFactory.getLogger(DefaultEntityData.class);
 
     private final Map<Class<? extends EntityComponent>, ComponentHandler> handlers = new ConcurrentHashMap<>();
@@ -60,24 +60,24 @@ public class DefaultEntityData implements ObservableEntityData {
      *  Keeps the unreleased entity sets so that we can give
      *  them the change updates relevant to them.
      */
-    private final List<DefaultEntitySet> entitySets = new CopyOnWriteArrayList<>();         
-    private final List<EntityComponentListener> entityListeners = new CopyOnWriteArrayList<>();      
-    
+    private final List<DefaultEntitySet> entitySets = new CopyOnWriteArrayList<>();
+    private final List<EntityComponentListener> entityListeners = new CopyOnWriteArrayList<>();
+
     public DefaultEntityData() {
         this(new DefaultEntityIdGenerator());
     }
-    
-    public DefaultEntityData( EntityIdGenerator idGenerator ) {    
+
+    public DefaultEntityData( EntityIdGenerator idGenerator ) {
         ReportSystem.registerCacheReporter(new EntitySetsReporter());
         this.idGenerator = idGenerator;
-        
+
         // If we haven't been extended then go ahead and create a
         // default string index
         if( getClass() == DefaultEntityData.class ) {
             this.stringIndex = new MemStringIndex();
         }
     }
-    
+
     protected void setIdGenerator( EntityIdGenerator idGenerator ) {
         this.idGenerator = idGenerator;
     }
@@ -89,7 +89,7 @@ public class DefaultEntityData implements ObservableEntityData {
     protected <T extends EntityComponent> void registerComponentHandler( Class<T> type, ComponentHandler<T> handler ) {
         handlers.put(type, handler);
     }
- 
+
     @Override
     public void addEntityComponentListener( EntityComponentListener l ) {
         if( l == null ) {
@@ -97,15 +97,15 @@ public class DefaultEntityData implements ObservableEntityData {
         }
         entityListeners.add(l);
     }
-    
+
     @Override
     public void removeEntityComponentListener( EntityComponentListener l ) {
         entityListeners.remove(l);
     }
-    
+
     @Override
-    public void close() {    
-    }  
+    public void close() {
+    }
 
     @Override
     public EntityId createEntity() {
@@ -116,13 +116,13 @@ public class DefaultEntityData implements ObservableEntityData {
     public void removeEntity( EntityId entityId ) {
         if( log.isTraceEnabled() ) {
             log.trace("removeEntity(" + entityId + ")");
-        }    
+        }
         // Note: because we only add the ComponentHandlers when
         // we encounter the component types... it's possible that
         // the entity stays orphaned with a few components if we
         // have never accessed any of them.  SqlEntityData should
         // probably specifically be given types someday.  FIXME
-    
+
         // Remove all of its components
         for( Class<? extends EntityComponent> c : handlers.keySet() ) {
             removeComponent(entityId, c);
@@ -133,7 +133,7 @@ public class DefaultEntityData implements ObservableEntityData {
     public StringIndex getStrings() {
         return stringIndex;
     }
-    
+
     /**
      *  When no specific type handler exists, this attempts to
      *  find an appropriate handler.  Default implementation returns
@@ -150,13 +150,13 @@ public class DefaultEntityData implements ObservableEntityData {
     protected <T extends EntityComponent> boolean hasHandler( Class<T> type ) {
         return handlers.containsKey(type);
     }
- 
+
     @SuppressWarnings("unchecked")
     protected <T extends EntityComponent> ComponentHandler<T> getHandler( Class type ) {
-    
+
         ComponentHandler result = handlers.get(type);
         if( result == null ) {
-            // A little double checked locking to make sure we 
+            // A little double checked locking to make sure we
             // don't create a handler twice
             synchronized( this ) {
                 result = handlers.get(type);
@@ -166,7 +166,7 @@ public class DefaultEntityData implements ObservableEntityData {
                 }
             }
         }
-        return (ComponentHandler<T>)result;             
+        return (ComponentHandler<T>)result;
     }
 
     @Override
@@ -177,7 +177,7 @@ public class DefaultEntityData implements ObservableEntityData {
         ComponentHandler<T> handler = getHandler(type);
         return handler.getComponent(entityId);
     }
-    
+
     @Override
     public <T extends EntityComponent> void setComponent( EntityId entityId, T component ) {
         if( entityId == null ) {
@@ -185,11 +185,11 @@ public class DefaultEntityData implements ObservableEntityData {
         }
         ComponentHandler<T> handler = getHandler(component.getClass());
         handler.setComponent(entityId, component);
-        
+
         // Can now update the entity sets that care
-        entityChange(new EntityChange(entityId, component)); 
+        entityChange(new EntityChange(entityId, component));
     }
-    
+
     @Override
     public <T extends EntityComponent> boolean removeComponent( EntityId entityId, Class<T> type ) {
         if( entityId == null ) {
@@ -197,10 +197,10 @@ public class DefaultEntityData implements ObservableEntityData {
         }
         if( log.isTraceEnabled() ) {
             log.trace("removeComponent(" + entityId + ", " + type + ")");
-        }    
+        }
         ComponentHandler handler = getHandler(type);
         boolean result = handler.removeComponent(entityId);
-        
+
         // 2022-11-06 - Adding a check based on problem report #27 which
         // indicates that we end up adding an EntityChange for every component type
         // when calling removeEntity().  As long as we trust handler.removeComponent()
@@ -210,11 +210,12 @@ public class DefaultEntityData implements ObservableEntityData {
             // Can now update the entity sets that care
             entityChange(new EntityChange(entityId, type));
         }
-        
-        return result; 
+
+        return result;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void removeComponents( EntityId entityId, Class... types ) {
         for (Class type : types) {
             removeComponent(entityId, type);
@@ -243,62 +244,62 @@ public class DefaultEntityData implements ObservableEntityData {
     protected void replace( Entity e, EntityComponent oldValue, EntityComponent newValue ) {
         setComponent(e.getId(), newValue);
     }
-  
+
     @Override
     public void setComponents( EntityId entityId, EntityComponent... components ) {
         for( EntityComponent c : components ) {
             setComponent(entityId, c);
         }
     }
- 
+
     @Override
     @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
     public Entity getEntity( EntityId entityId, Class... types ) {
-        EntityComponent[] values = new EntityComponent[types.length]; 
+        EntityComponent[] values = new EntityComponent[types.length];
         for( int i = 0; i < values.length; i++ ) {
             values[i] = getComponent(entityId, types[i]);
         }
-        return new DefaultEntity( this, entityId, values, types );            
+        return new DefaultEntity( this, entityId, values, types );
     }
- 
+
     @Override
     public EntitySet getEntities( Class... types ) {
-    
+
         DefaultEntitySet results = createSet((ComponentFilter)null, types);
         results.loadEntities(false);
-         
+
         /*
-        Should be enough to let the EntitySet load itself.        
+        Should be enough to let the EntitySet load itself.
         Set<EntityId> first = getEntityIds(types[0]);
         if( first.isEmpty() ) {
             return results;
-        } 
+        }
         Set<EntityId> and = new HashSet<EntityId>();
-        and.addAll(first); 
-            
+        and.addAll(first);
+
         for( int i = 1; i < types.length; i++ ) {
             and.retainAll(getEntityIds(types[i]));
         }
-                              
+
         // Now we have the info needed to build the entity set
-        EntityComponent[] buffer = new EntityComponent[types.length]; 
+        EntityComponent[] buffer = new EntityComponent[types.length];
         for( EntityId id : and ) {
             for( int i = 0; i < buffer.length; i++ ) {
                 buffer[i] = getComponent(id, types[i]);
             }
-                
+
             // Now create the entity
             DefaultEntity e = new DefaultEntity(this, id, buffer.clone(), types);
             results.add(e);
         }*/
-            
+
         return results;
     }
 
     protected ComponentFilter forType( ComponentFilter filter, Class type ) {
         if( filter == null || filter.getComponentType() != type )
             return null;
-        return filter; 
+        return filter;
     }
 
     @Override
@@ -306,49 +307,49 @@ public class DefaultEntityData implements ObservableEntityData {
         if( types == null || types.length == 0 ) {
             return findSingleEntity(filter);
         }
-        
+
         Set<EntityId> first = getEntityIds(types[0], forType(filter, types[0]));
         if( first.isEmpty() )
-            return null; 
+            return null;
         Set<EntityId> and = new HashSet<EntityId>();
-        and.addAll(first); 
-            
+        and.addAll(first);
+
         for( int i = 1; i < types.length; i++ ) {
             Set<EntityId> sub = getEntityIds(types[i], forType(filter, types[i]));
             if( sub.isEmpty() ) {
                 return null;
-            }  
+            }
             and.retainAll(sub);
         }
- 
+
         if( and.isEmpty() )
             return null;
-        
-        return and.iterator().next();        
+
+        return and.iterator().next();
     }
- 
+
     @Override
     public Set<EntityId> findEntities( ComponentFilter filter, Class... types ) {
         if( types == null || types.length == 0 ) {
             types = new Class[] { filter.getComponentType() };
         }
-        
+
         Set<EntityId> first = getEntityIds(types[0], forType(filter, types[0]));
         if( first.isEmpty() ) {
             return Collections.emptySet();
-        } 
+        }
         Set<EntityId> and = new HashSet<EntityId>();
-        and.addAll(first); 
-            
+        and.addAll(first);
+
         for( int i = 1; i < types.length; i++ ) {
             Set<EntityId> sub = getEntityIds(types[i], forType(filter, types[i]));
             if( sub.isEmpty() ) {
                 return Collections.emptySet();
-            }  
+            }
             and.retainAll(sub);
         }
-        
-        return and;        
+
+        return and;
     }
 
     @Override
@@ -362,38 +363,38 @@ public class DefaultEntityData implements ObservableEntityData {
     @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
     public WatchedEntity watchEntity( EntityId id, Class... types ) {
 
-        // Collect the components    
-        /*EntityComponent[] buffer = new EntityComponent[types.length]; 
+        // Collect the components
+        /*EntityComponent[] buffer = new EntityComponent[types.length];
         for( int i = 0; i < buffer.length; i++ ) {
             buffer[i] = getComponent(id, types[i]);
         }
-        
+
         DefaultWatchedEntity does that itself now
         */
-    
-        return new DefaultWatchedEntity(this, id, types);               
+
+        return new DefaultWatchedEntity(this, id, types);
     }
 
     protected void releaseEntitySet( EntitySet entities ) {
         entitySets.remove((DefaultEntitySet)entities);
     }
- 
+
     protected void entityChange( EntityChange change ) {
-    
+
         for( EntityComponentListener l : entityListeners ) {
             l.componentChange(change);
         }
-    
+
         for( DefaultEntitySet set : entitySets ) {
             set.entityChange(change);
-        }       
+        }
     }
- 
+
     private class EntitySetsReporter implements Reporter {
-    
+
         @Override
         public void printReport( String type, java.io.PrintWriter out ) {
             out.println("EntityData->EntitySets:" + entitySets.size());
         }
-    }            
+    }
 }
