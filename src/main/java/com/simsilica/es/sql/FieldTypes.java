@@ -34,12 +34,19 @@
 
 package com.simsilica.es.sql;
 
+import java.lang.reflect.*;
+import java.lang.reflect.Array;
+import java.sql.*;
+import java.util.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.primitives.*;
+
 import com.simsilica.es.IndexedField;
 import com.simsilica.es.StringType;
 import com.simsilica.es.EntityId;
-import java.lang.reflect.*;
-import java.sql.*;
-import java.util.*;
 
 
 /**
@@ -47,6 +54,7 @@ import java.util.*;
  *  @author    Paul Speed
  */
 public class FieldTypes {
+    static Logger log = LoggerFactory.getLogger(FieldTypes.class);
 
     private static final Map<String,String> dbTypes = new HashMap<String,String>();
     static {
@@ -64,6 +72,9 @@ public class FieldTypes {
 
     protected static List<FieldType> getFieldTypes( String prefix, Class type ) {
 
+        if( log.isTraceEnabled() ) {
+            log.trace("getFieldTypes(" + prefix + ", " + type + ")");
+        }
         List<FieldType> results = new ArrayList<FieldType>();
         Field[] fields = type.getDeclaredFields();
 
@@ -79,6 +90,9 @@ public class FieldTypes {
             }
 
             FieldType fieldType = toFieldType(prefix, f);
+            if( log.isTraceEnabled() ) {
+                log.trace("  field:" + f + "  fieldType:" + fieldType);
+            }
             results.add(fieldType);
         }
 
@@ -95,6 +109,14 @@ public class FieldTypes {
             return new PrimitiveField(prefix, field);
         }
 
+        if( ft.isArray() ) {
+            Class elementType = ft.getComponentType();
+            if( elementType.isPrimitive() ) {
+                return new PrimitiveArrayField(prefix, field);
+            }
+            throw new UnsupportedOperationException("Only primitive arrays are supported, field:" + field);
+        }
+
         if( EntityId.class.isAssignableFrom(ft) ) {
             return new EntityIdField(prefix, field);
         }
@@ -108,11 +130,77 @@ public class FieldTypes {
             // If we use strings then we have to calculate some max size
             // and if we use ordinals then even reordering the enum will
             // screw up the database mapping.
-            throw new UnsupportedOperationException("Enum types are not supported.");
+            throw new UnsupportedOperationException("Enum types are not supported, field:" + field);
         }
 
         // Assume that it's some kind of composite object
         return new ObjectField(prefix, field);
+    }
+
+    protected static String toDbType( Class type ) {
+        String db = dbTypes.get(type.getSimpleName());
+        if( db != null ) {
+            return db;
+        }
+        return type.getSimpleName();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static Object[] toObjectArray( Object array ) {
+        List result;
+        if( array == null ) {
+            return null;
+        } else if( array instanceof Object[] ) {
+            return (Object[])array;
+        } else if( array instanceof int[] ) {
+            result = Ints.asList((int[])array);
+        } else if( array instanceof long[] ) {
+            result = Longs.asList((long[])array);
+        } else if( array instanceof short[] ) {
+            result = Shorts.asList((short[])array);
+        } else if( array instanceof byte[] ) {
+            result = Bytes.asList((byte[])array);
+        } else if( array instanceof float[] ) {
+            result = Floats.asList((float[])array);
+        } else if( array instanceof double[] ) {
+            result = Doubles.asList((double[])array);
+        } else {
+            throw new IllegalArgumentException("Unhandled array type:" + array.getClass());
+        }
+        return result.toArray(new Object[0]);
+    }
+
+    protected static Object toPrimitiveArray( Object array, Class elementType ) {
+        if( array == null ) {
+            return null;
+        }
+        if( log.isTraceEnabled() ) {
+            log.trace("toPrimitiveArray(" + array + ", " + elementType + ")");
+        }
+        // Not entirely straight forward because the array will be Object[]
+        // and not the specific wrapper types like Integer[], etc..
+        int size = Array.getLength(array);
+        Object result = Array.newInstance(elementType, size);
+        for( int i = 0; i < size; i++ ) {
+            Object element = Array.get(array, i);
+            if( elementType == int.class ) {
+                Array.setInt(result, i, (Integer)element);
+            } else if( elementType == long.class ) {
+                Array.setLong(result, i, (Long)element);
+            } else if( elementType == short.class ) {
+                Array.setShort(result, i, (Short)element);
+            } else if( elementType == byte.class ) {
+                Array.setByte(result, i, (Byte)element);
+            } else if( elementType == float.class ) {
+                Array.setFloat(result, i, (Float)element);
+            } else if( elementType == double.class ) {
+                Array.setDouble(result, i, (Double)element);
+            } else {
+                // Just try setting the object directly
+                Array.set(result, i, element);
+            }
+        }
+        return result;
     }
 
     protected static class EntityIdField implements FieldType {
@@ -333,6 +421,9 @@ public class FieldTypes {
             this.field = field;
             this.name = field.getName();
             List<FieldType> list = getFieldTypes(prefix, field.getType());
+            if( list.isEmpty() ) {
+                throw new IllegalArgumentException("Field " + name + " type:" + field.getType() + " has no usable child fields.");
+            }
             fields = new FieldType[list.size()];
             fields = list.toArray(fields);
         }
@@ -552,6 +643,107 @@ public class FieldTypes {
             return getFieldName() + ":" + getType();
         }
     }
+
+    protected static class PrimitiveArrayField implements FieldType {
+
+        private String name;
+        private String dbFieldName;
+        private String dbElementType;
+        private Field field;
+
+        public PrimitiveArrayField( Field field ) {
+            this(null, field);
+        }
+
+        public PrimitiveArrayField( String prefix, Field field ) {
+            this.field = field;
+            this.name = field.getName();
+            if( prefix == null ) {
+                dbFieldName = name;
+            } else {
+                dbFieldName = prefix + name;
+            }
+            this.dbElementType = toDbType(field.getType().getComponentType());
+        }
+
+        @Override
+        public String getFieldName() {
+            return name;
+        }
+
+        @Override
+        public Class getType() {
+            return field.getType();
+        }
+
+        @Override
+        public String getDbType() {
+            return dbElementType + " ARRAY";
+        }
+
+        @Override
+        public boolean isIndexed() {
+            return field.getAnnotation(IndexedField.class) != null;
+        }
+
+        @Override
+        public void addFieldDefinitions( String prefix, Map<String,FieldType> defs ) {
+            defs.put(prefix + dbFieldName.toUpperCase(), this);
+        }
+
+        @Override
+        public void addFields( String prefix, List<String> fields ) {
+            fields.add(prefix + dbFieldName);
+        }
+
+        @Override
+        public Object toDbValue( Object o ) {
+            return o;
+        }
+
+        @Override
+        public int store( Object object, PreparedStatement ps, int index ) throws SQLException {
+            try {
+                Object primArray = field.get(object);
+                // Not 100% clear if it's dangerous to leave these Array objects hanging
+                // around after creation but also non-trivial to close it considering the
+                // statement will be executed after this method and cleared even later.
+                Object array = ps.getConnection().createArrayOf(dbElementType, toObjectArray(primArray));
+                ps.setObject(index++, array);
+                return index;
+            } catch( IllegalAccessException e ) {
+                throw new RuntimeException("Error in field mapping", e);
+            }
+        }
+
+        @Override
+        public int load( Object target, ResultSet rs, int index ) throws SQLException {
+            try {
+                java.sql.Array value = (java.sql.Array)rs.getArray(index++);
+                field.set(target, toPrimitiveArray(value.getArray(), field.getType().getComponentType()));
+                return index;
+            } catch( IllegalAccessException e ) {
+                throw new RuntimeException("Error in field mapping", e);
+            }
+        }
+
+        @Override
+        public int readIntoArray(Object[] store, int storeIndex, ResultSet rs, int columnIndex) throws SQLException {
+            Object value = rs.getObject(columnIndex++);
+
+            store[storeIndex] = value;
+            return columnIndex;
+        }
+
+        @Override
+        public String toString() {
+            if( dbFieldName != name ) {
+                return name + "/" + dbFieldName + ":" + getType();
+            }
+            return getFieldName() + ":" + getType();
+        }
+    }
+
 }
 
 

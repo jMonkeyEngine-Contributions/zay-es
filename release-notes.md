@@ -21,6 +21,7 @@ Zay-ES Core v1.6.0 (unrelease)
     when available.
 * Updated the es.sql code to look for IndexedField and create
     indexes for types with IndexedField fields.
+* Added basic support for primitive array types in the SQL layer.
 
 
 Zay-ES Core v1.5.0 (latest)
