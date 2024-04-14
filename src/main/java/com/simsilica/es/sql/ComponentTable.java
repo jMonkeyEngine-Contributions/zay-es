@@ -116,14 +116,22 @@ public class ComponentTable<T extends EntityComponent> {
         sql.append(" (");
 
         Joiner.on(", ").appendTo(sql, dbFieldNames);
-        sql.append(", entityId");
+        if( dbFieldNames.length > 0 ) {
+            // It's possible for a component to have no fields in which case
+            // we don't want the comma.
+            sql.append(", ");
+        }
+        sql.append("entityId");
         sql.append(")");
         sql.append(" VALUES ");
         sql.append("(");
         for( int i = 0; i < dbFieldNames.length; i++ ) {
             sql.append((i > 0 ? ", " : "") + "?");
         }
-        sql.append(", ?");
+        if( dbFieldNames.length > 0 ) {
+            sql.append(", ");
+        }
+        sql.append("?");
         sql.append(")");
 
         return sql.toString();
@@ -346,17 +354,26 @@ public class ComponentTable<T extends EntityComponent> {
     public void setComponent( SqlSession session, EntityId entityId,
                               T component ) throws SQLException {
 
-        // Try to update the existing component first
-        PreparedStatement st = session.prepareStatement(updateSql);
-        int index = 1;
-        for( FieldType t : fields ) {
-            index = t.store(component, st, index);
-        }
+        int index;
+        int result;
+        PreparedStatement st;
 
-        st.setObject(index++, entityId.getId());
-        int result = st.executeUpdate();
-        if( result > 0 ) {
-            return;
+        // If we don't have any fields then there would never be anything to update
+        // and the update syntax is bad.  So we'll only try to update if the
+        // object has actual fields (ie: not a marker component)
+        if( fields.length > 0 ) {
+            // Try to update the existing component first
+            st = session.prepareStatement(updateSql);
+            index = 1;
+            for( FieldType t : fields ) {
+                index = t.store(component, st, index);
+            }
+
+            st.setObject(index++, entityId.getId());
+            result = st.executeUpdate();
+            if( result > 0 ) {
+                return;
+            }
         }
 
         // If that didn't succeed then insert
