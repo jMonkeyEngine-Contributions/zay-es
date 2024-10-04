@@ -252,6 +252,26 @@ public class ComponentTable<T extends EntityComponent> {
         log.info("Result:" + i);
     }
 
+    protected boolean addField( SqlSession session, String tableName, FieldType ft ) throws SQLException {
+        log.info("add field for:" + tableName + " field:" + ft);
+        StringBuilder sb = new StringBuilder( "ALTER TABLE" );
+        sb.append( " " + tableName + "\n" );
+        sb.append( " ADD COLUMN " + ft.getFieldName() + " " + ft.getDbType() );
+
+        log.info("Add field statement:" + sb);
+
+        Statement st = session.getConnection().createStatement();
+        int i = st.executeUpdate(sb.toString());
+        st.close();
+
+        log.info("Result:" + i);
+
+        // The poblem left is how to provide values for the new fields other than
+        // defaults or null.
+
+        return true;
+    }
+
     protected void checkStructure( SqlSession session,
                                    String tableName,
                                    Map<String,FieldType> defs,
@@ -307,6 +327,17 @@ public class ComponentTable<T extends EntityComponent> {
         log.info("Removed fields:" + removedFields);
         log.info("New index fields:" + newIndex);
 
+        if( !newFields.isEmpty() ) {
+            // See if we can add any of the new fields... even if we can't
+            // fill in the new values for them.
+            for( String s : new ArrayList<>(newFields) ) {
+                FieldType ft = defs.get(s);
+                if( addField(session, tableName, ft) ) {
+                    newFields.remove(s);
+                }
+            }
+        }
+
         if( !newIndex.isEmpty() ) {
             // This is something we can fix
             for( String index : newIndex ) {
@@ -314,30 +345,15 @@ public class ComponentTable<T extends EntityComponent> {
             }
         }
 
-        if( newFields.isEmpty() && removedFields.isEmpty() ) {
-            return;
-        }
-
- /*
-        // Otherwise... let's see if we can alter the table to match
-        for( String s : newFields )
-            {
-            FieldType ft = defs.get(s);
-
-            StringBuilder sb = new StringBuilder( "ALTER TABLE" );
-            sb.append( " " + tableName + "\n" );
-            sb.append( " ADD COLUMN " + s + " " + ft.getDbType() );
-            }
-
-        This could work... the problem is in what to specify for
-        the default value for new fields in an existing table.  It might be
-        solvable or it might be something we include some groovy
-        scripts for upgrading versions or something.
-*/
-
         // See if it has the required fields
-        if( !newFields.isEmpty() || !removedFields.isEmpty() ) {
-            throw new RuntimeException("Schema mismatch, table fields:" + dbFields
+        if( !newFields.isEmpty() ) {
+            throw new RuntimeException("Added fields.  Schema mismatch, table fields:" + dbFields
+                                        + " object fields:" + defs.keySet());
+        }
+        if( !removedFields.isEmpty() ) {
+            // In theory, this should be ok but we'll issue a warning.  Extra
+            // fields just take up extra space.
+            log.warn("Removed fields.  Schema mismatch, table fields:" + dbFields
                                         + " object fields:" + defs.keySet());
         }
     }

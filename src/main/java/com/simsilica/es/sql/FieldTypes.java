@@ -614,6 +614,11 @@ public class FieldTypes {
 
                 if( value instanceof Number ) {
                     value = cast((Number)value, getType());
+                } else if( value == null ) {
+                    // Primitives cannot handle nulls so we'll supply
+                    // a default value.
+                    // Any number would work for 0 as a default value
+                    value = cast(Integer.valueOf(0), getType());
                 }
 
                 field.set(target, value);
