@@ -25,6 +25,7 @@ Zay-ES Core v1.6.0 (unrelease)
 * Fixed a bug in the SQL layer when saving components with no fields.
 * Updated ComponentTable to automatically add new table fields with 'null' values.
 * Updated FieldTypes.PrimitiveField to support null DB values default to 0.
+* Added a Name.filter() convenience method.
 
 
 Zay-ES Core v1.5.0 (latest)
