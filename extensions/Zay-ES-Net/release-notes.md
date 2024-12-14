@@ -5,6 +5,9 @@ Zay-ES-Net v1.6.0 (unreleased)
 * Added a bunch of trace logging to HostedEntityData.
 * Updated implementations with new removeComponents() method from
     the EntityData interface.
+* Updated to implement the new EntityCriteria-based EntityData/EntitySet methods.
+* Added better error reporting to the client when the server encounters an
+    exception.  The exception information is now packed up and sent to the client.
 
 
 Zay-ES-Net v1.5.2 (latest)
@@ -12,13 +15,13 @@ Zay-ES-Net v1.5.2 (latest)
 * Removed some debug code from the release.
 
 
-Zay-ES-Net v1.5.1 
+Zay-ES-Net v1.5.1
 ------------------
-* Fixed a NPE caused by rare race condition during connection teardown when 
+* Fixed a NPE caused by rare race condition during connection teardown when
     active entity sets are still present.
-     
 
-Zay-ES-Net v1.5.0 
+
+Zay-ES-Net v1.5.0
 ------------------
 * Upgraded the build to use gradle 7.4.2
 * Migrated publishing to maven central instead of jcenter

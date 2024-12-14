@@ -61,18 +61,18 @@ import com.simsilica.es.net.EntityDataMessage.ComponentData;
 public class HostedEntityData {
 
     public static final String ATTRIBUTE_NAME = "hostedEntityData";
- 
-    static Logger log = LoggerFactory.getLogger(HostedEntityData.class);  
- 
-    private final EntityHostSettings settings;   
+
+    static Logger log = LoggerFactory.getLogger(HostedEntityData.class);
+
+    private final EntityHostSettings settings;
     private final HostedConnection conn;
-    
+
     /**
      *  An EntityData passthrough that holds entity change events so that
      *  we can process them and collect them all at once during sendUpdates().
      */
     private final EntityDataWrapper ed;
-    
+
     private final AtomicBoolean closing = new AtomicBoolean(false);
     private final Map<Integer, EntitySet> activeSets = new ConcurrentHashMap<>();
     private final Map<Integer, EntityInfo> activeEntities = new ConcurrentHashMap<>();
@@ -86,30 +86,30 @@ public class HostedEntityData {
      *  a filter.
      */
     private final Lock updateLock = new ReentrantLock();
- 
+
     /**
      *  A data structure to do 'mark and sweep' style interest tracking
      *  for components that the client is currently interested in.
      */
     private final ComponentUsageTracker tracker = new ComponentUsageTracker();
- 
+
     /**
      *  A frame counter that is used during 'mark and sweep' to tell what
-     *  is stale and not. 
+     *  is stale and not.
      */
-    private long sendFrameCounter = 0;    
- 
+    private long sendFrameCounter = 0;
+
     /**
      *  Used during sendUpdates() to track the changes that were
      *  actually applied to our local wrapper.  Reused to avoid
      *  unnecessary GC.
      */
     private final List<EntityChange> frameChanges = new ArrayList<>();
- 
+
     /**
      *  Reused during update sending to capture the latest entity
-     *  set updates. 
-     */   
+     *  set updates.
+     */
     //private final Set<EntityChange> changeBuffer = new HashSet<EntityChange>();
 
     /**
@@ -117,7 +117,7 @@ public class HostedEntityData {
      *  where we potentially have to flush new entity data.
      */
     private final AtomicBoolean filtersReset = new AtomicBoolean();
-    
+
     /**
      *  Reused during update sending to collect full entity changes before
      *  sending them on.
@@ -126,32 +126,32 @@ public class HostedEntityData {
 
     /**
      *  Reused during update sending to collect batches of component changes
-     *  before sending them on. 
+     *  before sending them on.
      */
     private final List<EntityChange> changeList = new ArrayList<>();
-    
-    
+
+
     public HostedEntityData( EntityHostSettings settings, HostedConnection conn, ObservableEntityData ed ) {
         this.settings = settings;
         this.ed = new EntityDataWrapper(ed);
         this.conn = conn;
-        log.trace("Created HostedEntityData:" + this);    
+        log.trace("Created HostedEntityData:" + this);
     }
- 
+
     public void registerComponentVisibility( ComponentVisibility visibility ) {
         ed.registerComponentVisibility(visibility);
     }
- 
+
     public void close() {
         if( !closing.compareAndSet(false, true) ) {
             return;
-        } 
-   
+        }
+
         log.trace("Closing HostedEntityData:" + this);
-        
+
         // Release all of the active sets
         for( EntitySet set : activeSets.values() ) {
-            log.trace("Releasing: EntitySet@" + System.identityHashCode(set));        
+            log.trace("Releasing: EntitySet@" + System.identityHashCode(set));
             set.release();
         }
         activeSets.clear();
@@ -160,80 +160,80 @@ public class HostedEntityData {
         /*
         Nothing to release anymore as we don't track real ones here
         for( WatchedEntity e : activeEntities.values() ) {
-            log.trace("Releasing: WatchedEntity@" + System.identityHashCode(e));        
+            log.trace("Releasing: WatchedEntity@" + System.identityHashCode(e));
             e.release();
         }*/
         activeEntities.clear();
-        
+
         // And release our local view (which technically kind of does all of the
         // above anyway)
         ed.close();
-    }    
-    
+    }
+
     public void getComponents( HostedConnection source, GetComponentsMessage msg ) {
         if( log.isTraceEnabled() ) {
             log.trace("getComponents:" + msg);
-        }    
+        }
         Entity e = ed.getEntity(msg.getEntityId(), msg.getComponentTypes());
         if( log.isTraceEnabled() ) {
             log.trace("Sending back entity data:" + e);
-        }        
-        source.send(settings.getChannel(), 
+        }
+        source.send(settings.getChannel(),
                     new ResultComponentsMessage(msg.getRequestId(), e));
     }
-  
+
     public void findEntities( HostedConnection source, FindEntitiesMessage msg ) {
         if( log.isTraceEnabled() ) {
             log.trace("findEntities:" + msg);
-        }    
-        Set<EntityId> result = ed.findEntities(msg.getFilter(), msg.getComponentTypes());
-        if( log.isTraceEnabled() ) {        
+        }
+        Set<EntityId> result = ed.findEntities(msg.getCriteria());
+        if( log.isTraceEnabled() ) {
             log.trace("Sending back entity ID data:" + result);
-        }        
+        }
         source.send(settings.getChannel(),
-                    new EntityIdsMessage(msg.getRequestId(), result));                    
+                    new EntityIdsMessage(msg.getRequestId(), result));
     }
 
-    public void findEntity( HostedConnection source, FindEntityMessage msg ) {        
+    public void findEntity( HostedConnection source, FindEntityMessage msg ) {
         if( log.isTraceEnabled() ) {
             log.trace("findEntity:" + msg);
-        }    
-        EntityId result = ed.findEntity(msg.getFilter(), msg.getComponentTypes());
+        }
+        EntityId result = ed.findEntity(msg.getCriteria());
         if( log.isTraceEnabled() ) {
             log.trace("Sending back entity ID data:" + result);
-        }        
+        }
         source.send(settings.getChannel(),
-                    new EntityIdsMessage(msg.getRequestId(), result));                    
+                    new EntityIdsMessage(msg.getRequestId(), result));
     }
-    
+
     public void watchEntity( HostedConnection source, WatchEntityMessage msg ) {
-        
+
         if( log.isTraceEnabled() ) {
             log.trace("watchEntity:" + msg);
-        } 
+        }
         int watchId = msg.getWatchId();
         //WatchedEntity result = activeEntities.get(watchId);
         EntityInfo existing = activeEntities.get(watchId);
         if( existing != null ) {
             throw new RuntimeException("WatchedEntity already exists for watch ID:" + watchId);
-        }        
-        
+        }
+
         //result = ed.watchEntity(msg.getEntityId(), msg.getComponentTypes());
-        
+
         // Grab a regular entity just to send the data
         Entity result = ed.getEntity(msg.getEntityId(), msg.getComponentTypes());
- 
-        // We only need the id and types for tracking        
+
+        // We only need the id and types for tracking
         activeEntities.put(watchId, new EntityInfo(msg.getEntityId(), msg.getComponentTypes()));
-        
-        // We can reuse the result components message        
+
+        // We can reuse the result components message
         if( log.isTraceEnabled() ) {
             log.trace("Sending back entity data:" + result);
-        }        
-        source.send(settings.getChannel(), 
+        }
+        source.send(settings.getChannel(),
                     new ResultComponentsMessage(msg.getRequestId(), result));
     }
-    
+
     public void releaseEntity( HostedConnection source, ReleaseWatchedEntityMessage msg ) {
         if( log.isTraceEnabled() ) {
             log.trace("releaseEntity:" + msg);
@@ -243,12 +243,12 @@ public class HostedEntityData {
         //WatchedEntity e = activeEntities.remove(watchId);
         //e.release();
     }
-   
+
     public void getEntitySet( HostedConnection source, GetEntitySetMessage msg ) {
         if( log.isTraceEnabled() ) {
             log.trace("getEntitySet:" + msg);
-        }    
-        // Just send the results back directly       
+        }
+        // Just send the results back directly
         // Need to send the entity set ID that the client
         // will recognize and the entity data which is
         // entity ID plus an array of components.
@@ -258,18 +258,24 @@ public class HostedEntityData {
         // there is a nice balance when breaking them up with keeping
         // the message pipe moving.
 
-        int setId = msg.getSetId();        
+        int setId = msg.getSetId();
         EntitySet set = activeSets.get(setId);
-        
+
         // We should be the first or there is an error.
         if( set != null ) {
             throw new RuntimeException("Set already exists for ID:" + setId);
         }
-        
+
         if( log.isTraceEnabled() ) {
             log.trace("Creating set for ID:" + msg.getSetId());
-        } 
-        set = ed.getEntities(msg.getFilter(), msg.getComponentTypes());
+        }
+        try {
+            set = ed.getEntities(msg.getCriteria());
+        } catch( Exception e ) {
+            log.error("Error retrieving entity set", e);
+            conn.send(settings.getChannel(), new EntitySetErrorMessage(setId, e));
+            return;
+        }
 
         int batchMax = settings.getMaxEntityBatchSize();
         List<ComponentData> data = new ArrayList<>();
@@ -279,21 +285,21 @@ public class HostedEntityData {
                 sendAndClear(setId, data);
             }
         }
-        
+
         if( !data.isEmpty() ) {
             sendAndClear(setId, data);
         }
-        
+
         // Put the EntitySet into the active sets after we have
         // iterated over its data.  This prevents one case where
         // an eager sendUpdates() could applyChanges() on top of
         // us while doing a full data flush to the client.  After
         // this, all updates will be sent to the client via the
         // sendUpdates() method and there won't be a thread conflict
-        // (except with filter resets which will be dealt with 
+        // (except with filter resets which will be dealt with
         //  using a short-lived lock for that case.)
         activeSets.put(setId, set);
-        
+
         // Pretend that a filter has been reset so that the sendUpdates() loop
         // will make one pass through the sets and mark the tracker for this new
         // entity set.  Without this, sets retrieved won't see their removes if
@@ -303,25 +309,25 @@ public class HostedEntityData {
         // to do so.
         filtersReset.set(true);
     }
- 
+
     public void resetEntitySetFilter( HostedConnection source, ResetEntitySetFilterMessage msg ) {
         if( log.isTraceEnabled() ) {
             log.trace( "resetEntitySetFilter:" + msg );
         }
-        
+
         // Note: we could avoid the lock by queuing a command that applies
         //       the filter in sendUpdates() but we don't really avoid much
         //       threading overhead that way.
         updateLock.lock();
         try {
             EntitySet set = activeSets.get(msg.getSetId());
-            set.resetFilter(msg.getFilter());
+            set.resetEntityCriteria(msg.getCriteria());
             filtersReset.set(true);
         } finally {
             updateLock.unlock();
-        }        
-    } 
- 
+        }
+    }
+
     public void releaseEntitySet( HostedConnection source, ReleaseEntitySetMessage msg ) {
         if( log.isTraceEnabled() ) {
             log.trace("releaseEntitySet:" + msg);
@@ -330,7 +336,7 @@ public class HostedEntityData {
         // Releasing an entity set is (currently) a safe operation
         // to perform even if the set is in use at the time.  The client
         // already has to deal with the race condition of continuing to
-        // get updates for a (from their perspective) released set anyway.        
+        // get updates for a (from their perspective) released set anyway.
         EntitySet set = activeSets.remove(msg.getSetId());
         if( set == null ) {
             // 2022-08-14 - I've seen an NPE here during shutdown that I think
@@ -338,7 +344,7 @@ public class HostedEntityData {
             // It's very timing sensitive and I don't think it's a threading
             // problem.
             // Hypothesis: under certain conditions, releaseEntitySet() and close()
-            // come in so close together that close() gets to run first but 
+            // come in so close together that close() gets to run first but
             // releaseEntitySet() also gets to run right after it.
             // In testing, I've never been able to make them overlap start/start/finish/finish.
             // Always start/finish/start/finish.  And if I try to expand times to make
@@ -347,20 +353,20 @@ public class HostedEntityData {
             // the close... but we somehow slip in before the close detection.)
             // Either way, I'll add a warning here just in case.  During normal operation
             // this should never ever happend and if we see it a lot then we might
-            // want some more close-state tracking. 
+            // want some more close-state tracking.
             log.warn("null set in releaseEntitySet(" + msg + ")");
             return;
         }
-        set.release();            
+        set.release();
     }
-    
+
     public void getStringInfo( HostedConnection source, StringIdMessage msg ) {
         if( msg.getId() != null ) {
-            source.send(new StringIdMessage(msg.getRequestId(), 
-                                            ed.getStrings().getString(msg.getId())));   
+            source.send(new StringIdMessage(msg.getRequestId(),
+                                            ed.getStrings().getString(msg.getId())));
         } else if( msg.getString() != null ) {
-            source.send(new StringIdMessage(msg.getRequestId(), 
-                                            ed.getStrings().getStringId(msg.getString(), false)));   
+            source.send(new StringIdMessage(msg.getRequestId(),
+                                            ed.getStrings().getStringId(msg.getString(), false)));
         } else {
             throw new RuntimeException("Bad StringIdMessage:" + msg);
         }
@@ -370,7 +376,7 @@ public class HostedEntityData {
         conn.send(settings.getChannel(), new EntityDataMessage(setId, buffer));
         buffer.clear();
     }
- 
+
     protected void sendAndClear( List<EntityChange> buffer ) {
         if( log.isTraceEnabled() ) {
             for( EntityChange change : buffer ) {
@@ -378,29 +384,29 @@ public class HostedEntityData {
             }
         }
         conn.send(settings.getChannel(), new ComponentChangeMessage(buffer));
-        buffer.clear(); 
+        buffer.clear();
     }
- 
+
     /**
      *  Periodically called by the EntityDataHostService to send any relevant changes
      *  to the client.
      */
     public void sendUpdates() {
-    
+
         if( closing.get() ) {
             return;
         }
 
-        int entityMax = settings.getMaxEntityBatchSize(); 
-            
+        int entityMax = settings.getMaxEntityBatchSize();
+
         // Basic steps to figuring out what to send the client are as
         // follows:
-        // 1) apply changes to our local wrapper view 
+        // 1) apply changes to our local wrapper view
         // 2) update the entity sets
         // 3) 'mark' the component tracker with entity set info
-        // 3.5) 'mark' the component tracker with watched entity info 
+        // 3.5) 'mark' the component tracker with watched entity info
         // 4) go through the applied change events and send them along,
-        //    'sweeping' the component tracker as we go.      
+        //    'sweeping' the component tracker as we go.
         //
         // Threading-wise, the things we really care about are if the active
         // set list changes underneath us... and in this case by 'change' we
@@ -408,8 +414,8 @@ public class HostedEntityData {
         //
         // Thus, I think we only need the lock during the update and 'mark' phase.
         // We can combine those into one loop, even.
- 
- 
+
+
         // Establish the current frame... we do it once to avoid repeated
         // autoboxing but I'd assume the JVM is smart about that.  Maybe.
         Long frame = sendFrameCounter++;
@@ -417,9 +423,9 @@ public class HostedEntityData {
         // Clear the buffers just in case
         frameChanges.clear();
         entityBuffer.clear();
-                
+
         // Step 1: Apply the changes and collect them
-        boolean newFilters = filtersReset.getAndSet(false); 
+        boolean newFilters = filtersReset.getAndSet(false);
         if( !ed.applyChanges(frameChanges) && !newFilters ) {
             // Hey, no change... we can early out (a nice optimization over the
             // old version)
@@ -431,23 +437,46 @@ public class HostedEntityData {
             }
         }
 
+Map<Integer, Long> setTimes = new HashMap<>();
+
         // One lock per update is better than locking per entity set
         // even if it makes message handling methods wait a little longer.
         // They can afford to wait.
-        updateLock.lock();        
+long startLock = System.nanoTime();
+        updateLock.lock();
+long time1 = System.nanoTime();
+int setCount = activeSets.size();
+int addCount = 0;
+int updateCount = 0;
+int removeCount = 0;
+long time1a = 0;
+long time1b = 0;
+long time1c = 0;
+long time1d = 0;
+long time1e = 0;
+long sanity = 0;
+long applyTime = 0;
+int changedSets = 0;
         try {
             log.trace("Updating entity sets");
-            
             // Step 2 and 3: update the entity sets and mark usage
             for( Map.Entry<Integer,EntitySet> e : activeSets.entrySet() ) {
                 EntitySet set = e.getValue();
- 
+
                 if( log.isTraceEnabled() ) {
                     log.trace("Updating set for types:" + Arrays.asList(ed.getTypes(set)));
                 }
-
+long subt1 = System.nanoTime();
+long subt2 = subt1;
+long subt3 = subt1;
+long subt4 = subt1;
+long subt5 = subt1;
                 // Step 2: apply the changes
                 if( set.applyChanges() ) {
+changedSets++;
+subt2 = System.nanoTime();
+time1a += subt2 - subt1;
+setTimes.put(e.getKey(), subt2 - subt1);
                     if( log.isTraceEnabled() ) {
                         for( Entity entity : set.getRemovedEntities() ) {
                             log.trace("should be removed:" + entity.getId());
@@ -459,54 +488,73 @@ public class HostedEntityData {
                             log.trace("should be added:" + entity.getId());
                         }
                     }
-                
+updateCount += set.getChangedEntities().size();
+removeCount += set.getRemovedEntities().size();
+subt3 = System.nanoTime();
+time1b += subt3 - subt2;
+
                     // For adds, we still need to send the whole entity or
                     // the client won't get it.
                     for( Entity entity : set.getAddedEntities() ) {
+addCount++;
                         if( log.isTraceEnabled() ) {
                             log.trace("Sending new entity:" + entity.getId() + " to set:" + e.getKey());
-                        }                    
+                        }
                         // Note: we could technically be smarter about this
                         // and send only the components we know that the client
                         // doesn't know about.  We track interest, so we know.
-                        entityBuffer.add(new ComponentData(entity));                
+                        entityBuffer.add(new ComponentData(entity));
                         if( entityBuffer.size() > entityMax ) {
                             sendAndClear(e.getKey(), entityBuffer);
                         }
                     }
-                    
+subt4 = System.nanoTime();
+time1c += subt4 - subt3;
+
                     // Note: 2018-12-15 - since I just had to reteach myself, I'm
                     // leaving a comment.  The reason that we don't see set.getRemovedEntities()
                     // or set.getChangedEntities() is because we are going to send all of the
                     // relevant EntityChange events in a later loop and that will take care
                     // of that.  We specifically process added entities here so that we can send
                     // the full component list for that entity.  I guess one of those is
-                    // probably redundant with a change we'll send later but so be it.                    
-                    
-                    // Follow up with anything remaining in the buffer 
+                    // probably redundant with a change we'll send later but so be it.
+
+                    // Follow up with anything remaining in the buffer
                     if( !entityBuffer.isEmpty() ) {
                         sendAndClear(e.getKey(), entityBuffer);
                     }
+subt5 = System.nanoTime();
+time1d += subt5 - subt4;
                 }
+long subt6 = System.nanoTime();
+applyTime += subt6 - subt1;
+if( subt2 == subt1 ) {
+    // No time was recorded because applyChanges() returned false
+    setTimes.put(e.getKey(), subt6 - subt1);
+}
                 set.clearChangeSets();  // we don't need them
- 
+
                 // Step 3: 'mark' usage in the tracker if there are entities
                 // in the set at all
                 if( !set.isEmpty() ) {
-                    Class<EntityComponent>[] types = ed.getTypes(set);
-                    for( Class<EntityComponent> type : types ) {
+                    Class<? extends EntityComponent>[] types = ed.getTypes(set);
+                    for( Class<? extends EntityComponent> type : types ) {
                         if( log.isTraceEnabled() ) {
                             log.trace("EntitySet tracker.set(" + set.getEntityIds() + ", " + type + ", " + frame + ")");
                         }
                         tracker.set(set.getEntityIds(), type, frame);
                     }
                 }
-            }            
+long subt7 = System.nanoTime();
+time1e += subt7 - subt6;
+sanity += subt7 - subt1;
+            }
         } finally {
-            log.trace("Done updating entity sets");        
+            log.trace("Done updating entity sets");
             updateLock.unlock();
         }
-        
+long time2 = System.nanoTime();
+
         // Step 3.5: Now mark the watched entities
         for( EntityInfo e : activeEntities.values() ) {
             for( Class<EntityComponent> type : e.types ) {
@@ -514,19 +562,23 @@ public class HostedEntityData {
                     log.trace("WatchedEntity tracker.set(" + e.id + ", " + type + ", " + frame + ")");
                 }
                 tracker.set(e.id, type, frame);
-            }            
+            }
         }
- 
+
+long time3 = System.nanoTime();
+int sentChanges = 0;
+int batches = 0;
+
         // Step 4: Sweep and fill outbound change buffers
-        int changeMax = settings.getMaxChangeBatchSize(); 
+        int changeMax = settings.getMaxChangeBatchSize();
         for( EntityChange change : frameChanges ) {
-            
+
             Long last = tracker.getAndExpire(change.getEntityId(), change.getComponentType(),
                                              frame);
             if( log.isTraceEnabled() ) {
                 log.trace("tracker change:" + change + "  frame:" + frame + "  last:" + last);
             }
-            
+
             // Three cases:
             // a) last and frame are the same and we need to send the change
             // b) last and frame are different... we need to send the change
@@ -537,58 +589,108 @@ public class HostedEntityData {
                 continue;
             }
 
-            // Buffer the updates            
+            // Buffer the updates
             changeList.add(change);
             if( changeList.size() > changeMax ) {
+                sentChanges += changeList.size();
                 sendAndClear(changeList);
-            } 
+                batches++;
+            }
         }
 
+long time4 = System.nanoTime();
+
         // Send any final pending updates
-        if( !changeList.isEmpty() ) {             
+        if( !changeList.isEmpty() ) {
+            sentChanges += changeList.size();
             sendAndClear(changeList);
+            batches++;
         }
-        
+
         // Clean up pending expirations
         // 2023-10-15 - to fix a bug where multiple changes to the same entity+component
         // were collapsing to just the first, we queue up the expirations and must sweep
-        // them at the end.  This is different than the ancient comment below.         
+        // them at the end.  This is different than the ancient comment below.
         tracker.sweep();
-        
+
         // Periodically we should do a more thorough sweep to catch the
         // stuff we aren't watching and also hasn't changed.  Could keep a
-        // flag that we set when filters or active sets change       
+        // flag that we set when filters or active sets change
+long time5 = System.nanoTime();
+
+if( time5 - time1 > 100 * 1000000L ) {
+    log.warn(String.format("total: %.03f  span1: %.03f  span2: %.03f  span3: %.03f  span4: %.03f",
+                           (time5 - time1)/1000000.0,
+                           (time2 - time1)/1000000.0,
+                           (time3 - time2)/1000000.0,
+                           (time4 - time3)/1000000.0,
+                           (time5 - time4)/1000000.0));
+    log.warn(String.format("lock: %.03f   applyChanges: %.03f  b: %.03f  c: %.03f  d: %.03f  e: %.03f",
+                           (time1 - startLock)/1000000.0,
+                           time1a/1000000.0,
+                           time1b/1000000.0,
+                           time1c/1000000.0,
+                           time1d/1000000.0,
+                           time1e/1000000.0
+                           ));
+    log.warn(String.format("raw lock: %,d   a: %,d  b: %,d  c: %,d  d: %,d  e: %,d",
+                           (time1 - startLock),
+                           time1a,
+                           time1b,
+                           time1c,
+                           time1d,
+                           time1e
+                           ));
+    log.warn(String.format("changed sets: %,d  sanity: %.03f  process applies: %.03f",
+                           changedSets,
+                           sanity/1000000.0,
+                           applyTime/1000000.0
+                           ));
+    log.warn(String.format("frameChanges: %,d  sentChanges: %,d  batches: %,d",
+                           frameChanges.size(),
+                           sentChanges,
+                           batches));
+    log.warn("we're tracing:" + log.isTraceEnabled());
+    log.warn("sets:" + setCount + "  adds:" + addCount + " changes:" + updateCount + " removes:" + removeCount);
+    for( Map.Entry<Integer,EntitySet> e : activeSets.entrySet() ) {
+        Long time = setTimes.get(e.getKey());
+        if( time == null ) {
+            time = 0L;
+        }
+        log.warn(String.format("time: %.03f ms, set: %s", time/1000000.0, e));
     }
- 
+}
+    }
+
     // We do this a different way now but I'm leaving this here and commented
     // out for temporary reference.  Many years of pain and sweat went into
     // honing it and it's hard to carve it out without at least leaving some of
     // the comments in for one more GIT version.
-    /*   
+    /*
     public void sendUpdatesOld() {
         if( closing.get() ) {
             return;
         }
-        
+
         // Clear the last change buffer and last data buffer just in case
         changeBuffer.clear();
         entityBuffer.clear();
- 
+
         // One lock per update is better than locking per entity set
         // even if it makes message handling methods wait a little longer.
         // They can afford to wait.
         updateLock.lock();
         try {
-            // Go through all of the active sets 
+            // Go through all of the active sets
             int entityMax = settings.getMaxEntityBatchSize();
             for( Map.Entry<Integer,EntitySet> e : activeSets.entrySet() ) {
-            
+
                 EntitySet set = e.getValue();
                 if( !set.applyChanges(changeBuffer) ) {
                     // No changes to this set since last time
                     continue;
                 }
-                            
+
                 // In theory we could just send the raw component changes
                 // and let the client sort out the adds, removes, etc. for
                 // their entity sets.
@@ -602,74 +704,74 @@ public class HostedEntityData {
                 // Removes are a little different since the client will
                 // instantly know to remove it just from the component
                 // change.
-                
+
                 // So, send adds specifically
                 for( Entity entity : set.getAddedEntities() ) {
-                    entityBuffer.add( new ComponentData(entity) );                
+                    entityBuffer.add( new ComponentData(entity) );
                     if( entityBuffer.size() > entityMax ) {
                         sendAndClear(e.getKey(), entityBuffer);
                     }
                 }
- 
+
                 // Note to self: I'm trying to decide if sending the removes
                 // gets around some problems or creates new ones.  Right now
-                // there are a bunch of component sends that should not be 
+                // there are a bunch of component sends that should not be
                 // sent and there are a bunch of retrievals on the client trying
                 // to complete entities that will never complete.  Since adds
                 // are kind of forced then we could force removes also and lockstep
                 // the remote entity sets (removing some of the automatic processing).
                 // The fear is that we might create an ordering problem but I think
-                // if we make the remote version of entity set 'dumber' then it's 
+                // if we make the remote version of entity set 'dumber' then it's
                 // not an issue.  It will then only pay attention to changes that
                 // directly affect it (pass all filters) and ignore everything else.
                 // Adds and removes would come in explicitly so it doesn't need to
                 // detect them.
-                
+
 if( !set.getRemovedEntities().isEmpty() ) {
     System.out.println("HostedEntityData.removed entities:" + set.getRemovedEntities());
     System.out.println("  changes so far:" + changeBuffer);
-}                
+}
                 if( !entityBuffer.isEmpty() ) {
                     sendAndClear(e.getKey(), entityBuffer);
-                } 
+                }
             }
         } finally {
             updateLock.unlock();
         }
-        
+
         // Collect changes for any active entities
         for( WatchedEntity e : activeEntities.values() ) {
             e.applyChanges(changeBuffer);
         }
-        
+
         if( !changeBuffer.isEmpty() ) {
             // Send the component changes themselves...
             // Note: it's possible some of these are redundant with
             //       the adds above but there is no easy way to
-            //       safely detect that.            
-            int changeMax = settings.getMaxChangeBatchSize(); 
+            //       safely detect that.
+            int changeMax = settings.getMaxChangeBatchSize();
             for( EntityChange c : changeBuffer ) {
                 changeList.add(c);
                 if( changeList.size() > changeMax ) {
                     sendAndClear(changeList);
-                } 
+                }
             }
-            
-            if( !changeList.isEmpty() ) {             
+
+            if( !changeList.isEmpty() ) {
                 sendAndClear(changeList);
             }
         }
     }*/
-    
+
     private static class EntityInfo {
         EntityId id;
         Class<EntityComponent>[] types;
-        
+
         public EntityInfo( EntityId id, Class<EntityComponent>[] types ) {
             this.id = id;
             this.types = types;
         }
-    }          
+    }
 }
 
 

@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright (c) 2013 jMonkeyEngine
+ * Copyright (c) 2024 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,43 +36,56 @@ package com.simsilica.es.net;
 
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
-import com.simsilica.es.ComponentFilter;
-import com.simsilica.es.EntityComponent;
-import com.simsilica.es.EntityCriteria;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
+ *  Indicates EntitySet interaction errors that can be sent back to the client.
  *
  *  @author    Paul Speed
  */
 @Serializable
-public class FindEntitiesMessage extends AbstractMessage {
+public class EntitySetErrorMessage extends AbstractMessage {
 
-    private int requestId;
-    private Class<? extends EntityComponent>[] types;
-    private ComponentFilter[] filters;
+    private static final Pattern LINE = Pattern.compile("(?m)^(.).*$");
 
-    public FindEntitiesMessage() {
+    private int setId;
+    private String error;;
+
+    public EntitySetErrorMessage() {
     }
 
-    public FindEntitiesMessage( int requestId, EntityCriteria criteria ) {
-        this.requestId = requestId;
-        this.types = criteria.toTypeArray();
-        this.filters = criteria.toFilterArray();
+    public EntitySetErrorMessage( int setId, Throwable error ) {
+        this.setId = setId;
+        this.error = throwableToString("SERVER-ERROR:", error);
     }
 
-    public int getRequestId() {
-        return requestId;
+    public static String throwableToString( String prefix, Throwable error ) {
+        StringWriter sOut = new StringWriter();
+        try( PrintWriter out = new PrintWriter(sOut) ) {
+            error.printStackTrace(out);
+        }
+        String result = sOut.toString();
+        Matcher m = LINE.matcher(result);
+        return m.replaceAll(prefix + "$0");
     }
 
-    public EntityCriteria getCriteria() {
-        return new EntityCriteria().set(types, filters);
+    public int getSetId() {
+        return setId;
+    }
+
+    public String getError() {
+        return error;
     }
 
     @Override
     public String toString() {
-        return "FindEntitiesMessage[" + requestId + ", " + getCriteria() + "]";
+        return "EntitySetErrorMessage[" + setId + ", " + error + "]";
     }
 }
 

@@ -26,6 +26,10 @@ Zay-ES Core v1.6.0 (unrelease)
 * Updated ComponentTable to automatically add new table fields with 'null' values.
 * Updated FieldTypes.PrimitiveField to support null DB values default to 0.
 * Added a Name.filter() convenience method.
+* Added EntityCriteria to encapsulate the component types and filters for an
+    entity query.
+* Added EntityData and EntitySet methods that take EntityCriteria objects.
+* Added a Query interface and base implementations.
 
 
 Zay-ES Core v1.5.0 (latest)

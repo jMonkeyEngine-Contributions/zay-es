@@ -38,6 +38,7 @@ import com.jme3.network.serializing.Serializer;
 import com.jme3.network.serializing.serializers.FieldSerializer;
 import com.simsilica.es.CreatedBy;
 import com.simsilica.es.EntityChange;
+import com.simsilica.es.EntityCriteria;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.Name;
 import com.simsilica.es.filter.AndFilter;
@@ -54,22 +55,23 @@ import org.slf4j.LoggerFactory;
 public class EntitySerializers {
 
     static Logger log = LoggerFactory.getLogger(EntitySerializers.class);
-    
+
     private static final Class[] classes = {
         ComponentChangeMessage.class,
         EntityDataMessage.class,
         EntityDataMessage.ComponentData.class,
         EntityIdsMessage.class,
+        EntitySetErrorMessage.class,
         FindEntitiesMessage.class,
         FindEntityMessage.class,
         GetComponentsMessage.class,
         GetEntitySetMessage.class,
         ReleaseEntitySetMessage.class,
         ReleaseWatchedEntityMessage.class,
-        ResetEntitySetFilterMessage.class,  
+        ResetEntitySetFilterMessage.class,
         ResultComponentsMessage.class,
         StringIdMessage.class,
-        WatchEntityMessage.class          
+        WatchEntityMessage.class
     };
 
     private static final Class[] forced = {
@@ -79,15 +81,16 @@ public class EntitySerializers {
         Name.class,
         FieldFilter.class,
         OrFilter.class,
-        AndFilter.class
+        AndFilter.class,
+        EntityCriteria.class
     };
 
     public static void initialize() {
         Serializer.registerClass( Class.class, new ClassSerializer() );
         Serializer.registerClass( java.lang.reflect.Field.class, new ClassFieldSerializer() );
-        
+
         Serializer.registerClasses(classes);
-        
+
         // Register some classes manually since Spider Monkey currently
         // requires them all to have @Serializable but we already know
         // which serializer we want to use.  Eventually I will fix SM
@@ -95,7 +98,7 @@ public class EntitySerializers {
         // This keeps Zay-ES proper from requiring the jme3-networking
         // dependency.
         Serializer fieldSerializer = new FieldSerializer();
-        boolean error = false;        
+        boolean error = false;
         for( Class c : forced ) {
             try {
                 Serializer.registerClass(c, fieldSerializer);
@@ -107,10 +110,10 @@ public class EntitySerializers {
         if( error ) {
             throw new RuntimeException("Some classes failed to register");
         }
-        
+
         // Another standard one for Zay-ES that requires a custom
         // serializer
-        Serializer.registerClass(EntityChange.class, new EntityChangeSerializer());        
+        Serializer.registerClass(EntityChange.class, new EntityChangeSerializer());
     }
 }
 

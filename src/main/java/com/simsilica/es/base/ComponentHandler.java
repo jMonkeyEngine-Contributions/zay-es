@@ -39,6 +39,7 @@ import java.util.Set;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.ComponentFilter;
+import com.simsilica.es.Query;
 
 /**
  *  Handles the management of a particular component type
@@ -51,7 +52,11 @@ public interface ComponentHandler<T extends EntityComponent> {
     public void setComponent( EntityId entityId, T component );
     public boolean removeComponent( EntityId entityId );
     public T getComponent( EntityId entityId );
-    public Set<EntityId> getEntities(); 
+    public Set<EntityId> getEntities();
     public Set<EntityId> getEntities( ComponentFilter filter );
-    public EntityId findEntity( ComponentFilter filter ); 
+    public EntityId findEntity( ComponentFilter filter );
+
+    default Query createQuery( ComponentFilter<T> filter ) {
+        return new DefaultQuery<>(this, filter);
+    }
 }

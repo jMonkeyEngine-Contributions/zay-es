@@ -37,6 +37,9 @@ package com.simsilica.es.net;
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
 import com.simsilica.es.ComponentFilter;
+import com.simsilica.es.EntityComponent;
+import com.simsilica.es.EntityCriteria;
+import java.util.Arrays;
 
 
 /**
@@ -47,27 +50,29 @@ import com.simsilica.es.ComponentFilter;
 public class ResetEntitySetFilterMessage extends AbstractMessage {
 
     private int setId;
-    private ComponentFilter filter;
+    private Class<? extends EntityComponent>[] types;
+    private ComponentFilter[] filters;
 
     public ResetEntitySetFilterMessage() {
     }
-    
-    public ResetEntitySetFilterMessage( int setId, ComponentFilter filter ) {
+
+    public ResetEntitySetFilterMessage( int setId, EntityCriteria criteria ) {
         this.setId = setId;
-        this.filter = filter;
+        this.types = criteria.toTypeArray();
+        this.filters = criteria.toFilterArray();
     }
- 
+
     public int getSetId() {
         return setId;
     }
- 
-    public ComponentFilter getFilter() {
-        return filter;
+
+    public EntityCriteria getCriteria() {
+        return new EntityCriteria().set(types, filters);
     }
-    
-    @Override   
+
+    @Override
     public String toString() {
-        return "ResetEntitySetFilterMessage[" + setId + ", " + filter + "]"; 
+        return "ResetEntitySetFilterMessage[" + setId + ", " + getCriteria() + "]";
     }
 }
 

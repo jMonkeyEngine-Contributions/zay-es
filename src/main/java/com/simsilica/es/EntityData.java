@@ -46,24 +46,30 @@ public interface EntityData {
 
     public EntityId createEntity();
     public void removeEntity( EntityId entityId );
-    
+
     public <T extends EntityComponent> void setComponent( EntityId entityId, T component );
     public void setComponents( EntityId entityId, EntityComponent... components );
     public <T extends EntityComponent> boolean removeComponent( EntityId entityId, Class<T> type );
     public void removeComponents( EntityId entityId, Class... types );
 
     public <T extends EntityComponent> T getComponent( EntityId entityId, Class<T> type );
-    
+
     public Entity getEntity( EntityId entityId, Class... types );
     public EntityId findEntity( ComponentFilter filter, Class... types );
+    public EntityId findEntity( EntityCriteria criteria );
     public Set<EntityId> findEntities( ComponentFilter filter, Class... types );
-    
+    public Set<EntityId> findEntities( EntityCriteria criteria );
+
+    public Query createQuery( EntityCriteria criteria );
+    public <T extends EntityComponent> Query createQuery( ComponentFilter<T> filter, Class<T> type );
+
     public EntitySet getEntities( Class... types );
     public EntitySet getEntities( ComponentFilter filter, Class... types );
+    public EntitySet getEntities( EntityCriteria criteria );
 
     public WatchedEntity watchEntity( EntityId entityId, Class... types );
 
     public StringIndex getStrings();
-    
-    public void close();  
+
+    public void close();
 }
