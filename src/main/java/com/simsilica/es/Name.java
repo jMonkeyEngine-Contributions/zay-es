@@ -47,14 +47,14 @@ public class Name implements EntityComponent, PersistentComponent {
 
     @StringType(maxLength=80)
     private String name;
-    
+
     public Name() {
     }
-    
+
     public Name( String name ) {
         this(name, false);
     }
-    
+
     public Name( String name, boolean truncate ) {
         if( name.length() >= 80 ) {
             if( truncate ) {
@@ -62,11 +62,15 @@ public class Name implements EntityComponent, PersistentComponent {
                 name = name.substring(0, 77) + "...";
             } else {
                 throw new IllegalArgumentException("Name exceeds 80 characters:" + name);
-            } 
+            }
         }
         this.name = name;
     }
-    
+
+    public static ComponentFilter<Name> filter( String name ) {
+        return Filters.fieldEquals(Name.class, "name", name);
+    }
+
     public String getName() {
         return name;
     }
@@ -74,6 +78,6 @@ public class Name implements EntityComponent, PersistentComponent {
     @Override
     public String toString() {
         return "Name[" + name + "]";
-    }      
+    }
 }
 
