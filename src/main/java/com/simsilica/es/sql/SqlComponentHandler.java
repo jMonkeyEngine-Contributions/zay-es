@@ -40,6 +40,7 @@ import java.util.*;
 import com.simsilica.es.ComponentFilter;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntityComponent;
+import com.simsilica.es.Query;
 import com.simsilica.es.base.ComponentHandler;
 
 
@@ -53,7 +54,7 @@ public class SqlComponentHandler<T extends EntityComponent> implements Component
     private SqlEntityData parent;
     private Class<T> type;
     private ComponentTable<T> table;
- 
+
     public SqlComponentHandler( SqlEntityData parent, Class<T> type ) {
         this.parent = parent;
         this.type = type;
@@ -74,41 +75,45 @@ public class SqlComponentHandler<T extends EntityComponent> implements Component
             throw new RuntimeException("Error creating table for component type:" + type, e);
         }
     }
-    
+
     protected SqlSession getSession() throws SQLException {
         return parent.getSession();
     }
-    
+
+    public Query createQuery( ComponentFilter<T> filter ) {
+        return new TableQuery<T>(parent, type, table, filter);
+    }
+
     @Override
     public void setComponent( EntityId entityId, T component ) {
         try {
             table.setComponent(getSession(), entityId, component);
         } catch( SQLException e ) {
-            throw new RuntimeException("Error setting component:" + component 
-                                        + " on entity:" + entityId, e); 
+            throw new RuntimeException("Error setting component:" + component
+                                        + " on entity:" + entityId, e);
         }
     }
-    
+
     @Override
     public boolean removeComponent( EntityId entityId ) {
         try {
             return table.removeComponent(getSession(), entityId);
         } catch( SQLException e ) {
-            throw new RuntimeException("Error removing component type:" + type 
-                                        + " from entity:" + entityId); 
+            throw new RuntimeException("Error removing component type:" + type
+                                        + " from entity:" + entityId);
         }
     }
-    
+
     @Override
     public T getComponent( EntityId entityId ) {
-        try {       
+        try {
             return (T)table.getComponent(getSession(), entityId);
         } catch( SQLException e ) {
-            throw new RuntimeException("Error retrieving component type:" + type 
+            throw new RuntimeException("Error retrieving component type:" + type
                                         + " for entity:" + entityId, e);
-        }       
+        }
     }
-    
+
     @Override
     public Set<EntityId> getEntities() {
         try {
@@ -117,10 +122,10 @@ public class SqlComponentHandler<T extends EntityComponent> implements Component
             throw new RuntimeException("Error retrieving component entities for type:" + type);
         }
     }
-     
+
     @Override
     public Set<EntityId> getEntities( ComponentFilter filter ) {
-    
+
         if( filter == null ) {
             return getEntities();
         }
@@ -130,10 +135,10 @@ public class SqlComponentHandler<T extends EntityComponent> implements Component
             throw new RuntimeException("Error retrieving component entities for type:" + type, e);
         }
     }
-                
+
     @Override
     public EntityId findEntity( ComponentFilter filter ) {
-    
+
         if( filter == null ) {
             return null;
         }
@@ -142,5 +147,5 @@ public class SqlComponentHandler<T extends EntityComponent> implements Component
         } catch( SQLException e ) {
             throw new RuntimeException("Error retrieving entity for filter:" + filter, e);
         }
-    } 
+    }
 }
