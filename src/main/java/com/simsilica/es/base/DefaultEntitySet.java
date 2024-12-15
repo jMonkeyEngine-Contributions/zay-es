@@ -90,6 +90,13 @@ public class DefaultEntitySet extends AbstractSet<Entity>
     private boolean released = false;
 
 
+    /**
+     *  Kept for compatibility with any custom subclasses that might be out in
+     *  the wild.
+     *
+     *  @deprecated Use the EntityCriteria-based constructor instead.
+     */
+    @Deprecated
     public DefaultEntitySet( EntityData ed, ComponentFilter filter, Class<? extends EntityComponent>[] types ) {
         this(ed, new EntityCriteria().set(filter, types));
     }
