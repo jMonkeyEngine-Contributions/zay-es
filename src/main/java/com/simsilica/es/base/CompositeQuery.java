@@ -44,6 +44,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.MoreObjects;
+
 import com.simsilica.es.EntityId;
 import com.simsilica.es.Query;
 
@@ -110,6 +112,12 @@ public class CompositeQuery implements Query {
         return null;
     }
 
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(getClass().getSimpleName())
+            .add("children", children)
+            .toString();
+    }
 }
 
 
