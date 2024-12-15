@@ -34,6 +34,7 @@
 
 package com.simsilica.es.base;
 
+import com.google.common.base.MoreObjects;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.ComponentFilter;
@@ -46,41 +47,51 @@ import java.util.concurrent.*;
  *
  *  @author    Paul Speed
  */
-public class MapComponentHandler<T extends EntityComponent> 
+public class MapComponentHandler<T extends EntityComponent>
                     implements ComponentHandler<T> {
-                    
-    private Map<EntityId,T> components = new ConcurrentHashMap<EntityId,T>();
- 
+
+    private final Class<? extends EntityComponent> type;
+    private final Map<EntityId,T> components = new ConcurrentHashMap<EntityId,T>();
+
+    /**
+     *  Provided only for backwards compatibility with any custom subclasses.
+     */
+    @Deprecated
     public MapComponentHandler() {
+        this(null);
     }
-    
+
+    public MapComponentHandler( Class<? extends EntityComponent> type ) {
+        this.type = type;
+    }
+
     @Override
     public void setComponent( EntityId entityId, T component ) {
         components.put(entityId, component);
     }
-    
+
     @Override
     public boolean removeComponent( EntityId entityId ) {
         return components.remove(entityId) != null;
     }
-    
+
     @Override
     public T getComponent( EntityId entityId ) {
         return components.get(entityId);
     }
-    
+
     @Override
     public Set<EntityId> getEntities() {
         return components.keySet();
-    } 
+    }
 
     @Override
     public Set<EntityId> getEntities( ComponentFilter filter ) {
-    
+
         if( filter == null ) {
             return components.keySet();
         }
-               
+
         Set<EntityId> results = new HashSet<EntityId>();
         for( Map.Entry<EntityId,T> e : components.entrySet() ) {
             if( filter.evaluate((EntityComponent)e.getValue()) ) {
@@ -89,7 +100,7 @@ public class MapComponentHandler<T extends EntityComponent>
         }
         return results;
     }
-    
+
     @Override
     public EntityId findEntity( ComponentFilter filter ) {
         for( Map.Entry<EntityId,T> e : components.entrySet() ) {
@@ -98,5 +109,13 @@ public class MapComponentHandler<T extends EntityComponent>
             }
         }
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(getClass().getSimpleName())
+            .add("type", type)
+            .add("size", components.size())
+            .toString();
     }
 }

@@ -55,6 +55,7 @@ public class DefaultEntityData implements ObservableEntityData {
     private final Map<Class<? extends EntityComponent>, ComponentHandler> handlers = new ConcurrentHashMap<>();
     private EntityIdGenerator idGenerator;
     private StringIndex stringIndex;
+    private EntityDataStats stats = new NoopEntityDataStats();
 
     /**
      *  Keeps the unreleased entity sets so that we can give
@@ -76,6 +77,14 @@ public class DefaultEntityData implements ObservableEntityData {
         if( getClass() == DefaultEntityData.class ) {
             this.stringIndex = new MemStringIndex();
         }
+    }
+
+    public void setEntityDataStats( EntityDataStats stats ) {
+        this.stats = stats;
+    }
+
+    public EntityDataStats getEntityDataStats() {
+        return stats;
     }
 
     protected void setIdGenerator( EntityIdGenerator idGenerator ) {
@@ -140,7 +149,7 @@ public class DefaultEntityData implements ObservableEntityData {
      *  a new MapComponentHandler.
      */
     protected <T extends EntityComponent> ComponentHandler<T> lookupDefaultHandler( Class<T> type ) {
-        return new MapComponentHandler<T>();
+        return new MapComponentHandler<T>(type);
     }
 
     /**
@@ -282,17 +291,22 @@ public class DefaultEntityData implements ObservableEntityData {
         if( types == null || types.length == 0 ) {
             return findSingleEntity(filter);
         }
-        Set<EntityId> all = findEntities(new EntityCriteria().set(filter, types));
-        if( all.isEmpty() ) {
-            return null;
-        }
-        return all.iterator().next();
+        return findEntity(new EntityCriteria().set(filter, types));
     }
 
     @Override
     public EntityId findEntity( EntityCriteria criteria ) {
         Query query = createQuery(criteria);
-        return query.findFirst();
+        long start = System.nanoTime();
+        boolean found = false;
+        try {
+            EntityId result = query.findFirst();
+            found = result != null;
+            return result;
+        } finally {
+            long delta = System.nanoTime() - start;
+            stats.findEntity(delta, criteria, query, found);
+        }
     }
 
     @Override
@@ -343,7 +357,16 @@ public class DefaultEntityData implements ObservableEntityData {
     @Override
     public Set<EntityId> findEntities( EntityCriteria criteria ) {
         Query query = createQuery(criteria);
-        return query.execute();
+        long start = System.nanoTime();
+        int size = 0;
+        try {
+            Set<EntityId> results = query.execute();
+            size = results.size();
+            return results;
+        } finally {
+            long delta = System.nanoTime() - start;
+            stats.findEntities(delta, criteria, query, size);
+        }
     }
 
     @Override
