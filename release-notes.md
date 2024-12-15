@@ -30,6 +30,11 @@ Zay-ES Core v1.6.0 (unrelease)
     entity query.
 * Added EntityData and EntitySet methods that take EntityCriteria objects.
 * Added a Query interface and base implementations.
+* Implemented query joins for SQL-based queries.  Should improve performance
+    for multi-component finds.
+* Added a stats collector to DefaultEntityData along with a threshold
+    based watchdog implementation.
+* Deprecated some constructors that should no longer be used.
 
 
 Zay-ES Core v1.5.0 (latest)
