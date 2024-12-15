@@ -41,6 +41,8 @@ import java.util.*;
 
 import org.slf4j.*;
 
+import com.google.common.base.MoreObjects;
+
 import com.simsilica.es.EntityId;
 import com.simsilica.es.Query;
 
@@ -205,6 +207,9 @@ public class JoinQuery implements Query {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + queries + "]";
+        return MoreObjects.toStringHelper(getClass().getSimpleName())
+            .add("queries", queries)
+            .add("statement", statement)
+            .toString();
     }
 }

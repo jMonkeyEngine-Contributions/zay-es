@@ -41,6 +41,8 @@ import java.util.*;
 
 import org.slf4j.*;
 
+import com.google.common.base.MoreObjects;
+
 import com.simsilica.es.ComponentFilter;
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.EntityId;
@@ -114,6 +116,10 @@ public class TableQuery<T extends EntityComponent> implements Query {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + type + ", " + filter + "]";
+        return MoreObjects.toStringHelper(getClass().getSimpleName())
+            .omitNullValues()
+            .add("type", type)
+            .add("filter", filter)
+            .toString();
     }
 }
