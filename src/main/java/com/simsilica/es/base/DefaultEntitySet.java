@@ -427,13 +427,6 @@ public class DefaultEntitySet extends AbstractSet<Entity>
 
     protected boolean applyChanges( Set<EntityChange> updates, boolean clearChangeSets ) {
 
-        long start = System.nanoTime();
-        long transStart = 0;
-        long transEnd = 0;
-        long filterStart = 0;
-        long filterEnd = 0;
-
-try {
         // Need to return something to the caller about the adds and removes
         // actually we could just add that information to internal buffers
         // that get reset each time this is called. That means for any given
@@ -460,17 +453,13 @@ try {
             return hasChanges();
         }
 
-        transStart = System.nanoTime();
         if( buildTransactionChanges(updates) ) {
             // Resolve all of the changes into the change sets
             transaction.resolveChanges();
         }
-        transEnd = System.nanoTime();
 
         if( filtersChanged ) {
             filtersChanged = false;
-
-            filterStart = System.nanoTime();
 
             // Recompose our local filters array
             this.filters = criteria.toFilterArray();
@@ -480,24 +469,11 @@ try {
 
             // Find the latest entities
             loadEntities(true);
-
-            filterEnd = System.nanoTime();
         }
 
         return !addedEntities.isEmpty()
                 || !changedEntities.isEmpty()
                 || !removedEntities.isEmpty();
-} finally {
-    long end = System.nanoTime();
-    if( end - start > 13000000L ) {
-        log.warn(String.format("Long update: %.03f ms, trans: %.03f, filter: %.03f, this: %s",
-                 (end - start)/1000000.0,
-                 (transEnd - transStart)/1000000.0,
-                 (filterEnd - filterStart)/1000000.0,
-                 this
-                 ));
-    }
-}
     }
 
     /**
