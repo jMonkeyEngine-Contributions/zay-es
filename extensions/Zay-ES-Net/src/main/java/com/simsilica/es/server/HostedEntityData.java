@@ -437,26 +437,10 @@ public class HostedEntityData {
             }
         }
 
-Map<Integer, Long> setTimes = new HashMap<>();
-
         // One lock per update is better than locking per entity set
         // even if it makes message handling methods wait a little longer.
         // They can afford to wait.
-long startLock = System.nanoTime();
         updateLock.lock();
-long time1 = System.nanoTime();
-int setCount = activeSets.size();
-int addCount = 0;
-int updateCount = 0;
-int removeCount = 0;
-long time1a = 0;
-long time1b = 0;
-long time1c = 0;
-long time1d = 0;
-long time1e = 0;
-long sanity = 0;
-long applyTime = 0;
-int changedSets = 0;
         try {
             log.trace("Updating entity sets");
             // Step 2 and 3: update the entity sets and mark usage
@@ -466,17 +450,8 @@ int changedSets = 0;
                 if( log.isTraceEnabled() ) {
                     log.trace("Updating set for types:" + Arrays.asList(ed.getTypes(set)));
                 }
-long subt1 = System.nanoTime();
-long subt2 = subt1;
-long subt3 = subt1;
-long subt4 = subt1;
-long subt5 = subt1;
                 // Step 2: apply the changes
                 if( set.applyChanges() ) {
-changedSets++;
-subt2 = System.nanoTime();
-time1a += subt2 - subt1;
-setTimes.put(e.getKey(), subt2 - subt1);
                     if( log.isTraceEnabled() ) {
                         for( Entity entity : set.getRemovedEntities() ) {
                             log.trace("should be removed:" + entity.getId());
@@ -488,15 +463,10 @@ setTimes.put(e.getKey(), subt2 - subt1);
                             log.trace("should be added:" + entity.getId());
                         }
                     }
-updateCount += set.getChangedEntities().size();
-removeCount += set.getRemovedEntities().size();
-subt3 = System.nanoTime();
-time1b += subt3 - subt2;
 
                     // For adds, we still need to send the whole entity or
                     // the client won't get it.
                     for( Entity entity : set.getAddedEntities() ) {
-addCount++;
                         if( log.isTraceEnabled() ) {
                             log.trace("Sending new entity:" + entity.getId() + " to set:" + e.getKey());
                         }
@@ -508,8 +478,6 @@ addCount++;
                             sendAndClear(e.getKey(), entityBuffer);
                         }
                     }
-subt4 = System.nanoTime();
-time1c += subt4 - subt3;
 
                     // Note: 2018-12-15 - since I just had to reteach myself, I'm
                     // leaving a comment.  The reason that we don't see set.getRemovedEntities()
@@ -523,15 +491,7 @@ time1c += subt4 - subt3;
                     if( !entityBuffer.isEmpty() ) {
                         sendAndClear(e.getKey(), entityBuffer);
                     }
-subt5 = System.nanoTime();
-time1d += subt5 - subt4;
                 }
-long subt6 = System.nanoTime();
-applyTime += subt6 - subt1;
-if( subt2 == subt1 ) {
-    // No time was recorded because applyChanges() returned false
-    setTimes.put(e.getKey(), subt6 - subt1);
-}
                 set.clearChangeSets();  // we don't need them
 
                 // Step 3: 'mark' usage in the tracker if there are entities
@@ -545,15 +505,11 @@ if( subt2 == subt1 ) {
                         tracker.set(set.getEntityIds(), type, frame);
                     }
                 }
-long subt7 = System.nanoTime();
-time1e += subt7 - subt6;
-sanity += subt7 - subt1;
             }
         } finally {
             log.trace("Done updating entity sets");
             updateLock.unlock();
         }
-long time2 = System.nanoTime();
 
         // Step 3.5: Now mark the watched entities
         for( EntityInfo e : activeEntities.values() ) {
@@ -564,10 +520,6 @@ long time2 = System.nanoTime();
                 tracker.set(e.id, type, frame);
             }
         }
-
-long time3 = System.nanoTime();
-int sentChanges = 0;
-int batches = 0;
 
         // Step 4: Sweep and fill outbound change buffers
         int changeMax = settings.getMaxChangeBatchSize();
@@ -592,19 +544,13 @@ int batches = 0;
             // Buffer the updates
             changeList.add(change);
             if( changeList.size() > changeMax ) {
-                sentChanges += changeList.size();
                 sendAndClear(changeList);
-                batches++;
             }
         }
 
-long time4 = System.nanoTime();
-
         // Send any final pending updates
         if( !changeList.isEmpty() ) {
-            sentChanges += changeList.size();
             sendAndClear(changeList);
-            batches++;
         }
 
         // Clean up pending expirations
@@ -616,152 +562,7 @@ long time4 = System.nanoTime();
         // Periodically we should do a more thorough sweep to catch the
         // stuff we aren't watching and also hasn't changed.  Could keep a
         // flag that we set when filters or active sets change
-long time5 = System.nanoTime();
-
-if( time5 - time1 > 100 * 1000000L ) {
-    log.warn(String.format("total: %.03f  span1: %.03f  span2: %.03f  span3: %.03f  span4: %.03f",
-                           (time5 - time1)/1000000.0,
-                           (time2 - time1)/1000000.0,
-                           (time3 - time2)/1000000.0,
-                           (time4 - time3)/1000000.0,
-                           (time5 - time4)/1000000.0));
-    log.warn(String.format("lock: %.03f   applyChanges: %.03f  b: %.03f  c: %.03f  d: %.03f  e: %.03f",
-                           (time1 - startLock)/1000000.0,
-                           time1a/1000000.0,
-                           time1b/1000000.0,
-                           time1c/1000000.0,
-                           time1d/1000000.0,
-                           time1e/1000000.0
-                           ));
-    log.warn(String.format("raw lock: %,d   a: %,d  b: %,d  c: %,d  d: %,d  e: %,d",
-                           (time1 - startLock),
-                           time1a,
-                           time1b,
-                           time1c,
-                           time1d,
-                           time1e
-                           ));
-    log.warn(String.format("changed sets: %,d  sanity: %.03f  process applies: %.03f",
-                           changedSets,
-                           sanity/1000000.0,
-                           applyTime/1000000.0
-                           ));
-    log.warn(String.format("frameChanges: %,d  sentChanges: %,d  batches: %,d",
-                           frameChanges.size(),
-                           sentChanges,
-                           batches));
-    log.warn("we're tracing:" + log.isTraceEnabled());
-    log.warn("sets:" + setCount + "  adds:" + addCount + " changes:" + updateCount + " removes:" + removeCount);
-    for( Map.Entry<Integer,EntitySet> e : activeSets.entrySet() ) {
-        Long time = setTimes.get(e.getKey());
-        if( time == null ) {
-            time = 0L;
-        }
-        log.warn(String.format("time: %.03f ms, set: %s", time/1000000.0, e));
     }
-}
-    }
-
-    // We do this a different way now but I'm leaving this here and commented
-    // out for temporary reference.  Many years of pain and sweat went into
-    // honing it and it's hard to carve it out without at least leaving some of
-    // the comments in for one more GIT version.
-    /*
-    public void sendUpdatesOld() {
-        if( closing.get() ) {
-            return;
-        }
-
-        // Clear the last change buffer and last data buffer just in case
-        changeBuffer.clear();
-        entityBuffer.clear();
-
-        // One lock per update is better than locking per entity set
-        // even if it makes message handling methods wait a little longer.
-        // They can afford to wait.
-        updateLock.lock();
-        try {
-            // Go through all of the active sets
-            int entityMax = settings.getMaxEntityBatchSize();
-            for( Map.Entry<Integer,EntitySet> e : activeSets.entrySet() ) {
-
-                EntitySet set = e.getValue();
-                if( !set.applyChanges(changeBuffer) ) {
-                    // No changes to this set since last time
-                    continue;
-                }
-
-                // In theory we could just send the raw component changes
-                // and let the client sort out the adds, removes, etc. for
-                // their entity sets.
-                // However, in the case of adds, we potentially make the
-                // client do a lot more network comms just to sort it out.
-                // For example, if the client only sees one change that
-                // causes the entity to get added then it will have to
-                // retrieve all of the other components for that entity.
-                // When we detect an add, it's in our best interest to go
-                // ahead and send the whole thing.
-                // Removes are a little different since the client will
-                // instantly know to remove it just from the component
-                // change.
-
-                // So, send adds specifically
-                for( Entity entity : set.getAddedEntities() ) {
-                    entityBuffer.add( new ComponentData(entity) );
-                    if( entityBuffer.size() > entityMax ) {
-                        sendAndClear(e.getKey(), entityBuffer);
-                    }
-                }
-
-                // Note to self: I'm trying to decide if sending the removes
-                // gets around some problems or creates new ones.  Right now
-                // there are a bunch of component sends that should not be
-                // sent and there are a bunch of retrievals on the client trying
-                // to complete entities that will never complete.  Since adds
-                // are kind of forced then we could force removes also and lockstep
-                // the remote entity sets (removing some of the automatic processing).
-                // The fear is that we might create an ordering problem but I think
-                // if we make the remote version of entity set 'dumber' then it's
-                // not an issue.  It will then only pay attention to changes that
-                // directly affect it (pass all filters) and ignore everything else.
-                // Adds and removes would come in explicitly so it doesn't need to
-                // detect them.
-
-if( !set.getRemovedEntities().isEmpty() ) {
-    System.out.println("HostedEntityData.removed entities:" + set.getRemovedEntities());
-    System.out.println("  changes so far:" + changeBuffer);
-}
-                if( !entityBuffer.isEmpty() ) {
-                    sendAndClear(e.getKey(), entityBuffer);
-                }
-            }
-        } finally {
-            updateLock.unlock();
-        }
-
-        // Collect changes for any active entities
-        for( WatchedEntity e : activeEntities.values() ) {
-            e.applyChanges(changeBuffer);
-        }
-
-        if( !changeBuffer.isEmpty() ) {
-            // Send the component changes themselves...
-            // Note: it's possible some of these are redundant with
-            //       the adds above but there is no easy way to
-            //       safely detect that.
-            int changeMax = settings.getMaxChangeBatchSize();
-            for( EntityChange c : changeBuffer ) {
-                changeList.add(c);
-                if( changeList.size() > changeMax ) {
-                    sendAndClear(changeList);
-                }
-            }
-
-            if( !changeList.isEmpty() ) {
-                sendAndClear(changeList);
-            }
-        }
-    }*/
 
     private static class EntityInfo {
         EntityId id;
