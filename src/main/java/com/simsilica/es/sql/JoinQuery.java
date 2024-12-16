@@ -126,7 +126,9 @@ public class JoinQuery implements Query {
 
         this.statement = sql.toString();
 
-        log.info("Built SQL:" + statement + " parms:" + parms + " for:" + this);
+        if( log.isTraceEnabled() ) {
+            log.trace("Built SQL:" + statement + " parms:" + parms + " for:" + this);
+        }
     }
 
     protected PreparedStatement prepareStatement( SqlSession session ) throws SQLException {
