@@ -59,7 +59,7 @@ import com.simsilica.es.net.EntityDataMessage.ComponentData;
 /**
  *  An implementation of the EntityData interface that communicates
  *  with a remote server to provide entity and component access.
- *  This EntityData implementation is read only.  Any methods that 
+ *  This EntityData implementation is read only.  Any methods that
  *  modify entities will throw UnsupportedOperationException.
  *
  *  <p>Note: EntitySets returned by this implementation will behave
@@ -68,8 +68,8 @@ import com.simsilica.es.net.EntityDataMessage.ComponentData;
  *  code won't have an issue.  In a local-access situation, retrieving
  *  the EntitySet will also populate it.  In this implementation, the
  *  data arrives asynchronously as if entities have been added during
- *  applyChanges(). 
- *  </p> 
+ *  applyChanges().
+ *  </p>
  *
  *  @author    Paul Speed
  */
@@ -86,7 +86,7 @@ public class RemoteEntityData implements EntityData {
      *  Keeps track of the next ID for a remote watched entity.
      */
     private static final AtomicInteger nextWatchId = new AtomicInteger();
-    
+
     /**
      *  Keeps track of the next ID used for requests that return
      *  results... especially when the caller will be waiting for them.
@@ -95,11 +95,11 @@ public class RemoteEntityData implements EntityData {
 
     private final Client client;
     private final int channel;
-    
+
     /**
      *  Track the time of the last EntityChange message we've
      *  received.  When mining the EntitySets for cached components,
-     *  this is the value that will be used for data currency when 
+     *  this is the value that will be used for data currency when
      *  the component value is pulled from the unprocessed change
      *  sets.
      */
@@ -109,7 +109,7 @@ public class RemoteEntityData implements EntityData {
      *  Holds the blocked requests that are pending.
      */
     private final Map<Integer,PendingRequest> pendingRequests = new ConcurrentHashMap<>();
-    
+
     /**
      *  The active EntitySets that have been requested by the user
      *  but not yet released.  Incoming changes and updates are applied
@@ -117,14 +117,14 @@ public class RemoteEntityData implements EntityData {
      */
     private final Map<Integer,RemoteEntitySet> activeSets = new ConcurrentHashMap<>();
 
-    /** 
+    /**
      *  The active watched entities.  We don't support 'observability' on the remote
      *  entity data at this point and I'd rather not make that decisions in haste.
      *  But WatchedEntities will need to be updated just the same.
      */
-    private final Map<Integer,RemoteWatchedEntity> watchedEntities = new ConcurrentHashMap<>();     
+    private final Map<Integer,RemoteWatchedEntity> watchedEntities = new ConcurrentHashMap<>();
 
-    private final ObjectMessageDelegator<Client> messageHandler; 
+    private final ObjectMessageDelegator<Client> messageHandler;
 
     private final RemoteStringIndex strings = new RemoteStringIndex(this);
 
@@ -139,13 +139,13 @@ public class RemoteEntityData implements EntityData {
         this.messageHandler = new ObjectMessageDelegator<>(new EntityMessageHandler(), true);
         client.addMessageListener(messageHandler, messageHandler.getMessageTypes());
     }
- 
+
     @Override
     public <T extends EntityComponent> T getComponent( EntityId entityId, Class<T> type ) {
         if( log.isTraceEnabled() ) {
             log.trace("getComponent(" + entityId + ", " + type + ")");
         }
-        
+
         // New note: 2015/12/28
         // I'm seeing this called a lot to fill out an entity that shares
         // a changing component with a different view.  For example, position + model
@@ -155,7 +155,7 @@ public class RemoteEntityData implements EntityData {
         // Given the new approach to network synching, I think that the client
         // shouldn't even try to complete the entity.  It would already have been
         // sent the elevant information it it were an add.  We potentially need to
-        // implement a RemoteEntitySet from scratch that is a thinner/dumber client. 
+        // implement a RemoteEntitySet from scratch that is a thinner/dumber client.
 
 //System.out.println("RemoteEntityData.getComponent(" + entityId + ", " + type + ")");
         // This call can happen quite frequently as part of change processing
@@ -169,7 +169,7 @@ public class RemoteEntityData implements EntityData {
         // One way around this is to first consult our existing sets to
         // see if they have the component for that entity.  The down side
         // here is that with a naive implementation we could be looking
-        // at relatively stale data.  An EntitySet won't really know the 
+        // at relatively stale data.  An EntitySet won't really know the
         // latest component value unless it's processed its updates.
         //
         // It's not enough to go through the applied components, the change
@@ -190,7 +190,7 @@ public class RemoteEntityData implements EntityData {
             if( !set.hasType(type) ) {
                 continue;
             }
-            
+
             T value = set.checkChangeQueue(entityId, type);
             long updateTime = set.lastUpdate;
             if( value != null ) {
@@ -202,7 +202,7 @@ public class RemoteEntityData implements EntityData {
                 }
                 value = e.get(type);
             }
-            
+
             // If we found a value then see if it is more recent then
             // any previous value.
             if( updateTime > latest ) {
@@ -222,9 +222,9 @@ public class RemoteEntityData implements EntityData {
         // the user is calling it directly then... no issue.
         if( log.isDebugEnabled() ) {
             log.debug("Retrieving component from server for:" + entityId + " type:" + type);
-        }        
+        }
         Entity entity = getEntity( entityId, type );
-        return entity.get(type);        
+        return entity.get(type);
     }
 
     @Override
@@ -234,29 +234,29 @@ public class RemoteEntityData implements EntityData {
         }
 //log.info("getEntity(" + entityId + ", " + Arrays.asList(types) + ")", new Throwable());
         // Ignore caching for the moment...
-        
+
         // Need to fetch the entity
         int id = nextRequestId.getAndIncrement();
         GetComponentsMessage msg = new GetComponentsMessage(id, entityId, types);
         msg.setReliable(true);
-        
+
         // Setup the 'pending' request tracking so that we
         // can wait for the response.  Just in case, always make sure to
         // do this before sending the message.
-        PendingEntityRequest request = new PendingEntityRequest(msg); 
+        PendingEntityRequest request = new PendingEntityRequest(msg);
         pendingRequests.put(id, request);
-        
+
         // Now send the message.
         client.send(channel, msg);
-        
+
         Entity result;
         try {
-            // Wait for the response           
+            // Wait for the response
             result = request.getResult();
         } catch( InterruptedException e ) {
             throw new RuntimeException("Interrupted waiting for entity data.", e);
         }
-         
+
         if( log.isTraceEnabled() ) {
             log.trace("result:" + result);
         }
@@ -268,24 +268,32 @@ public class RemoteEntityData implements EntityData {
         if( log.isTraceEnabled() ) {
             log.trace("findEntity(" + filter + ", " + Arrays.asList(types) + ")");
         }
+        return findEntity(new EntityCriteria().set(filter, types));
+    }
+
+    @Override
+    public EntityId findEntity( EntityCriteria criteria ) {
+        if( log.isTraceEnabled() ) {
+            log.trace("findEntity(" + criteria + ")");
+        }
         // Need to fetch the entity
         int id = nextRequestId.getAndIncrement();
-        FindEntityMessage msg = new FindEntityMessage(id, filter, types);
+        FindEntityMessage msg = new FindEntityMessage(id, criteria);
         msg.setReliable(true);
-        
+
         // Setup the 'pending' request tracking so that we
         // can wait for the response.  Just in case, always make sure to
         // do this before sending the message.
-        PendingEntityIdsRequest request = new PendingEntityIdsRequest(msg); 
+        PendingEntityIdsRequest request = new PendingEntityIdsRequest(msg);
         pendingRequests.put(id, request);
-        
+
         // Now send the message.
         client.send(channel, msg);
-        
+
         EntityId[] result;
         try {
-            // Wait for the response           
-            result = request.getResult();            
+            // Wait for the response
+            result = request.getResult();
         } catch( InterruptedException e ) {
             throw new RuntimeException("Interrupted waiting for entity data.", e);
         }
@@ -302,24 +310,28 @@ public class RemoteEntityData implements EntityData {
         if( log.isTraceEnabled() ) {
             log.trace("findEntities(" + filter + ", " + Arrays.asList(types) + ")");
         }
-        
+        return findEntities(new EntityCriteria().set(filter, types));
+    }
+
+    @Override
+    public Set<EntityId> findEntities( EntityCriteria criteria ) {
         // Need to fetch the entity
         int id = nextRequestId.getAndIncrement();
-        FindEntitiesMessage msg = new FindEntitiesMessage(id, filter, types);
+        FindEntitiesMessage msg = new FindEntitiesMessage(id, criteria);
         msg.setReliable(true);
-        
+
         // Setup the 'pending' request tracking so that we
         // can wait for the response.  Just in case, always make sure to
         // do this before sending the message.
-        PendingEntityIdsRequest request = new PendingEntityIdsRequest(msg); 
+        PendingEntityIdsRequest request = new PendingEntityIdsRequest(msg);
         pendingRequests.put(id, request);
-        
+
         // Now send the message.
         client.send(channel, msg);
- 
-        Set<EntityId> result = new HashSet<>();               
+
+        Set<EntityId> result = new HashSet<>();
         try {
-            // Wait for the response           
+            // Wait for the response
             EntityId[] ids = request.getResult();
             if( ids != null ) {
                 result.addAll(Arrays.asList(ids));
@@ -335,58 +347,93 @@ public class RemoteEntityData implements EntityData {
     }
 
     @Override
-    public EntitySet getEntities( Class... types ) {
-        return getEntities(null, types);
+    public Query createQuery( EntityCriteria criteria ) {
+        return new Query() {
+                @Override
+                public Set<EntityId> execute() {
+                    return findEntities(criteria);
+                }
+
+                @Override
+                public EntityId findFirst() {
+                    return findEntity(criteria);
+                }
+            };
     }
 
     @Override
-    @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
+    public <T extends EntityComponent> Query createQuery( ComponentFilter<T> filter, Class<T> type ) {
+        return new Query() {
+                @Override
+                public Set<EntityId> execute() {
+                    return findEntities(filter, type);
+                }
+
+                @Override
+                public EntityId findFirst() {
+                    return findEntity(filter, type);
+                }
+            };
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public EntitySet getEntities( Class... types ) {
+        return getEntities(new EntityCriteria().add(types));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
     public EntitySet getEntities( ComponentFilter filter, Class... types ) {
-        
+        return getEntities(new EntityCriteria().set(filter, types));
+    }
+
+    @Override
+    public EntitySet getEntities( EntityCriteria criteria ) {
         if( log.isTraceEnabled() ) {
-            log.trace("getEntities(" + filter + ", " + Arrays.asList(types) + ")");
+            log.trace("getEntities(" + criteria + ")");
         }
 
         int id = nextSetId.getAndIncrement();
-        RemoteEntitySet result = new RemoteEntitySet(id, filter, types);
+        RemoteEntitySet result = new RemoteEntitySet(id, criteria);
 
         // Make sure we register the entity set before sending the message...
         activeSets.put(id, result);
-        
+
         // Send a message to ask the server to start watching this
-        // for us... and to send an initial data set asynchronously.                  
-        Message m = new GetEntitySetMessage( id, filter, types );
+        // for us... and to send an initial data set asynchronously.
+        Message m = new GetEntitySetMessage(id, criteria);
         m.setReliable(true);
         client.send(channel, m);
- 
+
         if( log.isTraceEnabled() ) {
             log.trace("result:" + result);
         }
-        return result;  
+        return result;
     }
 
     @Override
     public WatchedEntity watchEntity( EntityId entityId, Class... types ) {
-    
+
         // Need to fetch the entity
         int watchId = nextWatchId.getAndIncrement();
         int msgId = nextRequestId.getAndIncrement();
         WatchEntityMessage msg = new WatchEntityMessage(msgId, watchId, entityId, types);
         msg.setReliable(true);
-        
+
         // Setup the 'pending' request tracking so that we
         // can wait for the response.  Just in case, always make sure to
         // do this before sending the message.
-        PendingWatchEntityRequest request = new PendingWatchEntityRequest(msg); 
+        PendingWatchEntityRequest request = new PendingWatchEntityRequest(msg);
         pendingRequests.put(msgId, request);
-        
+
         // Now send the message.
         client.send(channel, msg);
 
         WatchedEntity result;
         try {
             // Wait for the response
-            result = request.getResult();           
+            result = request.getResult();
         } catch( InterruptedException e ) {
             throw new RuntimeException("Interrupted waiting for watched entity data.", e);
         }
@@ -396,38 +443,38 @@ public class RemoteEntityData implements EntityData {
         }
         return result;
     }
-    
+
     @Override
     public void close() {
         client.removeMessageListener(messageHandler, messageHandler.getMessageTypes());
     }
- 
+
     protected StringIdMessage getStringResponse( StringIdMessage msg ) {
         int id = msg.getRequestId();
         msg.setReliable(true);
-                
+
         // Setup response tracking
         PendingStringRequest request = new PendingStringRequest(msg);
         pendingRequests.put(id, request);
-        
+
         // Now we can send
         client.send(channel, msg);
-        
+
         try {
             return request.getResult();
         } catch( InterruptedException e ) {
             throw new RuntimeException("Interrupted waiting for string data.", e);
-        }        
+        }
     }
- 
+
     protected Integer getStringId( String s ) {
         return getStringResponse(new StringIdMessage(nextRequestId.getAndIncrement(), s)).getId();
     }
-    
+
     protected String getString( int id ) {
         return getStringResponse(new StringIdMessage(nextRequestId.getAndIncrement(), id)).getString();
     }
-    
+
     @Override
     public StringIndex getStrings() {
         return strings;
@@ -464,90 +511,110 @@ public class RemoteEntityData implements EntityData {
     }
 
     protected void entityChange( EntityChange change ) {
-    
+
         for( RemoteEntitySet set : activeSets.values() ) {
             set.entityChange(change);
         }
-        
+
         for( RemoteWatchedEntity e : watchedEntities.values() ) {
             e.addChange(change);
-        }       
+        }
     }
 
     private class RemoteEntitySet extends DefaultEntitySet {
-    
-        private final int setId;
-        private final ConcurrentLinkedQueue<DefaultEntity> directAdds 
-                    = new ConcurrentLinkedQueue<>();
-        private long lastUpdate;                    
 
-        public RemoteEntitySet( int setId, ComponentFilter filter, Class<EntityComponent>[] types ) {
-            super(RemoteEntityData.this, filter, types);
+        private final int setId;
+        private final ConcurrentLinkedQueue<DefaultEntity> directAdds
+                    = new ConcurrentLinkedQueue<>();
+        private long lastUpdate;
+        private String error;
+
+        public RemoteEntitySet( int setId, ComponentFilter filter, Class<? extends EntityComponent>[] types ) {
+            this(setId, new EntityCriteria().set(filter, types));
+        }
+
+        public RemoteEntitySet( int setId, EntityCriteria criteria ) {
+            super(RemoteEntityData.this, criteria);
             this.setId = setId;
         }
-        
+
+        protected void setError( String error ) {
+            this.error = error;
+        }
+
+        protected void checkError() {
+            if( error != null ) {
+                String msg = "Server error received:\n" + error;
+                error = null;
+                throw new IllegalStateException(msg);
+            }
+        }
+
         @Override
         public void release() {
             if( isReleased() ) {
                 return;
             }
             super.release();
- 
+
             if( log.isDebugEnabled() ) {
                 log.debug("Releasing set:" + setId );
             }
-                        
+
             activeSets.remove(setId);
-                        
+
             if( client.isConnected() ) {
                 ReleaseEntitySetMessage msg = new ReleaseEntitySetMessage(setId);
-                client.send(channel, msg);                       
+                client.send(channel, msg);
             }
         }
-        
+
         @Override
         public String debugId() {
             return "RemoteEntitySet@" + setId;
         }
-    
+
         @Override
         protected void loadEntities( boolean reload ) {
             // Entities will come in asynchronously.
+            checkError();
         }
-        
+
         @Override
-        public void resetFilter( ComponentFilter filter ) { 
-            super.resetFilter(filter);
- 
+        protected void filtersChanged() {
+            checkError();
             // Need to send a message to the server to let it
             // know our interests have changed.
-            Message m = new ResetEntitySetFilterMessage(setId, filter);
+            Message m = new ResetEntitySetFilterMessage(setId, getCriteria());
             m.setReliable(true);
-            
-            if( log.isDebugEnabled() )
+
+            if( log.isDebugEnabled() ) {
                 log.debug( "Sending filter reset:" + m );
-                            
-            client.send(channel, m);            
+            }
+
+            client.send(channel, m);
         }
 
-        @Override 
+        @Override
         protected boolean applyChanges( Set<EntityChange> updates, boolean clearChangeSets ) {
+            checkError();
+
             if( super.applyChanges(updates, clearChangeSets) ) {
                 lastUpdate = System.nanoTime();
-                return true; 
+                return true;
             }
             return false;
-        }        
+        }
 
-        @Override 
+        @Override
         protected boolean buildTransactionChanges( Set<EntityChange> updates ) {
             boolean directMods = false;
 
             // We could potentially avoid this if an added entity sent
             // a full change set.  This is probably more efficient, though.
-            if( !directAdds.isEmpty() ) { 
-                // Add them all            
-                while( !directAdds.isEmpty() ) {                
+            if( !directAdds.isEmpty() ) {
+                // Add them all
+                while( !directAdds.isEmpty() ) {
                     DefaultEntity d = directAdds.poll();
                     // Stick them in the transaction
                     transaction.directAdd(d);
@@ -558,17 +625,17 @@ public class RemoteEntityData implements EntityData {
             // Then process the transaction normally
             if( super.buildTransactionChanges(updates) )
                 return true;
-            return directMods;        
+            return directMods;
         }
-        
+
         protected void directAdd( DefaultEntity e ) {
             directAdds.add(e);
         }
-        
+
         @Override
         protected boolean completeEntity( DefaultEntity e ) {
- 
-            // In a remote situation, the server is (at least now) 
+
+            // In a remote situation, the server is (at least now)
             // always sending us what we need.  If the entity was
             // newly added to this set then it sent us the full
             // entity.  Else we've gotten every change we needed
@@ -576,7 +643,8 @@ public class RemoteEntityData implements EntityData {
             //
             // So all we need to do is check it for completion and
             // not bother retrieving the values.
- 
+
+            ComponentFilter[] filters = getFilters();
             EntityComponent[] array = e.getComponents();
             for( int i = 0; i < array.length; i++ ) {
                 if( array[i] == null || array[i] == REMOVED_COMPONENT ) {
@@ -587,33 +655,36 @@ public class RemoteEntityData implements EntityData {
                         // huge optimization so it's definitely worth having.)
                         log.trace("Entity is missing type " + getTypes()[i] + " so is not complete for this set.");
                     }
-                    return false;                     
-                } else if( getMainFilter() != null 
-                            && getMainFilter().getComponentType() == array[i].getClass() ) {
-                    // Check added by PR #18
-                    // https://github.com/jMonkeyEngine-Contributions/zay-es/pull/18
-                    if( !getMainFilter().evaluate(array[i]) ) {
-                        return false;
-                    }
-                } else {
-                    // Nothing to see here
+                    return false;
                 }
-            }        
-            
+                ComponentFilter filter = filters[i];
+                // Check added by PR #18
+                // https://github.com/jMonkeyEngine-Contributions/zay-es/pull/18
+                // Actually, the check used to be against the remove 'mainFilter' but
+                // I've kept the comment as reference to why the filter evaluation
+                // was added in case we remember why it was missing originally.
+                if( filter != null && !filter.evaluate(array[i]) ) {
+                    // This component does not match the filter in place so the entity is not
+                    // really part of the set.
+                    return false;
+                }
+            }
+
             return true;
         }
 
-        @Override 
+        @Override
         protected void entityChange( EntityChange change ) {
             lastChangeReceived = System.nanoTime();
             super.entityChange(change);
         }
-        
+
+        // Overridden only to provide outer class local access for debugging.
         @Override
-        protected Class<EntityComponent>[] getTypes() {
+        protected Class<? extends EntityComponent>[] getTypes() {
             return super.getTypes();
         }
- 
+
         protected <T extends EntityComponent> T checkChangeQueue( EntityId id, Class<T> type ) {
             // We will go through all of them because we want the latest
             // value.
@@ -630,17 +701,17 @@ public class RemoteEntityData implements EntityData {
             return result;
         }
     }
-    
+
     private class RemoteWatchedEntity extends DefaultWatchedEntity {
 
         private final int watchId;
 
-        public RemoteWatchedEntity( EntityData ed, int watchId, EntityId id, 
+        public RemoteWatchedEntity( EntityData ed, int watchId, EntityId id,
                                     EntityComponent[] components, Class<EntityComponent>[] types ) {
             super(ed, id, components, types);
             this.watchId = watchId;
             watchedEntities.put(watchId, this);
-        }                                    
+        }
 
         @Override
         public void release() {
@@ -648,16 +719,16 @@ public class RemoteEntityData implements EntityData {
                 return;
             }
             super.release();
- 
+
             if( log.isDebugEnabled() ) {
                 log.debug("Releasing watched entity:" + watchId );
             }
-                        
+
             watchedEntities.remove(watchId);
-                        
+
             if( client.isConnected() ) {
                 ReleaseWatchedEntityMessage msg = new ReleaseWatchedEntityMessage(watchId);
-                client.send(channel, msg);                       
+                client.send(channel, msg);
             }
         }
 
@@ -666,43 +737,43 @@ public class RemoteEntityData implements EntityData {
             super.addChange(change);
         }
     }
- 
+
     private class EntityMessageHandler {
 
-        @SuppressWarnings("unchecked")  
+        @SuppressWarnings("unchecked")
         public void entityComponents( ResultComponentsMessage msg ) {
             if( log.isTraceEnabled() ) {
                 log.trace("entityComponents(" + msg + ")");
-            } 
+            }
             PendingRequest request = pendingRequests.remove(msg.getRequestId());
             if( request == null ) {
                 log.error("Received component data but no request is pending, id:" + msg.getRequestId());
                 return;
             }
-            
+
             request.dataReceived(msg);
         }
-        
+
         public void entityData( EntityDataMessage msg ) {
             if( log.isTraceEnabled() ) {
                 log.trace("entityData(" + msg + ")");
-            }                         
+            }
             RemoteEntitySet set = activeSets.get(msg.getSetId());
             if( set == null ) {
                 // Probably it was released before we got this message... ships
-                // passing in the night.  Just in case, we'll log a warning at 
+                // passing in the night.  Just in case, we'll log a warning at
                 // least.
                 log.warn("Set not found for ID:" + msg.getSetId() + "  May have been released.");
-                return; 
+                return;
             }
- 
+
             for( ComponentData d : msg.getData() ) {
                 if( log.isTraceEnabled() ) {
                     log.trace("ComponentData for:" + msg.getSetId() + " :" + d);
-                }                 
+                }
                 DefaultEntity e = new DefaultEntity(RemoteEntityData.this,
-                                                    d.getEntityId(), 
-                                                    d.getComponents(), 
+                                                    d.getEntityId(),
+                                                    d.getComponents(),
                                                     set.getTypes());
                 set.directAdd(e);
             }
@@ -711,54 +782,69 @@ public class RemoteEntityData implements EntityData {
         public void componentChange( ComponentChangeMessage msg ) {
             if( log.isTraceEnabled() ) {
                 log.trace("componentChange(" + msg + ")");
-            } 
+            }
             for( EntityChange c : msg.getData() ) {
                 entityChange(c);
             }
         }
-        
-        @SuppressWarnings("unchecked")  
+
+        @SuppressWarnings("unchecked")
         public void entityIds( EntityIdsMessage msg ) {
             if( log.isTraceEnabled() ) {
                 log.trace("entityIds(" + msg + ")");
-            } 
+            }
             PendingRequest request = pendingRequests.remove(msg.getRequestId());
             if( request == null ) {
                 log.error("Received result entity IDs but no request is pending, id:" + msg.getRequestId());
                 return;
             }
-            
+
             request.dataReceived(msg);
         }
-        
-        @SuppressWarnings("unchecked")  
+
+        @SuppressWarnings("unchecked")
         public void stringId( StringIdMessage msg ) {
             if( log.isTraceEnabled() ) {
                 log.trace("stringId(" + msg + ")");
-            } 
+            }
             PendingRequest request = pendingRequests.remove(msg.getRequestId());
             if( request == null ) {
                 log.error("Received result string ID message but no request is pending, id:" + msg.getRequestId());
                 return;
-            }            
-            
+            }
+
             request.dataReceived(msg);
-        }        
+        }
+
+        public void entitySetError( EntitySetErrorMessage msg ) {
+            if( log.isTraceEnabled() ) {
+                log.trace("entitySetError(" + msg + ")");
+            }
+            RemoteEntitySet set = activeSets.get(msg.getSetId());
+            if( set == null ) {
+                // Probably it was released before we got this message... ships
+                // passing in the night.  Just in case, we'll log a warning at
+                // least.
+                log.warn("Set not found for ID:" + msg.getSetId() + "  May have been released.");
+                return;
+            }
+            set.setError(msg.getError());
+        }
     }
-    
+
     protected abstract class PendingRequest<M, T> {
         protected Message request;
         private final AtomicReference<T> result = new AtomicReference<>();
         private final CountDownLatch received = new CountDownLatch(1);
- 
+
         protected PendingRequest( Message request ) {
             this.request = request;
         }
- 
+
         public boolean isDone() {
             return result.get() != null;
         }
-        
+
         public void close() {
             received.countDown();
         }
@@ -766,15 +852,15 @@ public class RemoteEntityData implements EntityData {
         protected void setResult( T val ) {
             result.set(val);
             received.countDown();
-        } 
+        }
 
         public abstract void dataReceived( M m );
- 
+
         public T getResult() throws InterruptedException {
             received.await();
-            return result.get();           
+            return result.get();
         }
-        
+
         @Override
         public String toString() {
             return "PendingRequest[" + request + "]";
@@ -782,7 +868,7 @@ public class RemoteEntityData implements EntityData {
     }
 
     protected class PendingEntityRequest extends PendingRequest<ResultComponentsMessage, Entity> {
-    
+
         public PendingEntityRequest( GetComponentsMessage request )
         {
             super( request );
@@ -790,7 +876,7 @@ public class RemoteEntityData implements EntityData {
 
         @Override
         public void dataReceived( ResultComponentsMessage m ) {
-            Entity e = new DefaultEntity(RemoteEntityData.this, m.getEntityId(), m.getComponents(), 
+            Entity e = new DefaultEntity(RemoteEntityData.this, m.getEntityId(), m.getComponents(),
                                          ((GetComponentsMessage)request).getComponentTypes());
             setResult(e);
         }
@@ -800,23 +886,23 @@ public class RemoteEntityData implements EntityData {
 
         public PendingWatchEntityRequest( WatchEntityMessage request ) {
             super( request );
-        }        
+        }
 
         @Override
-        @SuppressWarnings("unchecked")  
+        @SuppressWarnings("unchecked")
         public void dataReceived( ResultComponentsMessage m ) {
- 
-            WatchedEntity e = new RemoteWatchedEntity(RemoteEntityData.this, 
+
+            WatchedEntity e = new RemoteWatchedEntity(RemoteEntityData.this,
                                                       ((WatchEntityMessage)request).getWatchId(),
-                                                      m.getEntityId(), 
-                                                      m.getComponents(), 
+                                                      m.getEntityId(),
+                                                      m.getComponents(),
                                                       ((WatchEntityMessage)request).getComponentTypes());
             setResult(e);
         }
-    } 
+    }
 
     protected class PendingEntityIdsRequest extends PendingRequest<EntityIdsMessage, EntityId[]> {
-    
+
         public PendingEntityIdsRequest( Message request ) {
             super( request );
         }
@@ -826,15 +912,15 @@ public class RemoteEntityData implements EntityData {
             setResult( m.getIds() );
         }
     }
-    
+
     protected class PendingStringRequest extends PendingRequest<StringIdMessage, StringIdMessage> {
         public PendingStringRequest( Message request ) {
             super(request);
         }
-        
+
         @Override
         public void dataReceived( StringIdMessage m ) {
             setResult(m);
-        }        
+        }
     }
 }

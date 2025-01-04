@@ -4,12 +4,14 @@
 
 plugins {
     id 'zay-es.published-library'
+    id 'groovy'
 }
 
 version='1.6.0'
 
 ext.guavaVersion='19.0'
 ext.slf4jVersion = '1.7.32'
+ext.log4jVersion = '2.15.0'
 
 // Set this module's maven pom description
 publishing.publications.library(MavenPublication).pom {
@@ -19,11 +21,27 @@ publishing.publications.library(MavenPublication).pom {
 dependencies {
     implementation "com.google.guava:guava:$guavaVersion"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
+
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.codehaus.groovy:groovy-all:2.4.11'
+    testRuntimeOnly "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
 }
 
 compileJava.doLast {
     def buildDate = new Date().format('yyyyMMdd')
     println "Writing zay-es.build.date:" + buildDate
     new File(destinationDir, 'zay-es.build.date').text = buildDate
+}
+
+test {
+    testLogging {
+        // I want to see the tests that are run and pass, etc.
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+
+        exceptionFormat org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showCauses true
+        showExceptions true
+        showStackTraces true
+    }
 }
 

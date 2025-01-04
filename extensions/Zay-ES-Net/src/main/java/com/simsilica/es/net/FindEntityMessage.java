@@ -37,6 +37,8 @@ package com.simsilica.es.net;
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
 import com.simsilica.es.ComponentFilter;
+import com.simsilica.es.EntityComponent;
+import com.simsilica.es.EntityCriteria;
 import java.util.Arrays;
 
 
@@ -48,33 +50,29 @@ import java.util.Arrays;
 public class FindEntityMessage extends AbstractMessage {
 
     private int requestId;
-    private ComponentFilter filter;
-    private Class[] componentTypes;
+    private Class<? extends EntityComponent>[] types;
+    private ComponentFilter[] filters;
 
     public FindEntityMessage() {
     }
-    
-    public FindEntityMessage( int requestId, ComponentFilter filter, Class... components ) {
+
+    public FindEntityMessage( int requestId, EntityCriteria criteria ) {
         this.requestId = requestId;
-        this.filter = filter;
-        this.componentTypes = components;
+        this.types = criteria.toTypeArray();
+        this.filters = criteria.toFilterArray();
     }
- 
+
     public int getRequestId() {
         return requestId;
     }
- 
-    public ComponentFilter getFilter() {
-        return filter;
+
+    public EntityCriteria getCriteria() {
+        return new EntityCriteria().set(types, filters);
     }
-    
-    public Class[] getComponentTypes() {
-        return componentTypes;
-    }
- 
-    @Override   
+
+    @Override
     public String toString() {
-        return "FindEntityMessage[" + requestId + ", " + filter + ", " + Arrays.asList(componentTypes) + "]"; 
+        return "FindEntityMessage[" + requestId + ", " + getCriteria() + "]";
     }
 }
 

@@ -91,6 +91,10 @@ public class ComponentTable<T extends EntityComponent> {
         return result;
     }
 
+    protected String getTableName() {
+        return tableName;
+    }
+
     protected String createUpdateSql() {
         StringBuilder sql = new StringBuilder("UPDATE " + tableName);
         sql.append(" SET (");
@@ -463,7 +467,7 @@ public class ComponentTable<T extends EntityComponent> {
         return results;
     }
 
-    protected int appendFilter( FieldFilter f, StringBuilder where, List<Object> parms ) {
+    protected int appendFilter( String prefix, FieldFilter f, StringBuilder where, List<Object> parms ) {
 
         FieldType ft = getFieldType(f.getFieldName());
 
@@ -473,15 +477,15 @@ public class ComponentTable<T extends EntityComponent> {
 
         Object dbValue = ft.toDbValue(f.getValue());
         if( dbValue == null ) {
-            where.append(f.getFieldName() + " IS NULL");
+            where.append(prefix + "." + f.getFieldName() + " IS NULL");
         } else {
-            where.append(f.getFieldName() + " = ?");
+            where.append(prefix + "." + f.getFieldName() + " = ?");
             parms.add(dbValue);
         }
         return 1;
     }
 
-    protected int appendFilter( OrFilter f, StringBuilder where, List<Object> parms ) {
+    protected int appendFilter( String prefix, OrFilter f, StringBuilder where, List<Object> parms ) {
 
         if( where.length() > 0 )
             where.append(" AND ");
@@ -495,7 +499,7 @@ public class ComponentTable<T extends EntityComponent> {
                 where.append(" OR ");
             }
 
-            int nested = appendFilter(op, sub, parms);
+            int nested = appendFilter(prefix, op, sub, parms);
             if( nested > 1 ) {
                 where.append("(" + sub + ")");
             } else {
@@ -508,7 +512,7 @@ public class ComponentTable<T extends EntityComponent> {
         return count;
     }
 
-    protected int appendFilter( AndFilter f, StringBuilder where, List<Object> parms ) {
+    protected int appendFilter( String prefix, AndFilter f, StringBuilder where, List<Object> parms ) {
 
         if( where.length() > 0 ) {
             where.append(" AND ");
@@ -523,7 +527,7 @@ public class ComponentTable<T extends EntityComponent> {
                 where.append( " AND " );
             }
 
-            int nested = appendFilter(op, sub, parms);
+            int nested = appendFilter(prefix, op, sub, parms);
             if( nested > 1 ) {
                 where.append("(" + sub + ")");
             } else {
@@ -536,36 +540,43 @@ public class ComponentTable<T extends EntityComponent> {
         return count;
     }
 
-    protected int appendFilter( ComponentFilter f, StringBuilder where, List<Object> parms ) {
+    protected int appendFilter( String prefix, ComponentFilter f, StringBuilder where, List<Object> parms ) {
         if( f instanceof FieldFilter ) {
-            return appendFilter((FieldFilter)f, where, parms);
+            return appendFilter(prefix, (FieldFilter)f, where, parms);
         } else if( f instanceof OrFilter ) {
-            return appendFilter((OrFilter)f, where, parms);
+            return appendFilter(prefix, (OrFilter)f, where, parms);
         } else if( f instanceof AndFilter ) {
-            return appendFilter((AndFilter)f, where, parms);
+            return appendFilter(prefix, (AndFilter)f, where, parms);
         } else {
             throw new IllegalArgumentException("Cannot handle filter:" + f);
         }
     }
 
-    public Set<EntityId> getEntityIds( SqlSession session,
-                                       ComponentFilter filter ) throws SQLException {
-
+    protected String buildStatement( ComponentFilter filter, List<Object> parms ) {
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(" entityId");
-        sql.append(" FROM " + tableName);
-
-        List<Object> parms = new ArrayList<Object>();
+        sql.append(" t1.entityId");
+        sql.append(" FROM " + tableName + " t1");
 
         StringBuilder where = new StringBuilder();
-        appendFilter(filter, where, parms);
+        if( filter != null ) {
+            appendFilter("t1", filter, where, parms);
+        }
 
         if( where.length() > 0 ) {
             sql.append(" WHERE " + where);
         }
 
+        return sql.toString();
+    }
+
+    public Set<EntityId> getEntityIds( SqlSession session,
+                                       ComponentFilter filter ) throws SQLException {
+
+        List<Object> parms = new ArrayList<>();
+        String statement = buildStatement(filter, parms);
+
         try {
-            PreparedStatement st = session.prepareStatement(sql.toString());
+            PreparedStatement st = session.prepareStatement(statement);
             int index = 1;
             for( Object o : parms ) {
                 st.setObject(index++, o);
@@ -585,7 +596,7 @@ public class ComponentTable<T extends EntityComponent> {
 
             return results;
         } catch( SQLException e ) {
-            throw new RuntimeException("Error executing sql:" + sql, e);
+            throw new RuntimeException("Error executing sql:" + statement, e);
         }
     }
 
@@ -595,20 +606,10 @@ public class ComponentTable<T extends EntityComponent> {
     public EntityId getEntityId( SqlSession session,
                                  ComponentFilter filter ) throws SQLException {
 
-        StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(" entityId");
-        sql.append(" FROM " + tableName);
+        List<Object> parms = new ArrayList<>();
+        String statement = buildStatement(filter, parms);
 
-        List<Object> parms = new ArrayList<Object>();
-
-        StringBuilder where = new StringBuilder();
-        appendFilter(filter, where, parms);
-
-        if( where.length() > 0 ) {
-            sql.append(" WHERE " + where);
-        }
-
-        PreparedStatement st = session.prepareStatement(sql.toString());
+        PreparedStatement st = session.prepareStatement(statement);
         int index = 1;
         for( Object o : parms ) {
             st.setObject(index++, o);

@@ -55,6 +55,7 @@ public class DefaultEntityData implements ObservableEntityData {
     private final Map<Class<? extends EntityComponent>, ComponentHandler> handlers = new ConcurrentHashMap<>();
     private EntityIdGenerator idGenerator;
     private StringIndex stringIndex;
+    private EntityDataStats stats = new NoopEntityDataStats();
 
     /**
      *  Keeps the unreleased entity sets so that we can give
@@ -76,6 +77,14 @@ public class DefaultEntityData implements ObservableEntityData {
         if( getClass() == DefaultEntityData.class ) {
             this.stringIndex = new MemStringIndex();
         }
+    }
+
+    public void setEntityDataStats( EntityDataStats stats ) {
+        this.stats = stats;
+    }
+
+    public EntityDataStats getEntityDataStats() {
+        return stats;
     }
 
     protected void setIdGenerator( EntityIdGenerator idGenerator ) {
@@ -140,7 +149,7 @@ public class DefaultEntityData implements ObservableEntityData {
      *  a new MapComponentHandler.
      */
     protected <T extends EntityComponent> ComponentHandler<T> lookupDefaultHandler( Class<T> type ) {
-        return new MapComponentHandler<T>();
+        return new MapComponentHandler<T>(type);
     }
 
     /**
@@ -149,6 +158,10 @@ public class DefaultEntityData implements ObservableEntityData {
      */
     protected <T extends EntityComponent> boolean hasHandler( Class<T> type ) {
         return handlers.containsKey(type);
+    }
+
+    protected Map<Class<? extends EntityComponent>, ComponentHandler> getComponentHandlers() {
+        return handlers;
     }
 
     @SuppressWarnings("unchecked")
@@ -234,9 +247,8 @@ public class DefaultEntityData implements ObservableEntityData {
         return getHandler(type).getEntities(filter);
     }
 
-    @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
-    protected DefaultEntitySet createSet( ComponentFilter filter, Class... types ) {
-        DefaultEntitySet set = new DefaultEntitySet(this, filter, types);
+    protected DefaultEntitySet createSet( EntityCriteria criteria ) {
+        DefaultEntitySet set = new DefaultEntitySet(this, criteria);
         entitySets.add(set);
         return set;
     }
@@ -263,37 +275,9 @@ public class DefaultEntityData implements ObservableEntityData {
     }
 
     @Override
+    @SuppressWarnings("unchecked") // because Java doesn't like generic varargs
     public EntitySet getEntities( Class... types ) {
-
-        DefaultEntitySet results = createSet((ComponentFilter)null, types);
-        results.loadEntities(false);
-
-        /*
-        Should be enough to let the EntitySet load itself.
-        Set<EntityId> first = getEntityIds(types[0]);
-        if( first.isEmpty() ) {
-            return results;
-        }
-        Set<EntityId> and = new HashSet<EntityId>();
-        and.addAll(first);
-
-        for( int i = 1; i < types.length; i++ ) {
-            and.retainAll(getEntityIds(types[i]));
-        }
-
-        // Now we have the info needed to build the entity set
-        EntityComponent[] buffer = new EntityComponent[types.length];
-        for( EntityId id : and ) {
-            for( int i = 0; i < buffer.length; i++ ) {
-                buffer[i] = getComponent(id, types[i]);
-            }
-
-            // Now create the entity
-            DefaultEntity e = new DefaultEntity(this, id, buffer.clone(), types);
-            results.add(e);
-        }*/
-
-        return results;
+        return getEntities(new EntityCriteria().add(types));
     }
 
     protected ComponentFilter forType( ComponentFilter filter, Class type ) {
@@ -307,54 +291,92 @@ public class DefaultEntityData implements ObservableEntityData {
         if( types == null || types.length == 0 ) {
             return findSingleEntity(filter);
         }
+        return findEntity(new EntityCriteria().set(filter, types));
+    }
 
-        Set<EntityId> first = getEntityIds(types[0], forType(filter, types[0]));
-        if( first.isEmpty() )
-            return null;
-        Set<EntityId> and = new HashSet<EntityId>();
-        and.addAll(first);
-
-        for( int i = 1; i < types.length; i++ ) {
-            Set<EntityId> sub = getEntityIds(types[i], forType(filter, types[i]));
-            if( sub.isEmpty() ) {
-                return null;
-            }
-            and.retainAll(sub);
+    @Override
+    public EntityId findEntity( EntityCriteria criteria ) {
+        Query query = createQuery(criteria);
+        long start = System.nanoTime();
+        boolean found = false;
+        try {
+            EntityId result = query.findFirst();
+            found = result != null;
+            return result;
+        } finally {
+            long delta = System.nanoTime() - start;
+            stats.findEntity(delta, criteria, query, found);
         }
-
-        if( and.isEmpty() )
-            return null;
-
-        return and.iterator().next();
     }
 
     @Override
     public Set<EntityId> findEntities( ComponentFilter filter, Class... types ) {
-        if( types == null || types.length == 0 ) {
-            types = new Class[] { filter.getComponentType() };
-        }
+        return findEntities(new EntityCriteria().set(filter, types));
+    }
 
-        Set<EntityId> first = getEntityIds(types[0], forType(filter, types[0]));
-        if( first.isEmpty() ) {
-            return Collections.emptySet();
-        }
-        Set<EntityId> and = new HashSet<EntityId>();
-        and.addAll(first);
+    @Override
+    public <T extends EntityComponent> Query createQuery( ComponentFilter<T> filter, Class<T> type ) {
+        ComponentHandler<T> handler = getHandler(type);
+        return handler.createQuery(filter);
+    }
 
-        for( int i = 1; i < types.length; i++ ) {
-            Set<EntityId> sub = getEntityIds(types[i], forType(filter, types[i]));
-            if( sub.isEmpty() ) {
-                return Collections.emptySet();
+    @Override
+    @SuppressWarnings("unchecked")
+    public Query createQuery( EntityCriteria criteria ) {
+        ComponentFilter[] filters = criteria.toFilterArray();
+        Class[] types = criteria.toTypeArray();
+
+        List<Query> subQueries = new ArrayList<>();
+        for( int i = 0; i < types.length; i++ ) {
+            Query query = createQuery(filters[i], types[i]);
+
+            // See if it can be merged with any of the existing subqueries
+            for( ListIterator<Query> it = subQueries.listIterator(); it.hasNext(); ) {
+                Query sub = it.next();
+                Query merged = sub.join(query);
+                if( merged != null ) {
+                    query = null;
+                    it.set(merged);
+                    break;
+                }
             }
-            and.retainAll(sub);
+
+            // If it wasn't merged with an existing query then add it to
+            // the list.
+            if( query != null ) {
+                subQueries.add(query);
+            }
         }
 
-        return and;
+        if( subQueries.size() == 1 ) {
+            return subQueries.get(0);
+        }
+        return new CompositeQuery(subQueries);
+    }
+
+    @Override
+    public Set<EntityId> findEntities( EntityCriteria criteria ) {
+        Query query = createQuery(criteria);
+        long start = System.nanoTime();
+        int size = 0;
+        try {
+            Set<EntityId> results = query.execute();
+            size = results.size();
+            return results;
+        } finally {
+            long delta = System.nanoTime() - start;
+            stats.findEntities(delta, criteria, query, size);
+        }
     }
 
     @Override
     public EntitySet getEntities( ComponentFilter filter, Class... types ) {
-        DefaultEntitySet results = createSet(filter, types);
+        return getEntities(new EntityCriteria().set(filter, types));
+    }
+
+    @Override
+    public EntitySet getEntities( EntityCriteria criteria ) {
+        DefaultEntitySet results = createSet(criteria);
         results.loadEntities(false);
         return results;
     }
@@ -362,16 +384,6 @@ public class DefaultEntityData implements ObservableEntityData {
     @Override
     @SuppressWarnings("unchecked")  // because Java doesn't like generic varargs
     public WatchedEntity watchEntity( EntityId id, Class... types ) {
-
-        // Collect the components
-        /*EntityComponent[] buffer = new EntityComponent[types.length];
-        for( int i = 0; i < buffer.length; i++ ) {
-            buffer[i] = getComponent(id, types[i]);
-        }
-
-        DefaultWatchedEntity does that itself now
-        */
-
         return new DefaultWatchedEntity(this, id, types);
     }
 

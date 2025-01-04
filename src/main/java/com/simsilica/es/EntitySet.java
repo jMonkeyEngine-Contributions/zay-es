@@ -47,28 +47,37 @@ import java.util.*;
 public interface EntitySet extends Set<Entity> {
 
     /**
-     *  Swaps out the current main filter for a new one.  The
-     *  changes will show up the next time applyChanges() is called.
+     *  Swaps out the current main filter for a new one and clears all existing
+     *  filters.  The changes will show up the next time applyChanges() is called.
+     *  This is kept for backwards compatibility from one an EntitySet could only
+     *  have one filter at a time.
      */
     public void resetFilter( ComponentFilter filter );
- 
+
+    /**
+     *  Resets the criteria used by this entity set.  If the criteria's type
+     *  array does not match the existing type array then an IllegalArgumentException
+     *  is thrown.  A new criteria object cannot reset the types for the entity set.
+     */
+    public void resetEntityCriteria( EntityCriteria criteria );
+
     /**
      *  Returns true if this set contains the entity with the
      *  specified ID.
      */
     public boolean containsId( EntityId id );
- 
+
     /**
      *  Returns all of the EntityIds currently in this set.
      */
     public Set<EntityId> getEntityIds();
- 
+
     /**
      *  Returns this set's version of the Entity for the specified
      *  ID or null if this set does not contain the specified entity.
      */
     public Entity getEntity( EntityId id );
-    
+
     /**
      *  Returns the entities that were added during applyChanges().
      */
@@ -88,7 +97,7 @@ public interface EntitySet extends Set<Entity> {
      *  Clears all pending change sets accumulated during the last
      *  applyChanges().  The change sets are automatically cleared
      *  at the beginning of the next applyChanges() but sometimes
-     *  it can be useful to free them early (if the change set is large, 
+     *  it can be useful to free them early (if the change set is large,
      *  etc.).
      */
     public void clearChangeSets();
@@ -105,7 +114,7 @@ public interface EntitySet extends Set<Entity> {
      *  changes.
      */
     public boolean applyChanges();
- 
+
     /**
      *  Applies any accumulated changes to this list's entities since
      *  the last time it was called and returns true if there were
@@ -113,7 +122,7 @@ public interface EntitySet extends Set<Entity> {
      *  will be added to the supplied updates set.
      *
      *  @deprecated Changes collected this way are not accurate and this
-     *              method will be removed in the next version.  The 
+     *              method will be removed in the next version.  The
      *              signature is kept only for compile-time compatibility
      *              as all of the implementations now ignore the updates argument.
      */
@@ -130,7 +139,7 @@ public interface EntitySet extends Set<Entity> {
     /**
      *  Returns true if this EntitySet is made of entities
      *  that have the specified type of component.
-     */ 
+     */
     public boolean hasType( Class type );
 }
 
