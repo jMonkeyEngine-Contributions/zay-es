@@ -1,4 +1,4 @@
-Zay-ES-Net v1.6.0 (unreleased)
+Zay-ES-Net v1.6.0 (latest)
 ------------------
 * Fixed a bug where only the first EntityChange was being sent if
     multiple changes happened for the same entity + component type.
@@ -7,18 +7,18 @@ Zay-ES-Net v1.6.0 (unreleased)
     the EntityData interface.
 
 
-Zay-ES-Net v1.5.2 (latest)
+Zay-ES-Net v1.5.2
 ------------------
 * Removed some debug code from the release.
 
 
-Zay-ES-Net v1.5.1 
+Zay-ES-Net v1.5.1
 ------------------
-* Fixed a NPE caused by rare race condition during connection teardown when 
+* Fixed a NPE caused by rare race condition during connection teardown when
     active entity sets are still present.
-     
 
-Zay-ES-Net v1.5.0 
+
+Zay-ES-Net v1.5.0
 ------------------
 * Upgraded the build to use gradle 7.4.2
 * Migrated publishing to maven central instead of jcenter

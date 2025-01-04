@@ -1,4 +1,4 @@
-Zay-ES Core v1.6.0 (unrelease)
+Zay-ES Core v1.6.0 (latest)
 --------------------
 * Modified SqlEntityData to allowing specifying the max string size
     for the StringIndex (default is still 50 characters)
@@ -28,7 +28,7 @@ Zay-ES Core v1.6.0 (unrelease)
 * Added a Name.filter() convenience method.
 
 
-Zay-ES Core v1.5.0 (latest)
+Zay-ES Core v1.5.0
 --------------------
 * Added some trace logging to DefaultEntityData.removeEntity()
     and DefaultEntityData.removeComponent()
