@@ -46,8 +46,10 @@ publishing {
     repositories {
         maven {
             credentials {
-                username = project.hasProperty('ossrhUsername') ? ossrhUsername : 'Unknown user'
-                password = project.hasProperty('ossrhPassword') ? ossrhPassword : 'Unknown password'
+                //username = project.hasProperty('ossrhUsername') ? ossrhUsername : 'Unknown user'
+                //password = project.hasProperty('ossrhPassword') ? ossrhPassword : 'Unknown password'
+                username = findProperty("ossrhToken") as String
+                password = findProperty("ossrhTokenPassword") as String
             }
             name = 'OSSRH'
 
