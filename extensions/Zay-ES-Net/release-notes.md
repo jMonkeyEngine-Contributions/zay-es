@@ -1,3 +1,12 @@
+Zay-ES-Net v1.7.0 (unreleased)
+------------------
+* Updated to implement the new EntityCriteria-based EntityData/EntitySet methods.
+* Implemented JoinedQuery for creating SELECT statements that span multiple tables
+    at once.
+* Added better error reporting to the client when the server encounters an
+    exception.  The exception information is now packed up and sent to the client.
+
+
 Zay-ES-Net v1.6.0 (latest)
 ------------------
 * Fixed a bug where only the first EntityChange was being sent if
@@ -5,9 +14,6 @@ Zay-ES-Net v1.6.0 (latest)
 * Added a bunch of trace logging to HostedEntityData.
 * Updated implementations with new removeComponents() method from
     the EntityData interface.
-* Updated to implement the new EntityCriteria-based EntityData/EntitySet methods.
-* Added better error reporting to the client when the server encounters an
-    exception.  The exception information is now packed up and sent to the client.
 
 
 Zay-ES-Net v1.5.2
