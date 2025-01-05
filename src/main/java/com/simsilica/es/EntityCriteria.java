@@ -40,6 +40,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.*;
 
@@ -62,7 +63,9 @@ public class EntityCriteria implements Cloneable {
     @Override
     public EntityCriteria clone() {
         try {
-            return (EntityCriteria)super.clone();
+            EntityCriteria result = (EntityCriteria)super.clone();
+            result.criteria = new LinkedHashMap<>(criteria);
+            return result;
         } catch( CloneNotSupportedException e ) {
             throw new RuntimeException("Failed to clone", e);
         }
@@ -126,6 +129,10 @@ public class EntityCriteria implements Cloneable {
 
     public Collection<ComponentFilter> getFilters() {
         return Collections.unmodifiableCollection(criteria.values());
+    }
+
+    public Set<Class<? extends EntityComponent>> getComponentTypes() {
+        return Collections.unmodifiableSet(criteria.keySet());
     }
 
     @SuppressWarnings("unchecked")
