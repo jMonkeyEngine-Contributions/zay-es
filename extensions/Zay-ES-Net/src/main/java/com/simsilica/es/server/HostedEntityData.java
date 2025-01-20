@@ -486,6 +486,11 @@ public class HostedEntityData {
                     // of that.  We specifically process added entities here so that we can send
                     // the full component list for that entity.  I guess one of those is
                     // probably redundant with a change we'll send later but so be it.
+                    //
+                    // Note: 2025-01-20 - I think the above is wrong with respect to
+                    // filter changes.  If the filter gets changed and the entity doesn't
+                    // change then nothing will trigger the removal on the client.
+                    // FIXME
 
                     // Follow up with anything remaining in the buffer
                     if( !entityBuffer.isEmpty() ) {
