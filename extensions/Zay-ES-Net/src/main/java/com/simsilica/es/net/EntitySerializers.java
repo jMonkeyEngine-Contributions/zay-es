@@ -66,6 +66,7 @@ public class EntitySerializers {
         FindEntityMessage.class,
         GetComponentsMessage.class,
         GetEntitySetMessage.class,
+        PurgeIdsMessage.class,
         ReleaseEntitySetMessage.class,
         ReleaseWatchedEntityMessage.class,
         ResetEntitySetFilterMessage.class,

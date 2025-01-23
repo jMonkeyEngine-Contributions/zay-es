@@ -103,6 +103,14 @@ public class EntityDataWrapper implements ObservableEntityData {
         return ((LocalEntitySet)set).getTypes();
     }
 
+    /**
+     *  After an applyChanges() this will return the purged entities for a particular
+     *  local client-specific entity set.
+     */
+    public Set<EntityId> getPurgedEntities( EntitySet set ) {
+        return ((LocalEntitySet)set).getPurgedEntities();
+    }
+
     @Override
     public EntityId createEntity() {
         return delegate.createEntity();
@@ -412,9 +420,25 @@ public class EntityDataWrapper implements ObservableEntityData {
      *  other stuff.
      */
     protected class LocalEntitySet extends DefaultEntitySet {
+        // Keep track of the purged entities caused by switching filters.
+        private Set<EntityId> purged = new HashSet<>();
 
         public LocalEntitySet( EntityData ed, EntityCriteria criteria ) {
             super(ed, criteria);
+        }
+
+        public Set<EntityId> getPurgedEntities() {
+            return purged;
+        }
+
+        @Override
+        public void clearChangeSets() {
+            super.clearChangeSets();
+            purged.clear();
+        }
+
+        protected void onEntityPurged( Entity e ) {
+            purged.add(e.getId());
         }
 
         /**

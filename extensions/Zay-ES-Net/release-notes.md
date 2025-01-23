@@ -5,6 +5,9 @@ Zay-ES-Net v1.7.0 (unreleased)
     at once.
 * Added better error reporting to the client when the server encounters an
     exception.  The exception information is now packed up and sent to the client.
+* Modified to send a new 'PurgeIdsMessage' when an entity set has purged entities
+    due to a filter change.  Somehow this worked before the criteria-related changes
+    but more investigation is needed.
 
 
 Zay-ES-Net v1.6.0 (latest)

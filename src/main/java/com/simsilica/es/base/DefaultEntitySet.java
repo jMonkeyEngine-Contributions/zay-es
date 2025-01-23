@@ -89,7 +89,6 @@ public class DefaultEntitySet extends AbstractSet<Entity>
 
     private boolean released = false;
 
-
     /**
      *  Kept for compatibility with any custom subclasses that might be out in
      *  the wild.
@@ -177,14 +176,20 @@ public class DefaultEntitySet extends AbstractSet<Entity>
      *  tracking.
      */
     protected void purgeEntities() {
-
         for( Iterator<Entity> it = iterator(); it.hasNext(); ) {
             Entity e = it.next();
             if( !entityMatches(e) ) {
                 it.remove();
                 removedEntities.add(e);
+                onEntityPurged(e);
             }
         }
+    }
+
+    /**
+     *  Subclasses can use this for specialized 'purge' processing.
+     */
+    protected void onEntityPurged( Entity e ) {
     }
 
     /**
@@ -606,7 +611,6 @@ public class DefaultEntitySet extends AbstractSet<Entity>
         if( log.isTraceEnabled() ) {
             log.trace("Adding change:" + change);
         }
-
         // Accumulate the change for the next update pass
         changes.add(change);
     }
@@ -764,13 +768,50 @@ public class DefaultEntitySet extends AbstractSet<Entity>
         final Map<EntityId,DefaultEntity> adds = new HashMap<>();
         final Set<EntityId> mods = new HashSet<>();
 
+        // Keep track of direct purges
+        final Set<EntityId> purges = new HashSet<>();
+
         /**
          *  Called when we know (for whatever reason) that a full entity
          *  is being added.  This is useful for any implementation that
          *  asynchronously loads data.
          */
         public void directAdd( DefaultEntity e ) {
+            // If this entity already exists in this entity set then we are technically
+            // causing problems for the users of this set by wholesale replacing the instance.
+            // It's a non-trivial fix and generally caused by a bug in the caller of directAdd()
+            // so we'll just log it for now.  -pspeed:2025-01-22
+            Entity existing = getEntity(e.getId());
+            if( existing != null ) {
+                log.warn("Fully replacing existing entity:" + existing + " with:" + e);
+            }
             adds.put(e.getId(), e);
+
+            // A direct add trumps a direct move.
+            purges.remove(e.getId());
+        }
+
+        /**
+         *  Called when we know that a full entity has been purged, probably
+         *  due to no longer matching conditions relevant for its membership in this
+         *  set.
+         */
+        public void directPurge( EntityId id ) {
+            // This is unfortunately tricky logic on top of an already tricky
+            // problem.  If the server detects that an entity no longer matches a filter
+            // then it will send a purge for that entity.  This is parallel to any
+            // component changes because the components may not have changed... the filter
+            // itself changed.
+            // The direct adds and direct purges are processed in order, so each should
+            // undo the other.  This may represent changing conditions over the snapshot
+            // of time this transaction represents.  For example:
+            // filter changes, purges entity(1)
+            // component changes that makes it match the filter again, direct add entity(1)
+            // ...all within the same transaction.
+
+            purges.add(id);
+            // A direct remove trumps a direct add
+            adds.remove(id);
         }
 
         public void addChange( EntityChange change, Set<EntityChange> updates ) {
@@ -912,6 +953,19 @@ public class DefaultEntitySet extends AbstractSet<Entity>
                 }
             }
 
+            // Process the purges
+            for( EntityId id : purges ) {
+                Entity e = entities.get(id);
+                if( e != null ) {
+                    if( remove(e) ) {
+                        removedEntities.add(e);
+                    }
+                }
+                // No reason to do extra work in the mods list if we happened
+                // to get component changes for the purged entity.
+                mods.remove(id);
+            }
+
             // Now... see which changes were removes and which ones
             // were real updates
             for( EntityId id : mods ) {
@@ -935,6 +989,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             // Clear the buffers for next time
             adds.clear();
             mods.clear();
+            purges.clear();
         }
     }
 }

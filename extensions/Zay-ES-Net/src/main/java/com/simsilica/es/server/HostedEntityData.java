@@ -490,11 +490,35 @@ public class HostedEntityData {
                     // Note: 2025-01-20 - I think the above is wrong with respect to
                     // filter changes.  If the filter gets changed and the entity doesn't
                     // change then nothing will trigger the removal on the client.
-                    // FIXME
+                    // 2025-01-22 - this is actually a bigger deal than I initially thought.
+                    // For one thing, for client EntitySets that change their filters often
+                    // the will end up with tons and tons of entities that never get removed.
+                    // But more importantly, we will change their entity instance out from
+                    // under them because when we see the entity match the filter again, we
+                    // send a full entity update.... there are kind of two bugs here:
+                    // 1) the client doesn't know when an entity is purged.
+                    // 2) when a client gets a whole new entity, it doesn't check to see
+                    //    if it already has it before simply replacing it.
+                    //
+                    // (2) is kind of tricky to fix... and if we fix (1) then we don't experience
+                    // that until the next similar bug.  I added a warning for (2) so at least
+                    // we should see them.
+                    //
+                    // Note also: this is apparently something that broke recently, probably
+                    // with the criteria-related changes.  2024-11-18 release of Mythruna does
+                    // not have this problem but the current release does.  I've added a fix
+                    // but I need to do some more investigation to see if there was a simpler
+                    // fix... but at least I know it hasn't always been broken.
 
                     // Follow up with anything remaining in the buffer
                     if( !entityBuffer.isEmpty() ) {
                         sendAndClear(e.getKey(), entityBuffer);
+                    }
+
+                    // Process the removals caused by a filter change
+                    Set<EntityId> purged = ed.getPurgedEntities(set);
+                    if( !purged.isEmpty() ) {
+                        conn.send(settings.getChannel(), new PurgeIdsMessage(e.getKey(), purged));
                     }
                 }
                 set.clearChangeSets();  // we don't need them

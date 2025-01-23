@@ -511,7 +511,6 @@ public class RemoteEntityData implements EntityData {
     }
 
     protected void entityChange( EntityChange change ) {
-
         for( RemoteEntitySet set : activeSets.values() ) {
             set.entityChange(change);
         }
@@ -526,6 +525,8 @@ public class RemoteEntityData implements EntityData {
         private final int setId;
         private final ConcurrentLinkedQueue<DefaultEntity> directAdds
                     = new ConcurrentLinkedQueue<>();
+        private final ConcurrentLinkedQueue<EntityId> directPurges
+                    = new ConcurrentLinkedQueue<>();
         private long lastUpdate;
         private String error;
 
@@ -536,6 +537,10 @@ public class RemoteEntityData implements EntityData {
         public RemoteEntitySet( int setId, EntityCriteria criteria ) {
             super(RemoteEntityData.this, criteria);
             this.setId = setId;
+        }
+
+        protected void directPurge( EntityId id ) {
+            directPurges.add(id);
         }
 
         protected void setError( String error ) {
@@ -622,9 +627,20 @@ public class RemoteEntityData implements EntityData {
                 }
             }
 
+            if( !directPurges.isEmpty() ) {
+                // Remove entities that no longer match the filter, according to the
+                // server.
+                while( !directPurges.isEmpty() ) {
+                    EntityId id = directPurges.poll();
+                    transaction.directPurge(id);
+                    directMods = true;
+                }
+            }
+
             // Then process the transaction normally
-            if( super.buildTransactionChanges(updates) )
+            if( super.buildTransactionChanges(updates) ) {
                 return true;
+            }
             return directMods;
         }
 
@@ -763,7 +779,7 @@ public class RemoteEntityData implements EntityData {
                 // Probably it was released before we got this message... ships
                 // passing in the night.  Just in case, we'll log a warning at
                 // least.
-                log.warn("Set not found for ID:" + msg.getSetId() + "  May have been released.");
+                log.warn("entityData() Set not found for ID:" + msg.getSetId() + "  May have been released.");
                 return;
             }
 
@@ -825,10 +841,28 @@ public class RemoteEntityData implements EntityData {
                 // Probably it was released before we got this message... ships
                 // passing in the night.  Just in case, we'll log a warning at
                 // least.
-                log.warn("Set not found for ID:" + msg.getSetId() + "  May have been released.");
+                log.warn("entitySetError() Set not found for ID:" + msg.getSetId() + "  May have been released.");
                 return;
             }
             set.setError(msg.getError());
+        }
+
+        public void purgeIds( PurgeIdsMessage msg ) {
+            if( log.isTraceEnabled() ) {
+                log.trace("purgeIds(" + msg + ")");
+            }
+            log.info("purgeIds(" + msg + ")");
+            RemoteEntitySet set = activeSets.get(msg.getSetId());
+            if( set == null ) {
+                // Probably it was released before we got this message... ships
+                // passing in the night.  Just in case, we'll log a warning at
+                // least.
+                log.warn("purgedIds() Set not found for ID:" + msg.getSetId() + "  May have been released.");
+                return;
+            }
+            for( EntityId id : msg.getIds() ) {
+                set.directPurge(id);
+            }
         }
     }
 

@@ -9,6 +9,8 @@ Zay-ES Core v1.7.0 (unreleased)
 * Added a stats collector to DefaultEntityData along with a threshold
     based watchdog implementation.
 * Deprecated some constructors that should no longer be used.
+* Added 'direct purge' support to DefaultEntitySet to better coordinate with
+    server-side filter purges.
 
 
 Zay-ES Core v1.6.0 (latest)
