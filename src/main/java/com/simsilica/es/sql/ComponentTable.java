@@ -256,11 +256,11 @@ public class ComponentTable<T extends EntityComponent> {
         log.info("Result:" + i);
     }
 
-    protected boolean addField( SqlSession session, String tableName, FieldType ft ) throws SQLException {
+    protected boolean addField( SqlSession session, String tableName, String columnName, FieldType ft ) throws SQLException {
         log.info("add field for:" + tableName + " field:" + ft);
         StringBuilder sb = new StringBuilder( "ALTER TABLE" );
         sb.append( " " + tableName + "\n" );
-        sb.append( " ADD COLUMN " + ft.getFieldName() + " " + ft.getDbType() );
+        sb.append( " ADD COLUMN " + columnName + " " + ft.getDbType() );
 
         log.info("Add field statement:" + sb);
 
@@ -336,7 +336,7 @@ public class ComponentTable<T extends EntityComponent> {
             // fill in the new values for them.
             for( String s : new ArrayList<>(newFields) ) {
                 FieldType ft = defs.get(s);
-                if( addField(session, tableName, ft) ) {
+                if( addField(session, tableName, s, ft) ) {
                     newFields.remove(s);
                 }
             }

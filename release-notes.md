@@ -11,6 +11,8 @@ Zay-ES Core v1.7.0 (unreleased)
 * Deprecated some constructors that should no longer be used.
 * Added 'direct purge' support to DefaultEntitySet to better coordinate with
     server-side filter purges.
+* Fixed automatic column adding to work with composite fields, it was using the
+    wrong field name before.
 
 
 Zay-ES Core v1.6.0 (latest)
