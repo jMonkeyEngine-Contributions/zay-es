@@ -23,7 +23,7 @@ dependencies {
 compileJava.doLast {
     def buildDate = new Date().format('yyyyMMdd')
     println "Writing zay-es.build.date:" + buildDate
-    new File(destinationDir, 'zay-es.build.date').text = buildDate
+    destinationDirectory.file('zay-es.build.date').get().asFile.text = buildDate
 }
 
 test {
