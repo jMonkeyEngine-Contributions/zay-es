@@ -42,8 +42,6 @@ import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.primitives.*;
-
 import com.simsilica.es.IndexedField;
 import com.simsilica.es.StringType;
 import com.simsilica.es.EntityId;
@@ -145,29 +143,44 @@ public class FieldTypes {
         return type.getSimpleName();
     }
 
-    @SuppressWarnings("unchecked")
-    protected static Object[] toObjectArray( Object array ) {
-        List result;
-        if( array == null ) {
+    protected static Object[] toObjectArray(Object array) {
+        if (array == null) {
             return null;
-        } else if( array instanceof Object[] ) {
-            return (Object[])array;
-        } else if( array instanceof int[] ) {
-            result = Ints.asList((int[])array);
-        } else if( array instanceof long[] ) {
-            result = Longs.asList((long[])array);
-        } else if( array instanceof short[] ) {
-            result = Shorts.asList((short[])array);
-        } else if( array instanceof byte[] ) {
-            result = Bytes.asList((byte[])array);
-        } else if( array instanceof float[] ) {
-            result = Floats.asList((float[])array);
-        } else if( array instanceof double[] ) {
-            result = Doubles.asList((double[])array);
-        } else {
-            throw new IllegalArgumentException("Unhandled array type:" + array.getClass());
+        } else if (array instanceof Object[]) {
+            return (Object[]) array;
         }
-        return result.toArray(new Object[0]);
+
+        Object[] result;
+
+        if (array instanceof int[]) {
+            int[] arr = (int[]) array;
+            result = new Object[arr.length];
+            for (int i = 0; i < arr.length; i++) result[i] = arr[i];
+        } else if (array instanceof long[]) {
+            long[] arr = (long[]) array;
+            result = new Object[arr.length];
+            for (int i = 0; i < arr.length; i++) result[i] = arr[i];
+        } else if (array instanceof short[]) {
+            short[] arr = (short[]) array;
+            result = new Object[arr.length];
+            for (int i = 0; i < arr.length; i++) result[i] = arr[i];
+        } else if (array instanceof byte[]) {
+            byte[] arr = (byte[]) array;
+            result = new Object[arr.length];
+            for (int i = 0; i < arr.length; i++) result[i] = arr[i];
+        } else if (array instanceof float[]) {
+            float[] arr = (float[]) array;
+            result = new Object[arr.length];
+            for (int i = 0; i < arr.length; i++) result[i] = arr[i];
+        } else if (array instanceof double[]) {
+            double[] arr = (double[]) array;
+            result = new Object[arr.length];
+            for (int i = 0; i < arr.length; i++) result[i] = arr[i];
+        } else {
+            throw new IllegalArgumentException("Unhandled array type: " + array.getClass());
+        }
+
+        return result;
     }
 
     protected static Object toPrimitiveArray( Object array, Class elementType ) {

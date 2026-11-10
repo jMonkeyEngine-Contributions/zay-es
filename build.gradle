@@ -19,7 +19,6 @@ publishing.publications.library(MavenPublication).pom {
 }
 
 dependencies {
-    implementation "com.google.guava:guava:$guavaVersion"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
     testImplementation 'junit:junit:4.12'

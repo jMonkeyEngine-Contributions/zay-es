@@ -34,7 +34,6 @@
 
 package com.simsilica.es.base;
 
-import com.google.common.base.MoreObjects;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.ComponentFilter;
@@ -113,9 +112,10 @@ public class MapComponentHandler<T extends EntityComponent>
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(getClass().getSimpleName())
-            .add("type", type)
-            .add("size", components.size())
-            .toString();
+        return new StringBuilder(getClass().getSimpleName())
+                .append("{type=").append(type)
+                .append(", size=").append(components.size())
+                .append("}")
+                .toString();
     }
 }

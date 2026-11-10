@@ -41,8 +41,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.MoreObjects;
-
 import com.simsilica.es.ComponentFilter;
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.EntityId;
@@ -77,9 +75,10 @@ public class DefaultQuery<T extends EntityComponent> implements Query {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(getClass().getName())
-            .add("handler", handler)
-            .add("filter", filter)
-            .toString();
+        return new StringBuilder(getClass().getSimpleName())
+                .append("{handler=").append(handler)
+                .append(", filter=").append(filter)
+                .append("}")
+                .toString();
     }
 }

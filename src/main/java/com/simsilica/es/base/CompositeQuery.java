@@ -40,11 +40,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.MoreObjects;
 
 import com.simsilica.es.EntityId;
 import com.simsilica.es.Query;
@@ -114,9 +113,10 @@ public class CompositeQuery implements Query {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(getClass().getSimpleName())
-            .add("children", children)
-            .toString();
+        return new StringBuilder(getClass().getSimpleName())
+                .append("{children=").append(children)
+                .append("}")
+                .toString();
     }
 }
 

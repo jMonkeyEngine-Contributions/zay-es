@@ -40,7 +40,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.MoreObjects;
 
 import com.simsilica.es.*;
 
@@ -690,13 +689,16 @@ public class DefaultEntitySet extends AbstractSet<Entity>
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(getClass().getSimpleName())
-            .add("types", Arrays.asList(types))
-            .add("criteria", criteria)
-            .add("entityCount", entities.size())
-            .add("changeCount", changes.size())
-            .add("released", released)
-            .toString();
+        return new StringBuilder(getClass().getSimpleName())
+                .append("{types=").append(Arrays.toString(types))
+                .append(", criteria=").append(criteria)
+                .append(", entityCount=").append(entities.size())
+                .append(", changeCount=").append(changes.size())
+                .append(", released=").append(released)
+                .append("}")
+                .toString();
+        
+        
     }
 
     private class EntityIterator implements Iterator<Entity> {

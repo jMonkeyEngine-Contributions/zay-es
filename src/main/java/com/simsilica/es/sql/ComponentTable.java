@@ -40,8 +40,6 @@ import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Joiner;
-
 import com.simsilica.es.ComponentFilter;
 import com.simsilica.es.EntityId;
 import com.simsilica.es.EntityComponent;
@@ -99,7 +97,7 @@ public class ComponentTable<T extends EntityComponent> {
         StringBuilder sql = new StringBuilder("UPDATE " + tableName);
         sql.append(" SET (");
 
-        Joiner.on(", ").appendTo(sql, dbFieldNames);
+        sql.append(String.join(", ", dbFieldNames));
         sql.append(")");
 
         sql.append(" = ");
@@ -119,7 +117,7 @@ public class ComponentTable<T extends EntityComponent> {
         StringBuilder sql = new StringBuilder("INSERT INTO " + tableName);
         sql.append(" (");
 
-        Joiner.on(", ").appendTo(sql, dbFieldNames);
+        sql.append(String.join(", ", dbFieldNames));
         if( dbFieldNames.length > 0 ) {
             // It's possible for a component to have no fields in which case
             // we don't want the comma.
@@ -422,7 +420,7 @@ public class ComponentTable<T extends EntityComponent> {
 
         StringBuilder sql = new StringBuilder("SELECT ");
         if( dbFieldNames.length > 0 ) {
-            Joiner.on(", ").appendTo(sql, dbFieldNames);
+            sql.append(String.join(", ", dbFieldNames));
         } else {
             // 2022-08-16 We need 'some' field just to make the SQL work in
             // the case of no other fields.  Since we will ignore it anyway
@@ -635,7 +633,7 @@ public class ComponentTable<T extends EntityComponent> {
 
         StringBuilder sql = new StringBuilder("SELECT ");
         if( dbFieldNames.length > 0 ) {
-            Joiner.on(", ").appendTo(sql, dbFieldNames);
+            sql.append(String.join(", ", dbFieldNames));
             sql.append(", entityId");
         } else {
             // 2022-08-16 For components with no fields, just the entityID is all we need
