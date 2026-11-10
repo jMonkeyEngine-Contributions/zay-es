@@ -17,7 +17,7 @@ publishing.publications.library(MavenPublication).pom {
 dependencies {
 
     testImplementation 'junit:junit:4.12'
-    testImplementation 'org.codehaus.groovy:groovy-all:2.4.11'
+    testImplementation 'org.codehaus.groovy:groovy-all:3.0.25'
 }
 
 compileJava.doLast {
