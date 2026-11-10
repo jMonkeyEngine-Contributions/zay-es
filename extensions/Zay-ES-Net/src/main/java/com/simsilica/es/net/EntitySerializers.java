@@ -34,6 +34,9 @@
 
 package com.simsilica.es.net;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import com.jme3.network.serializing.Serializer;
 import com.jme3.network.serializing.serializers.FieldSerializer;
 import com.simsilica.es.CreatedBy;
@@ -44,8 +47,6 @@ import com.simsilica.es.Name;
 import com.simsilica.es.filter.AndFilter;
 import com.simsilica.es.filter.FieldFilter;
 import com.simsilica.es.filter.OrFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -54,7 +55,7 @@ import org.slf4j.LoggerFactory;
  */
 public class EntitySerializers {
 
-    static Logger log = LoggerFactory.getLogger(EntitySerializers.class);
+    static Logger log = System.getLogger(EntitySerializers.class.getName());
 
     private static final Class[] classes = {
         ComponentChangeMessage.class,
@@ -104,7 +105,7 @@ public class EntitySerializers {
             try {
                 Serializer.registerClass(c, fieldSerializer);
             } catch( Exception e ) {
-                log.error("Error registering class:" + c, e);
+                log.log(Level.ERROR, "Error registering class:" + c, e);
                 error = true;
             }
         }

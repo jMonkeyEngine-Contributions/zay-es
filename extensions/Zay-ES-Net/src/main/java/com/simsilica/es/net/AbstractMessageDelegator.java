@@ -37,6 +37,9 @@ package com.simsilica.es.net;
 import com.jme3.network.Message;
 import com.jme3.network.MessageConnection;
 import com.jme3.network.MessageListener;
+
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -44,8 +47,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -59,7 +60,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractMessageDelegator<S extends MessageConnection> 
                                 implements MessageListener<S> {
                                 
-    static Logger log = LoggerFactory.getLogger(AbstractMessageDelegator.class);                                
+    static Logger log = System.getLogger(AbstractMessageDelegator.class.getName());                                
                                 
     private Class delegateType;
     private Map<Class, Method> methods = new HashMap<Class, Method>();
@@ -81,30 +82,38 @@ public abstract class AbstractMessageDelegator<S extends MessageConnection>
  
     protected boolean isValidMethod( Method m, Class messageType ) {
  
-        if( log.isTraceEnabled() ) {
-            log.trace("isValidMethod(" + m + ", " + messageType + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "isValidMethod(" + m + ", " + messageType + ")");
         }
                
         // Parameters must be S and message type or just message type
         Class<?>[] parms = m.getParameterTypes();
         if( parms.length != 2 && parms.length != 1 ) {
-            log.trace("Parameter count is not 1 or 2");
+            if(log.isLoggable(Level.TRACE)) {
+                log.log(Level.TRACE, "Parameter count is not 1 or 2");
+            }
             return false;
         }            
         int connectionIndex = parms.length > 1 ? 0 : -1;
         int messageIndex = parms.length > 1 ? 1 : 0;
 
         if( connectionIndex > 0 && !MessageConnection.class.isAssignableFrom(parms[connectionIndex]) ) {
-            log.trace("First paramter is not a MessageConnection or subclass.");
+            if(log.isLoggable(Level.TRACE)) {
+                log.log(Level.TRACE, "First paramter is not a MessageConnection or subclass.");
+            }
             return false;
         }
  
         if( messageType == null && !Message.class.isAssignableFrom(parms[messageIndex]) ) {
-            log.trace("Second paramter is not a Message or subclass.");
+            if(log.isLoggable(Level.TRACE)) {
+                log.log(Level.TRACE, "Second paramter is not a Message or subclass.");
+            }
             return false;
         }
         if( messageType != null && !parms[messageIndex].isAssignableFrom(messageType) ) {
-            log.trace("Second paramter is not a " + messageType );
+            if(log.isLoggable(Level.TRACE)) {
+                log.log(Level.TRACE, "Second paramter is not a " + messageType );
+            }
             return false;
         }
         return true;            
@@ -153,26 +162,30 @@ public abstract class AbstractMessageDelegator<S extends MessageConnection>
     
     protected void map( Set<String> constraints ) {
         
-        if( log.isTraceEnabled() ) {
-            log.trace("map(" + constraints);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "map(" + constraints);
         } 
         for( Method m : delegateType.getDeclaredMethods() ) {        
-            if( log.isTraceEnabled() ) {
-                log.trace("Checking method:" + m);
+            if( log.isLoggable(Level.TRACE) ) {
+                log.log(Level.TRACE, "Checking method:" + m);
             }
 
             if( constraints == null && !allowName(m.getName()) ) {
-                log.trace("Name is not allowed.");
+                if(log.isLoggable(Level.TRACE)) {
+                    log.log(Level.TRACE, "Name is not allowed.");
+                }
                 continue;
             }
             if( constraints != null && !constraints.contains(m.getName()) ) {
-                log.trace("Name is not in constraints set.");
+                if(log.isLoggable(Level.TRACE)) {
+                    log.log(Level.TRACE, "Name is not in constraints set.");
+                }
                 continue;
             }
 
             if( isValidMethod(m, null) ) {
-                if( log.isTraceEnabled() ) {            
-                    log.trace("Adding method mapping:" + getMessageType(m) + " = " + m);
+                if( log.isLoggable(Level.TRACE) ) {            
+                    log.log(Level.TRACE, "Adding method mapping:" + getMessageType(m) + " = " + m);
                 }
                 // Make sure we can access the method even if it's not public or
                 // is in a non-public inner class.
@@ -193,8 +206,8 @@ public abstract class AbstractMessageDelegator<S extends MessageConnection>
                                         + messageType.getName() + ")" );
         }                                        
  
-        if( log.isTraceEnabled() ) {            
-            log.trace("Adding method mapping:" + messageType + " = " + m);
+        if( log.isLoggable(Level.TRACE) ) {            
+            log.log(Level.TRACE, "Adding method mapping:" + messageType + " = " + m);
         }  
         methods.put( messageType, m );
         messageTypes = null;        

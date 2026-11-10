@@ -36,11 +36,11 @@
 
 package com.simsilica.es.server;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.slf4j.*;
 
 import com.simsilica.es.*;
 import com.simsilica.es.base.CompositeQuery;
@@ -64,7 +64,7 @@ import com.simsilica.es.base.DefaultWatchedEntity;
  */
 public class EntityDataWrapper implements ObservableEntityData {
 
-    static Logger log = LoggerFactory.getLogger(EntityDataWrapper.class);
+    static Logger log = System.getLogger(EntityDataWrapper.class.getName());
 
     private final ObservableEntityData delegate;
     private final ChangeObserver listener = new ChangeObserver();
@@ -143,8 +143,8 @@ public class EntityDataWrapper implements ObservableEntityData {
 
     @Override
     public <T extends EntityComponent> T getComponent( EntityId entityId, Class<T> type ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("getComponent(" + entityId + ", " + type + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "getComponent(" + entityId + ", " + type + ")");
         }
         ComponentVisibility visibility = visibilityFilters.get(type);
         if( visibility != null ) {
@@ -155,8 +155,8 @@ public class EntityDataWrapper implements ObservableEntityData {
 
     @Override
     public Entity getEntity( EntityId entityId, Class... types ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("getEntity(" + entityId + ", " + Arrays.asList(types) + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "getEntity(" + entityId + ", " + Arrays.asList(types) + ")");
         }
         // Ok to just return it because this entity is not tracked or anything
         // FIXME: filter the entity's components based on visibility filters
@@ -165,8 +165,8 @@ public class EntityDataWrapper implements ObservableEntityData {
 
     @Override
     public EntityId findEntity( ComponentFilter filter, Class... types ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("findEntity(" + filter + ", " + Arrays.asList(types) + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "findEntity(" + filter + ", " + Arrays.asList(types) + ")");
         }
         // FIXME: reimplement in terms of findEntities() or using a similar
         // technique to pay attention to component visility.
@@ -175,8 +175,8 @@ public class EntityDataWrapper implements ObservableEntityData {
 
     @Override
     public EntityId findEntity( EntityCriteria criteria ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("findEntity(" + criteria + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "findEntity(" + criteria + ")");
         }
         Query query = createQuery(criteria);
         return query.findFirst();
@@ -191,8 +191,8 @@ public class EntityDataWrapper implements ObservableEntityData {
     @Override
     @SuppressWarnings("unchecked")
     public Set<EntityId> findEntities( ComponentFilter filter, Class... types ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("findEntities(" + filter + ", " + Arrays.asList(types) + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "findEntities(" + filter + ", " + Arrays.asList(types) + ")");
         }
 
         // If there are no visility filters then there is no reason to
@@ -347,8 +347,8 @@ public class EntityDataWrapper implements ObservableEntityData {
     @Override
     @SuppressWarnings("unchecked") // because Java doesn't like generic varargs
     public WatchedEntity watchEntity( EntityId entityId, Class... types ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("watchEntity(" + entityId + ", " + Arrays.asList(types) + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "watchEntity(" + entityId + ", " + Arrays.asList(types) + ")");
         }
         return new DefaultWatchedEntity(this, entityId, types);
     }

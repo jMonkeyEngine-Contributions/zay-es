@@ -36,10 +36,10 @@
 
 package com.simsilica.es.sql;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.sql.*;
 import java.util.*;
-
-import org.slf4j.*;
 
 import com.simsilica.es.EntityId;
 import com.simsilica.es.Query;
@@ -50,7 +50,7 @@ import com.simsilica.es.Query;
  *  @author    Paul Speed
  */
 public class JoinQuery implements Query {
-    static Logger log = LoggerFactory.getLogger(JoinQuery.class);
+    static Logger log = System.getLogger(JoinQuery.class.getName());
 
     private final SqlEntityData parent;
     private final List<TableQuery> queries = new ArrayList<>();
@@ -124,8 +124,8 @@ public class JoinQuery implements Query {
 
         this.statement = sql.toString();
 
-        if( log.isTraceEnabled() ) {
-            log.trace("Built SQL:" + statement + " parms:" + parms + " for:" + this);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "Built SQL:" + statement + " parms:" + parms + " for:" + this);
         }
     }
 

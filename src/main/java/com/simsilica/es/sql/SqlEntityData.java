@@ -35,11 +35,10 @@
 package com.simsilica.es.sql;
 
 import java.io.File;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.sql.*;
 import java.util.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.PersistentComponent;
@@ -56,7 +55,7 @@ import com.simsilica.es.base.DefaultEntityData;
  */
 public class SqlEntityData extends DefaultEntityData implements PersistentEntityData {
 
-    static Logger log = LoggerFactory.getLogger(SqlEntityData.class);
+    static Logger log = System.getLogger(SqlEntityData.class.getName());
     
     private String dbPath;
     private ThreadLocal<SqlSession> cachedSession = new ThreadLocal<SqlSession>();
@@ -135,7 +134,7 @@ public class SqlEntityData extends DefaultEntityData implements PersistentEntity
         Connection conn = DriverManager.getConnection("jdbc:hsqldb:" + dbPath + "/entity_db",    
                                                       "SA", "");
  
-        log.info("Created connection.  Autocommit:" + conn.getAutoCommit());
+        log.log(Level.INFO, "Created connection.  Autocommit:" + conn.getAutoCommit());
                                                                                      
         session = new SqlSession(conn);
         cachedSession.set(session);        

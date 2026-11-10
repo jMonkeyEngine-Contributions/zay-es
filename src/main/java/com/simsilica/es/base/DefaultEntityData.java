@@ -34,10 +34,10 @@
 
 package com.simsilica.es.base;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.*;
 import java.util.concurrent.*;
-
-import org.slf4j.*;
 
 import com.simsilica.util.ReportSystem;
 import com.simsilica.util.Reporter;
@@ -50,7 +50,7 @@ import com.simsilica.es.*;
  */
 public class DefaultEntityData implements ObservableEntityData {
 
-    static Logger log = LoggerFactory.getLogger(DefaultEntityData.class);
+    static Logger log = System.getLogger(DefaultEntityData.class.getName());
 
     private final Map<Class<? extends EntityComponent>, ComponentHandler> handlers = new ConcurrentHashMap<>();
     private EntityIdGenerator idGenerator;
@@ -123,8 +123,8 @@ public class DefaultEntityData implements ObservableEntityData {
 
     @Override
     public void removeEntity( EntityId entityId ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("removeEntity(" + entityId + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE,"removeEntity(" + entityId + ")");
         }
         // Note: because we only add the ComponentHandlers when
         // we encounter the component types... it's possible that
@@ -208,8 +208,8 @@ public class DefaultEntityData implements ObservableEntityData {
         if( entityId == null ) {
             throw new IllegalArgumentException("EntityId cannot be null.");
         }
-        if( log.isTraceEnabled() ) {
-            log.trace("removeComponent(" + entityId + ", " + type + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "removeComponent(" + entityId + ", " + type + ")");
         }
         ComponentHandler handler = getHandler(type);
         boolean result = handler.removeComponent(entityId);

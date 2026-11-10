@@ -34,13 +34,12 @@
 
 package com.simsilica.es.sql;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.lang.reflect.*;
 import java.lang.reflect.Array;
 import java.sql.*;
 import java.util.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.simsilica.es.IndexedField;
 import com.simsilica.es.StringType;
@@ -52,7 +51,7 @@ import com.simsilica.es.EntityId;
  *  @author    Paul Speed
  */
 public class FieldTypes {
-    static Logger log = LoggerFactory.getLogger(FieldTypes.class);
+    static Logger log = System.getLogger(FieldTypes.class.getName());
 
     private static final Map<String,String> dbTypes = new HashMap<String,String>();
     static {
@@ -70,8 +69,8 @@ public class FieldTypes {
 
     protected static List<FieldType> getFieldTypes( String prefix, Class type ) {
 
-        if( log.isTraceEnabled() ) {
-            log.trace("getFieldTypes(" + prefix + ", " + type + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "getFieldTypes(" + prefix + ", " + type + ")");
         }
         List<FieldType> results = new ArrayList<FieldType>();
         Field[] fields = type.getDeclaredFields();
@@ -88,8 +87,8 @@ public class FieldTypes {
             }
 
             FieldType fieldType = toFieldType(prefix, f);
-            if( log.isTraceEnabled() ) {
-                log.trace("  field:" + f + "  fieldType:" + fieldType);
+            if( log.isLoggable(Level.TRACE) ) {
+                log.log(Level.TRACE, "  field:" + f + "  fieldType:" + fieldType);
             }
             results.add(fieldType);
         }
@@ -187,8 +186,8 @@ public class FieldTypes {
         if( array == null ) {
             return null;
         }
-        if( log.isTraceEnabled() ) {
-            log.trace("toPrimitiveArray(" + array + ", " + elementType + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "toPrimitiveArray(" + array + ", " + elementType + ")");
         }
         // Not entirely straight forward because the array will be Object[]
         // and not the specific wrapper types like Integer[], etc..

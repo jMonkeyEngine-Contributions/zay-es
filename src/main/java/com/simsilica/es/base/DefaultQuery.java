@@ -38,9 +38,6 @@ package com.simsilica.es.base;
 
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.simsilica.es.ComponentFilter;
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.EntityId;
@@ -53,7 +50,6 @@ import com.simsilica.es.Query;
  *  @author    Paul Speed
  */
 public class DefaultQuery<T extends EntityComponent> implements Query {
-    static Logger log = LoggerFactory.getLogger(DefaultQuery.class);
 
     private final ComponentHandler<T> handler;
     private final ComponentFilter<T> filter;

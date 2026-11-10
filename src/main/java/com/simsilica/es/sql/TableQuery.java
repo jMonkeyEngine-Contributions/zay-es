@@ -39,8 +39,6 @@ package com.simsilica.es.sql;
 import java.sql.*;
 import java.util.*;
 
-import org.slf4j.*;
-
 import com.simsilica.es.ComponentFilter;
 import com.simsilica.es.EntityComponent;
 import com.simsilica.es.EntityId;
@@ -53,7 +51,6 @@ import com.simsilica.es.Query;
  *  @author    Paul Speed
  */
 public class TableQuery<T extends EntityComponent> implements Query {
-    static Logger log = LoggerFactory.getLogger(TableQuery.class);
 
     private final SqlEntityData parent;
     private final Class<T> type;
