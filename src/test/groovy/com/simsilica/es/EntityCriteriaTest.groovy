@@ -36,6 +36,7 @@
 
 package com.simsilica.es;
 
+import org.junit.Test
 
 /**
  *  Tests for the EntityCriteria class.
@@ -44,7 +45,7 @@ package com.simsilica.es;
  */
 public class EntityCriteriaTest {
 
-    static class SetTest extends GroovyTestCase {
+        @Test
         void testInOrder() {
             def filter1 = Name.filter("test");
             def criteria = new EntityCriteria().set(filter1, Name.class, CreatedBy.class);
@@ -56,6 +57,7 @@ public class EntityCriteriaTest {
             assert [Name.class, CreatedBy.class] == types;
         }
 
+        @Test
         void testOutOfOrder() {
             def filter1 = Name.filter("test");
             def criteria = new EntityCriteria().set(filter1, CreatedBy.class, Name.class);
@@ -66,9 +68,9 @@ public class EntityCriteriaTest {
             assert [null, filter1] == filters;
             assert [CreatedBy.class, Name.class] == types;
         }
-    }
-
-    static class AddTest extends GroovyTestCase {
+    
+        
+        @Test
         void testAddFilters() {
             def filter1 = Name.filter("test");
             def filter2 = CreatedBy.filter(new EntityId(42));
@@ -81,6 +83,7 @@ public class EntityCriteriaTest {
             assert [Name.class, CreatedBy.class] == types;
         }
 
+        @Test
         void testAddTypes() {
             def criteria = new EntityCriteria().add(Name.class, CreatedBy.class);
 
@@ -90,15 +93,15 @@ public class EntityCriteriaTest {
             assert [null, null] == filters;
             assert [Name.class, CreatedBy.class] == types;
         }
-    }
-
-    static class IsMatchingComponentTest extends GroovyTestCase {
+    
+        @Test
         void testTypeOnly() {
             def criteria = new EntityCriteria().add(Name.class);
             assert criteria.hasType(Name.class);
             assert !criteria.hasType(CreatedBy.class);
         }
 
+        @Test
         void testOneFilter() {
             def filter1 = Name.filter("test");
             def criteria = new EntityCriteria().add(filter1);
@@ -107,6 +110,7 @@ public class EntityCriteriaTest {
             assert !criteria.isMatchingComponent(new CreatedBy(new EntityId(42)));
         }
 
+        @Test
         void testTwoFilters() {
             def filter1 = Name.filter("test");
             def filter2 = CreatedBy.filter(new EntityId(42));
@@ -117,6 +121,7 @@ public class EntityCriteriaTest {
             assert !criteria.isMatchingComponent(new CreatedBy(new EntityId(43)));
         }
 
+        @Test
         void testMixed() {
             def filter1 = Name.filter("test");
             def criteria = new EntityCriteria().add(filter1).add(CreatedBy.class);
@@ -124,7 +129,7 @@ public class EntityCriteriaTest {
             assert !criteria.isMatchingComponent(new Name("not-test"));
             assert criteria.isMatchingComponent(new CreatedBy(new EntityId(42)));
         }
-    }
+    
 }
 
 
