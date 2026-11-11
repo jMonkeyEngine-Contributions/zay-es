@@ -36,8 +36,6 @@
 
 package com.simsilica.es.base;
 
-import org.slf4j.*;
-
 import com.simsilica.es.EntityCriteria;
 import com.simsilica.es.Query;
 
@@ -47,7 +45,6 @@ import com.simsilica.es.Query;
  *  @author    Paul Speed
  */
 public class NoopEntityDataStats implements EntityDataStats {
-    static Logger log = LoggerFactory.getLogger(NoopEntityDataStats.class);
 
     @Override
     public void findEntities( long nanos, EntityCriteria criteria, Query query, int results ) {

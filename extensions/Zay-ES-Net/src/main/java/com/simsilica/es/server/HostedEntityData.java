@@ -34,14 +34,13 @@
 
 package com.simsilica.es.server;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.jme3.network.HostedConnection;
 
@@ -62,7 +61,7 @@ public class HostedEntityData {
 
     public static final String ATTRIBUTE_NAME = "hostedEntityData";
 
-    static Logger log = LoggerFactory.getLogger(HostedEntityData.class);
+    static Logger log = System.getLogger(HostedEntityData.class.getName());
 
     private final EntityHostSettings settings;
     private final HostedConnection conn;
@@ -135,7 +134,9 @@ public class HostedEntityData {
         this.settings = settings;
         this.ed = new EntityDataWrapper(ed);
         this.conn = conn;
-        log.trace("Created HostedEntityData:" + this);
+        if(log.isLoggable(Level.TRACE)) {
+            log.log(Level.TRACE, "Created HostedEntityData:" + this);
+        }
     }
 
     public void registerComponentVisibility( ComponentVisibility visibility ) {
@@ -147,11 +148,15 @@ public class HostedEntityData {
             return;
         }
 
-        log.trace("Closing HostedEntityData:" + this);
+        if(log.isLoggable(Level.TRACE)) {
+            log.log(Level.TRACE, "Closing HostedEntityData:" + this);
+        }
 
         // Release all of the active sets
         for( EntitySet set : activeSets.values() ) {
-            log.trace("Releasing: EntitySet@" + System.identityHashCode(set));
+            if(log.isLoggable(Level.TRACE)) {
+                log.log(Level.TRACE, "Releasing: EntitySet@" + System.identityHashCode(set));
+            }
             set.release();
         }
         activeSets.clear();
@@ -171,36 +176,36 @@ public class HostedEntityData {
     }
 
     public void getComponents( HostedConnection source, GetComponentsMessage msg ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("getComponents:" + msg);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "getComponents:" + msg);
         }
         Entity e = ed.getEntity(msg.getEntityId(), msg.getComponentTypes());
-        if( log.isTraceEnabled() ) {
-            log.trace("Sending back entity data:" + e);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "Sending back entity data:" + e);
         }
         source.send(settings.getChannel(),
                     new ResultComponentsMessage(msg.getRequestId(), e));
     }
 
     public void findEntities( HostedConnection source, FindEntitiesMessage msg ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("findEntities:" + msg);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "findEntities:" + msg);
         }
         Set<EntityId> result = ed.findEntities(msg.getCriteria());
-        if( log.isTraceEnabled() ) {
-            log.trace("Sending back entity ID data:" + result);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "Sending back entity ID data:" + result);
         }
         source.send(settings.getChannel(),
                     new EntityIdsMessage(msg.getRequestId(), result));
     }
 
     public void findEntity( HostedConnection source, FindEntityMessage msg ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("findEntity:" + msg);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "findEntity:" + msg);
         }
         EntityId result = ed.findEntity(msg.getCriteria());
-        if( log.isTraceEnabled() ) {
-            log.trace("Sending back entity ID data:" + result);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "Sending back entity ID data:" + result);
         }
         source.send(settings.getChannel(),
                     new EntityIdsMessage(msg.getRequestId(), result));
@@ -208,8 +213,8 @@ public class HostedEntityData {
 
     public void watchEntity( HostedConnection source, WatchEntityMessage msg ) {
 
-        if( log.isTraceEnabled() ) {
-            log.trace("watchEntity:" + msg);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "watchEntity:" + msg);
         }
         int watchId = msg.getWatchId();
         //WatchedEntity result = activeEntities.get(watchId);
@@ -227,16 +232,16 @@ public class HostedEntityData {
         activeEntities.put(watchId, new EntityInfo(msg.getEntityId(), msg.getComponentTypes()));
 
         // We can reuse the result components message
-        if( log.isTraceEnabled() ) {
-            log.trace("Sending back entity data:" + result);
+        if( log.isLoggable(Level.TRACE)) {
+            log.log(Level.TRACE, "Sending back entity data:" + result);
         }
         source.send(settings.getChannel(),
                     new ResultComponentsMessage(msg.getRequestId(), result));
     }
 
     public void releaseEntity( HostedConnection source, ReleaseWatchedEntityMessage msg ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("releaseEntity:" + msg);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "releaseEntity:" + msg);
         }
         int watchId = msg.getWatchId();
         activeEntities.remove(watchId);
@@ -245,8 +250,8 @@ public class HostedEntityData {
     }
 
     public void getEntitySet( HostedConnection source, GetEntitySetMessage msg ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("getEntitySet:" + msg);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "getEntitySet:" + msg);
         }
         // Just send the results back directly
         // Need to send the entity set ID that the client
@@ -266,13 +271,13 @@ public class HostedEntityData {
             throw new RuntimeException("Set already exists for ID:" + setId);
         }
 
-        if( log.isTraceEnabled() ) {
-            log.trace("Creating set for ID:" + msg.getSetId());
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "Creating set for ID:" + msg.getSetId());
         }
         try {
             set = ed.getEntities(msg.getCriteria());
         } catch( Exception e ) {
-            log.error("Error retrieving entity set", e);
+            log.log(Level.ERROR, "Error retrieving entity set", e);
             conn.send(settings.getChannel(), new EntitySetErrorMessage(setId, e));
             return;
         }
@@ -311,8 +316,8 @@ public class HostedEntityData {
     }
 
     public void resetEntitySetFilter( HostedConnection source, ResetEntitySetFilterMessage msg ) {
-        if( log.isTraceEnabled() ) {
-            log.trace( "resetEntitySetFilter:" + msg );
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "resetEntitySetFilter:" + msg );
         }
 
         // Note: we could avoid the lock by queuing a command that applies
@@ -329,8 +334,8 @@ public class HostedEntityData {
     }
 
     public void releaseEntitySet( HostedConnection source, ReleaseEntitySetMessage msg ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("releaseEntitySet:" + msg);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "releaseEntitySet:" + msg);
         }
 
         // Releasing an entity set is (currently) a safe operation
@@ -354,7 +359,7 @@ public class HostedEntityData {
             // Either way, I'll add a warning here just in case.  During normal operation
             // this should never ever happend and if we see it a lot then we might
             // want some more close-state tracking.
-            log.warn("null set in releaseEntitySet(" + msg + ")");
+            log.log(Level.WARNING, "null set in releaseEntitySet(" + msg + ")");
             return;
         }
         set.release();
@@ -378,9 +383,9 @@ public class HostedEntityData {
     }
 
     protected void sendAndClear( List<EntityChange> buffer ) {
-        if( log.isTraceEnabled() ) {
+        if( log.isLoggable(Level.TRACE) ) {
             for( EntityChange change : buffer ) {
-                log.trace("sending:" + change);
+                log.log(Level.TRACE, "sending:" + change);
             }
         }
         conn.send(settings.getChannel(), new ComponentChangeMessage(buffer));
@@ -431,9 +436,9 @@ public class HostedEntityData {
             // old version)
             return;
         }
-        if( log.isTraceEnabled() && !frameChanges.isEmpty() ) {
+        if( log.isLoggable(Level.TRACE) && !frameChanges.isEmpty() ) {
             for( EntityChange change : frameChanges ) {
-                log.trace("frame:" + frame + " change:" + change);
+                log.log(Level.TRACE, "frame:" + frame + " change:" + change);
             }
         }
 
@@ -442,33 +447,35 @@ public class HostedEntityData {
         // They can afford to wait.
         updateLock.lock();
         try {
-            log.trace("Updating entity sets");
+            if(log.isLoggable(Level.TRACE)) {
+                log.log(Level.TRACE, "Updating entity sets");
+            }
             // Step 2 and 3: update the entity sets and mark usage
             for( Map.Entry<Integer,EntitySet> e : activeSets.entrySet() ) {
                 EntitySet set = e.getValue();
 
-                if( log.isTraceEnabled() ) {
-                    log.trace("Updating set for types:" + Arrays.asList(ed.getTypes(set)));
+                if( log.isLoggable(Level.TRACE)) {
+                    log.log(Level.TRACE, "Updating set for types:" + Arrays.asList(ed.getTypes(set)));
                 }
                 // Step 2: apply the changes
                 if( set.applyChanges() ) {
-                    if( log.isTraceEnabled() ) {
+                    if( log.isLoggable(Level.TRACE) ) {
                         for( Entity entity : set.getRemovedEntities() ) {
-                            log.trace("should be removed:" + entity.getId());
+                            log.log(Level.TRACE, "should be removed:" + entity.getId());
                         }
                         for( Entity entity : set.getChangedEntities() ) {
-                            log.trace("should be updated:" + entity.getId());
+                            log.log(Level.TRACE, "should be updated:" + entity.getId());
                         }
                         for( Entity entity : set.getAddedEntities() ) {
-                            log.trace("should be added:" + entity.getId());
+                            log.log(Level.TRACE, "should be added:" + entity.getId());
                         }
                     }
 
                     // For adds, we still need to send the whole entity or
                     // the client won't get it.
                     for( Entity entity : set.getAddedEntities() ) {
-                        if( log.isTraceEnabled() ) {
-                            log.trace("Sending new entity:" + entity.getId() + " to set:" + e.getKey());
+                        if( log.isLoggable(Level.TRACE) ) {
+                            log.log(Level.TRACE, "Sending new entity:" + entity.getId() + " to set:" + e.getKey());
                         }
                         // Note: we could technically be smarter about this
                         // and send only the components we know that the client
@@ -528,23 +535,25 @@ public class HostedEntityData {
                 if( !set.isEmpty() ) {
                     Class<? extends EntityComponent>[] types = ed.getTypes(set);
                     for( Class<? extends EntityComponent> type : types ) {
-                        if( log.isTraceEnabled() ) {
-                            log.trace("EntitySet tracker.set(" + set.getEntityIds() + ", " + type + ", " + frame + ")");
+                        if( log.isLoggable(Level.TRACE) ) {
+                            log.log(Level.TRACE, "EntitySet tracker.set(" + set.getEntityIds() + ", " + type + ", " + frame + ")");
                         }
                         tracker.set(set.getEntityIds(), type, frame);
                     }
                 }
             }
         } finally {
-            log.trace("Done updating entity sets");
+            if(log.isLoggable(Level.TRACE)) {
+                log.log(Level.TRACE, "Done updating entity sets");
+            }
             updateLock.unlock();
         }
 
         // Step 3.5: Now mark the watched entities
         for( EntityInfo e : activeEntities.values() ) {
             for( Class<EntityComponent> type : e.types ) {
-                if( log.isTraceEnabled() ) {
-                    log.trace("WatchedEntity tracker.set(" + e.id + ", " + type + ", " + frame + ")");
+                if( log.isLoggable(Level.TRACE) ) {
+                    log.log(Level.TRACE, "WatchedEntity tracker.set(" + e.id + ", " + type + ", " + frame + ")");
                 }
                 tracker.set(e.id, type, frame);
             }
@@ -556,8 +565,8 @@ public class HostedEntityData {
 
             Long last = tracker.getAndExpire(change.getEntityId(), change.getComponentType(),
                                              frame);
-            if( log.isTraceEnabled() ) {
-                log.trace("tracker change:" + change + "  frame:" + frame + "  last:" + last);
+            if( log.isLoggable(Level.TRACE) ) {
+                log.log(Level.TRACE, "tracker change:" + change + "  frame:" + frame + "  last:" + last);
             }
 
             // Three cases:

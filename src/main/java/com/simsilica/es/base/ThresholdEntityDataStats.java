@@ -36,7 +36,8 @@
 
 package com.simsilica.es.base;
 
-import org.slf4j.*;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 
 import com.simsilica.es.EntityCriteria;
 import com.simsilica.es.Query;
@@ -47,7 +48,7 @@ import com.simsilica.es.Query;
  *  @author    Paul Speed
  */
 public class ThresholdEntityDataStats implements EntityDataStats {
-    static Logger log = LoggerFactory.getLogger(ThresholdEntityDataStats.class);
+    static Logger log = System.getLogger(ThresholdEntityDataStats.class.getName());
 
     private final long thresholdNanos;
     private final boolean includeStackTrace;
@@ -80,9 +81,9 @@ public class ThresholdEntityDataStats implements EntityDataStats {
                                     query
                                   );
             if( includeStackTrace ) {
-                log.warn(msg, new Throwable("stack-trace"));
+                log.log(Level.WARNING, msg, new Throwable("stack-trace"));
             } else {
-                log.warn(msg);
+                log.log(Level.WARNING, msg);
             }
         }
     }
@@ -97,9 +98,9 @@ public class ThresholdEntityDataStats implements EntityDataStats {
                                     query
                                   );
             if( includeStackTrace ) {
-                log.warn(msg, new Throwable("stack-trace"));
+                log.log(Level.WARNING, msg, new Throwable("stack-trace"));
             } else {
-                log.warn(msg);
+                log.log(Level.WARNING, msg);
             }
         }
     }

@@ -34,15 +34,12 @@
 
 package com.simsilica.es.sql;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.lang.reflect.*;
 import java.lang.reflect.Array;
 import java.sql.*;
 import java.util.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.primitives.*;
 
 import com.simsilica.es.IndexedField;
 import com.simsilica.es.StringType;
@@ -54,7 +51,7 @@ import com.simsilica.es.EntityId;
  *  @author    Paul Speed
  */
 public class FieldTypes {
-    static Logger log = LoggerFactory.getLogger(FieldTypes.class);
+    static Logger log = System.getLogger(FieldTypes.class.getName());
 
     private static final Map<String,String> dbTypes = new HashMap<String,String>();
     static {
@@ -72,8 +69,8 @@ public class FieldTypes {
 
     protected static List<FieldType> getFieldTypes( String prefix, Class type ) {
 
-        if( log.isTraceEnabled() ) {
-            log.trace("getFieldTypes(" + prefix + ", " + type + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "getFieldTypes(" + prefix + ", " + type + ")");
         }
         List<FieldType> results = new ArrayList<FieldType>();
         Field[] fields = type.getDeclaredFields();
@@ -90,8 +87,8 @@ public class FieldTypes {
             }
 
             FieldType fieldType = toFieldType(prefix, f);
-            if( log.isTraceEnabled() ) {
-                log.trace("  field:" + f + "  fieldType:" + fieldType);
+            if( log.isLoggable(Level.TRACE) ) {
+                log.log(Level.TRACE, "  field:" + f + "  fieldType:" + fieldType);
             }
             results.add(fieldType);
         }
@@ -145,37 +142,52 @@ public class FieldTypes {
         return type.getSimpleName();
     }
 
-    @SuppressWarnings("unchecked")
-    protected static Object[] toObjectArray( Object array ) {
-        List result;
-        if( array == null ) {
+    protected static Object[] toObjectArray(Object array) {
+        if (array == null) {
             return null;
-        } else if( array instanceof Object[] ) {
-            return (Object[])array;
-        } else if( array instanceof int[] ) {
-            result = Ints.asList((int[])array);
-        } else if( array instanceof long[] ) {
-            result = Longs.asList((long[])array);
-        } else if( array instanceof short[] ) {
-            result = Shorts.asList((short[])array);
-        } else if( array instanceof byte[] ) {
-            result = Bytes.asList((byte[])array);
-        } else if( array instanceof float[] ) {
-            result = Floats.asList((float[])array);
-        } else if( array instanceof double[] ) {
-            result = Doubles.asList((double[])array);
-        } else {
-            throw new IllegalArgumentException("Unhandled array type:" + array.getClass());
+        } else if (array instanceof Object[]) {
+            return (Object[]) array;
         }
-        return result.toArray(new Object[0]);
+
+        Object[] result;
+
+        if (array instanceof int[]) {
+            int[] arr = (int[]) array;
+            result = new Object[arr.length];
+            for (int i = 0; i < arr.length; i++) result[i] = arr[i];
+        } else if (array instanceof long[]) {
+            long[] arr = (long[]) array;
+            result = new Object[arr.length];
+            for (int i = 0; i < arr.length; i++) result[i] = arr[i];
+        } else if (array instanceof short[]) {
+            short[] arr = (short[]) array;
+            result = new Object[arr.length];
+            for (int i = 0; i < arr.length; i++) result[i] = arr[i];
+        } else if (array instanceof byte[]) {
+            byte[] arr = (byte[]) array;
+            result = new Object[arr.length];
+            for (int i = 0; i < arr.length; i++) result[i] = arr[i];
+        } else if (array instanceof float[]) {
+            float[] arr = (float[]) array;
+            result = new Object[arr.length];
+            for (int i = 0; i < arr.length; i++) result[i] = arr[i];
+        } else if (array instanceof double[]) {
+            double[] arr = (double[]) array;
+            result = new Object[arr.length];
+            for (int i = 0; i < arr.length; i++) result[i] = arr[i];
+        } else {
+            throw new IllegalArgumentException("Unhandled array type: " + array.getClass());
+        }
+
+        return result;
     }
 
     protected static Object toPrimitiveArray( Object array, Class elementType ) {
         if( array == null ) {
             return null;
         }
-        if( log.isTraceEnabled() ) {
-            log.trace("toPrimitiveArray(" + array + ", " + elementType + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "toPrimitiveArray(" + array + ", " + elementType + ")");
         }
         // Not entirely straight forward because the array will be Object[]
         // and not the specific wrapper types like Integer[], etc..

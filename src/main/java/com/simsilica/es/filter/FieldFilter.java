@@ -34,9 +34,8 @@
 
 package com.simsilica.es.filter;
 
-import com.google.common.base.Objects;
 import java.lang.reflect.*;
-
+import java.util.Objects;
 
 import com.simsilica.es.ComponentFilter;
 import com.simsilica.es.EntityComponent;
@@ -96,7 +95,7 @@ public class FieldFilter<T extends EntityComponent> implements ComponentFilter<T
                 initialized = true;
             }
             Object val = field.get(c);
-            return Objects.equal(value, val);
+            return Objects.equals(value, val);
         } catch( IllegalAccessException e ) {
             throw new RuntimeException("Error retrieving field[" + field + "] of:" + c, e);
         } 

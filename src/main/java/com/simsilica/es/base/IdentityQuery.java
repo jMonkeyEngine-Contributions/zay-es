@@ -38,8 +38,6 @@ package com.simsilica.es.base;
 
 import java.util.Set;
 
-import org.slf4j.*;
-
 import com.simsilica.es.EntityId;
 import com.simsilica.es.Query;
 
@@ -49,7 +47,6 @@ import com.simsilica.es.Query;
  *  @author    Paul Speed
  */
 public class IdentityQuery implements Query {
-    static Logger log = LoggerFactory.getLogger(IdentityQuery.class);
 
     private Set<EntityId> results;
 

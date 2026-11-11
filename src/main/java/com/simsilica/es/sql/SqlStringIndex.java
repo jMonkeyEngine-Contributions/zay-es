@@ -34,9 +34,10 @@
 
 package com.simsilica.es.sql;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import java.sql.*;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.simsilica.es.StringIndex;
 import com.simsilica.util.ReportSystem;
@@ -51,14 +52,14 @@ public class SqlStringIndex implements StringIndex {
 
     private SqlEntityData parent;
     private StringTable stringTable;
-    private Cache<Integer,String> idToString;      
-    private Cache<String,Integer> stringToId;
+    private Map<Integer, String> idToString;       
+    private Map<String, Integer> stringToId;
  
     public SqlStringIndex( SqlEntityData parent, int maxIndexedStringSize, int cacheSize ) {
         this.parent = parent;
     
-        this.idToString = CacheBuilder.newBuilder().maximumSize(cacheSize).build();
-        this.stringToId = CacheBuilder.newBuilder().maximumSize(cacheSize).build();
+        this.idToString = createLruCache(cacheSize);
+        this.stringToId = createLruCache(cacheSize);
 
         ReportSystem.registerCacheReporter(new CacheReporter());
         
@@ -86,7 +87,7 @@ public class SqlStringIndex implements StringIndex {
     @Override
     public int getStringId( String s, boolean add ) {
     
-        Integer result = stringToId.getIfPresent(s);
+        Integer result = stringToId.get(s);
         if( result != null ) {
             return result;
         }
@@ -99,7 +100,7 @@ public class SqlStringIndex implements StringIndex {
                 // while we were waiting for the synch and if so then it will
                 // still be cached (presuming we aren't tearing through ID lookups
                 // like madmen.)           
-                result = stringToId.getIfPresent(s);
+                result = stringToId.get(s);
                 if( result != null ) {
                     return result;
                 }
@@ -134,10 +135,21 @@ public class SqlStringIndex implements StringIndex {
         return i;           
     }
     
+    private static <K, V> Map<K, V> createLruCache(final int maxEntries) {
+        // LinkedHashMap(initialCapacity, loadFactor, accessOrder)
+        // accessOrder = true makes it an LRU cache rather than insertion-order
+        return Collections.synchronizedMap(new LinkedHashMap<K, V>(16, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+                return size() > maxEntries;
+            }
+        });
+    }
+    
     @Override
     public String getString( int id ) {
     
-        String result = idToString.getIfPresent(id);
+        String result = idToString.get(id);
         if( result != null ) {
             return result;
         }
@@ -158,10 +170,8 @@ public class SqlStringIndex implements StringIndex {
     
         @Override
         public void printReport( String type, java.io.PrintWriter out ) {
-            out.println("SqlStringIndex->id to string:" + idToString.size() 
-                            + " stats:" + idToString.stats());
-            out.println("SqlStringIndex->string to id:" + stringToId.size() 
-                            + " stats:" + stringToId.stats());
+            out.println("SqlStringIndex->id to string:" + idToString.size());
+            out.println("SqlStringIndex->string to id:" + stringToId.size());
         }
     }            
 }

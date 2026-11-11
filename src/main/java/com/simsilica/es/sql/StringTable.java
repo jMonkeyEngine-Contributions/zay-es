@@ -34,11 +34,10 @@
 
 package com.simsilica.es.sql;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.sql.*;
 import java.util.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 
@@ -50,7 +49,7 @@ import org.slf4j.LoggerFactory;
  */
 public class StringTable {
 
-    static Logger log = LoggerFactory.getLogger(StringTable.class);
+    static Logger log = System.getLogger(StringTable.class.getName());
  
     private String tableName = "STRINGS";
     private int maxIndexedStringSize;   
@@ -81,7 +80,7 @@ public class StringTable {
         // See if the table exists
         DatabaseMetaData md = session.getConnection().getMetaData();
  
-        log.info("Checking for table:" + tableName);           
+        log.log(Level.INFO, "Checking for table:" + tableName);           
         ResultSet rs = md.getColumns(null, "PUBLIC", tableName, null);
         Map<String,ColumnInfo> dbFields = new HashMap<>();        
         try {
@@ -92,7 +91,7 @@ public class StringTable {
             rs.close();
         }
 
-        log.info("dbFields for " + tableName + " :" + dbFields);
+        log.log(Level.INFO, "dbFields for " + tableName + " :" + dbFields);
         if( !dbFields.isEmpty() ) {
             checkStructure(session, dbFields);
             return;
@@ -112,16 +111,16 @@ public class StringTable {
         sb.append(",\n  CONSTRAINT val_key UNIQUE (val)");
         sb.append("\n)");
         
-        if( log.isTraceEnabled() ) {
-            log.trace("Create statement:\n" + sb);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "Create statement:\n" + sb);
         }
         
         Statement st = session.getConnection().createStatement();    
         int i = st.executeUpdate(sb.toString());
         st.close();    
         
-        if( log.isTraceEnabled() ) {
-            log.trace("Result:" + i);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "Result:" + i);
         }        
     }
 
@@ -133,21 +132,21 @@ public class StringTable {
     }
     
     protected void upgradeValueSize( SqlSession session, int from, int to ) throws SQLException {
-        log.warn("************************************");
-        log.warn("***** UPGRADING StringIndex table value size from:" + from + " to:" + to); 
-        log.warn("************************************");
+        log.log(Level.WARNING, "************************************");
+        log.log(Level.WARNING, "***** UPGRADING StringIndex table value size from:" + from + " to:" + to); 
+        log.log(Level.WARNING, "************************************");
         String sql = "ALTER TABLE " + tableName + " ALTER COLUMN VAL VARCHAR(" + to + ")";
-        log.info("Running:" + sql);
+        log.log(Level.INFO, "Running:" + sql);
         Statement st = session.getConnection().createStatement();    
         int i = st.executeUpdate(sql);
         st.close();    
-        log.info("result:" + i);    
+        log.log(Level.INFO, "result:" + i);    
     }
 
     protected int lookupString( SqlSession session, String s ) throws SQLException {
     
-        if( log.isTraceEnabled() ) {
-            log.trace("executing query:" + idForString);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "executing query:" + idForString);
         }    
         PreparedStatement st = session.prepareStatement(idForString);
         st.setObject(1, s);
@@ -165,21 +164,21 @@ public class StringTable {
     
     protected int addString( SqlSession session, String s ) throws SQLException {
     
-        if( log.isTraceEnabled() ) {
-            log.trace("Executing:" + insertSql);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "Executing:" + insertSql);
         }    
         PreparedStatement st = session.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS);
         st.setObject(1, s);
         int count = st.executeUpdate();
-        if( log.isTraceEnabled() ) {
-            log.trace("count:" + count);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "count:" + count);
         }               
         ResultSet keys = st.getGeneratedKeys();
         try {
             if( keys.next() ) {
                 Integer i = (Integer)keys.getObject(1);
-                if( log.isTraceEnabled() ) {
-                    log.trace("Generated key: " + i);
+                if( log.isLoggable(Level.TRACE) ) {
+                    log.log(Level.TRACE, "Generated key: " + i);
                 }        
                 return i;
             }
@@ -191,19 +190,19 @@ public class StringTable {
     
     public int getStringId( SqlSession session, String s, boolean add ) throws SQLException {
     
-        if( log.isTraceEnabled() ) {
-            log.trace("db.getStringId(" + s + ", " + add + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "db.getStringId(" + s + ", " + add + ")");
         }
             
         // See if the string exists
         int result = lookupString(session, s);
-        if( log.isTraceEnabled() ) {
-            log.trace("Result from lookup:" + result);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "Result from lookup:" + result);
         }        
         if( result == -1 && add ) {
             result = addString(session, s);
-            if( log.isTraceEnabled() ) {
-                log.trace("result from add:" + result);
+            if( log.isLoggable(Level.TRACE) ) {
+                log.log(Level.TRACE, "result from add:" + result);
             }            
         }
     

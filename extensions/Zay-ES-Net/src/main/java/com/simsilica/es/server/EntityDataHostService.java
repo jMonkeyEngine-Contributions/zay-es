@@ -34,12 +34,13 @@
 
 package com.simsilica.es.server;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import com.jme3.network.ConnectionListener;
 import com.jme3.network.HostedConnection;
 import com.jme3.network.Server;
 import com.simsilica.es.ObservableEntityData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -59,7 +60,7 @@ import org.slf4j.LoggerFactory;
  */
 public class EntityDataHostService implements EntityHostSettings {
 
-    static Logger log = LoggerFactory.getLogger(EntityDataHostService.class);
+    static Logger log = System.getLogger(EntityDataHostService.class.getName());
     
     private final Server server;
     private final int channel;
@@ -128,7 +129,9 @@ public class EntityDataHostService implements EntityHostSettings {
      *  in addConnection() and is controlled by the setAutoHost() property.
      */
     public void startHostingOnConnection( HostedConnection hc ) {
-        log.debug("startHostingOnConnection:" + hc);
+        if(log.isLoggable(Level.DEBUG)) {
+            log.log(Level.DEBUG, "startHostingOnConnection:" + hc);
+        }
         hc.setAttribute(HostedEntityData.ATTRIBUTE_NAME, new HostedEntityData(this, hc, ed));
     }
 
@@ -142,7 +145,9 @@ public class EntityDataHostService implements EntityHostSettings {
         if( hed == null ) {
             return;
         }
-        log.debug("stopHostingOnConnection:" + hc);
+        if(log.isLoggable(Level.DEBUG)) {
+            log.log(Level.DEBUG, "stopHostingOnConnection:" + hc);
+        }
         hc.setAttribute(HostedEntityData.ATTRIBUTE_NAME, null);
         hed.close();
     }
@@ -197,14 +202,18 @@ public class EntityDataHostService implements EntityHostSettings {
     }
  
     protected void addConnection( HostedConnection hc ) {
-        log.debug("Connection added:" + hc);
+        if(log.isLoggable(Level.DEBUG)) {
+            log.log(Level.DEBUG, "Connection added:" + hc);
+        }
         if( autoHost ) {
             startHostingOnConnection(hc);
         }    
     }
     
     protected void removeConnection( HostedConnection hc ) {
-        log.debug("Connection removed:" + hc);
+        if(log.isLoggable(Level.DEBUG)) {
+            log.log(Level.DEBUG, "Connection removed:" + hc);
+        }
         stopHostingOnConnection(hc);    
     } 
     

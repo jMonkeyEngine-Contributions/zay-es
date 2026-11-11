@@ -9,28 +9,22 @@ plugins {
 
 version='1.7.0-SNAPSHOT'
 
-ext.guavaVersion='19.0'
-ext.slf4jVersion = '1.7.32'
-ext.log4jVersion = '2.15.0'
-
 // Set this module's maven pom description
 publishing.publications.library(MavenPublication).pom {
     description = 'A java-based entity component system library.'
 }
 
 dependencies {
-    implementation "com.google.guava:guava:$guavaVersion"
-    implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
     testImplementation 'junit:junit:4.12'
-    testImplementation 'org.codehaus.groovy:groovy-all:2.4.11'
-    testRuntimeOnly "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
+    testImplementation 'org.apache.groovy:groovy:5.1.3'
+    testImplementation 'org.apache.groovy:groovy-test:5.1.3'
 }
 
 compileJava.doLast {
     def buildDate = new Date().format('yyyyMMdd')
     println "Writing zay-es.build.date:" + buildDate
-    new File(destinationDir, 'zay-es.build.date').text = buildDate
+    destinationDirectory.file('zay-es.build.date').get().asFile.text = buildDate
 }
 
 test {

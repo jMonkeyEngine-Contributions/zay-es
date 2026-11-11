@@ -42,8 +42,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.*;
-
 
 /**
  *  A composite query criteria objects that describes a type of
@@ -53,7 +51,6 @@ import org.slf4j.*;
  *  @author    Paul Speed
  */
 public class EntityCriteria implements Cloneable {
-    static Logger log = LoggerFactory.getLogger(EntityCriteria.class);
 
     private Map<Class<? extends EntityComponent>, ComponentFilter> criteria = new LinkedHashMap<>();
 

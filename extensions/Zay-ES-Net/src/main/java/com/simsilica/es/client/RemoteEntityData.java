@@ -34,15 +34,14 @@
 
 package com.simsilica.es.client;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.jme3.network.Client;
 import com.jme3.network.Message;
@@ -75,7 +74,7 @@ import com.simsilica.es.net.EntityDataMessage.ComponentData;
  */
 public class RemoteEntityData implements EntityData {
 
-    static Logger log = LoggerFactory.getLogger(RemoteEntityData.class);
+    static Logger log = System.getLogger(RemoteEntityData.class.getName());
 
     /**
      *  Keeps track of the next ID for a remote entity set.
@@ -142,8 +141,8 @@ public class RemoteEntityData implements EntityData {
 
     @Override
     public <T extends EntityComponent> T getComponent( EntityId entityId, Class<T> type ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("getComponent(" + entityId + ", " + type + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "getComponent(" + entityId + ", " + type + ")");
         }
 
         // New note: 2015/12/28
@@ -208,8 +207,8 @@ public class RemoteEntityData implements EntityData {
             if( updateTime > latest ) {
                 latest = updateTime;
                 fromCache = value;
-                if( log.isTraceEnabled() ) {
-                    log.trace("Found cached component from:" + updateTime + " in set for:" + Arrays.asList(set.getTypes()));
+                if( log.isLoggable(Level.TRACE) ) {
+                    log.log(Level.TRACE, "Found cached component from:" + updateTime + " in set for:" + Arrays.asList(set.getTypes()));
                 }
             }
         }
@@ -220,8 +219,8 @@ public class RemoteEntityData implements EntityData {
         // I raise the log level here because this might be an indication
         // of a performance problem slipping through. (see above)  Unless
         // the user is calling it directly then... no issue.
-        if( log.isDebugEnabled() ) {
-            log.debug("Retrieving component from server for:" + entityId + " type:" + type);
+        if( log.isLoggable(Level.DEBUG) ) {
+            log.log(Level.DEBUG, "Retrieving component from server for:" + entityId + " type:" + type);
         }
         Entity entity = getEntity( entityId, type );
         return entity.get(type);
@@ -229,8 +228,8 @@ public class RemoteEntityData implements EntityData {
 
     @Override
     public Entity getEntity( EntityId entityId, Class... types ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("getEntity(" + entityId + ", " + Arrays.asList(types) + ")", new Throwable());
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "getEntity(" + entityId + ", " + Arrays.asList(types) + ")", new Throwable());
         }
 //log.info("getEntity(" + entityId + ", " + Arrays.asList(types) + ")", new Throwable());
         // Ignore caching for the moment...
@@ -257,24 +256,24 @@ public class RemoteEntityData implements EntityData {
             throw new RuntimeException("Interrupted waiting for entity data.", e);
         }
 
-        if( log.isTraceEnabled() ) {
-            log.trace("result:" + result);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "result:" + result);
         }
         return result;
     }
 
     @Override
     public EntityId findEntity( ComponentFilter filter, Class... types ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("findEntity(" + filter + ", " + Arrays.asList(types) + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "findEntity(" + filter + ", " + Arrays.asList(types) + ")");
         }
         return findEntity(new EntityCriteria().set(filter, types));
     }
 
     @Override
     public EntityId findEntity( EntityCriteria criteria ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("findEntity(" + criteria + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "findEntity(" + criteria + ")");
         }
         // Need to fetch the entity
         int id = nextRequestId.getAndIncrement();
@@ -298,17 +297,17 @@ public class RemoteEntityData implements EntityData {
             throw new RuntimeException("Interrupted waiting for entity data.", e);
         }
 
-        if( log.isTraceEnabled() ) {
+        if( log.isLoggable(Level.TRACE) ) {
             EntityId returning = (result != null && result.length > 0) ? result[0] : null;
-            log.trace("result:" + returning);
+            log.log(Level.TRACE, "result:" + returning);
         }
         return (result != null && result.length > 0) ? result[0] : null;
     }
 
     @Override
     public Set<EntityId> findEntities( ComponentFilter filter, Class... types ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("findEntities(" + filter + ", " + Arrays.asList(types) + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "findEntities(" + filter + ", " + Arrays.asList(types) + ")");
         }
         return findEntities(new EntityCriteria().set(filter, types));
     }
@@ -340,8 +339,8 @@ public class RemoteEntityData implements EntityData {
             throw new RuntimeException("Interrupted waiting for entity data.", e);
         }
 
-        if( log.isTraceEnabled() ) {
-            log.trace("result:" + result);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "result:" + result);
         }
         return result;
     }
@@ -390,8 +389,8 @@ public class RemoteEntityData implements EntityData {
 
     @Override
     public EntitySet getEntities( EntityCriteria criteria ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("getEntities(" + criteria + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "getEntities(" + criteria + ")");
         }
 
         int id = nextSetId.getAndIncrement();
@@ -406,8 +405,8 @@ public class RemoteEntityData implements EntityData {
         m.setReliable(true);
         client.send(channel, m);
 
-        if( log.isTraceEnabled() ) {
-            log.trace("result:" + result);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "result:" + result);
         }
         return result;
     }
@@ -438,8 +437,8 @@ public class RemoteEntityData implements EntityData {
             throw new RuntimeException("Interrupted waiting for watched entity data.", e);
         }
 
-        if( log.isTraceEnabled() ) {
-            log.trace("result:" + result);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "result:" + result);
         }
         return result;
     }
@@ -562,8 +561,8 @@ public class RemoteEntityData implements EntityData {
             }
             super.release();
 
-            if( log.isDebugEnabled() ) {
-                log.debug("Releasing set:" + setId );
+            if( log.isLoggable(Level.DEBUG) ) {
+                log.log(Level.DEBUG, "Releasing set:" + setId );
             }
 
             activeSets.remove(setId);
@@ -593,8 +592,8 @@ public class RemoteEntityData implements EntityData {
             Message m = new ResetEntitySetFilterMessage(setId, getCriteria());
             m.setReliable(true);
 
-            if( log.isDebugEnabled() ) {
-                log.debug( "Sending filter reset:" + m );
+            if( log.isLoggable(Level.DEBUG) ) {
+                log.log(Level.DEBUG, "Sending filter reset:" + m );
             }
 
             client.send(channel, m);
@@ -664,12 +663,12 @@ public class RemoteEntityData implements EntityData {
             EntityComponent[] array = e.getComponents();
             for( int i = 0; i < array.length; i++ ) {
                 if( array[i] == null || array[i] == REMOVED_COMPONENT ) {
-                    if( log.isTraceEnabled() ) {
+                    if( log.isLoggable(Level.TRACE) ) {
                         // Logging this because if the assumptions above ever
                         // prove false then it would be nice to have some trace
                         // logging to remind me of the optimization.  (It's a big
                         // huge optimization so it's definitely worth having.)
-                        log.trace("Entity is missing type " + getTypes()[i] + " so is not complete for this set.");
+                        log.log(Level.TRACE, "Entity is missing type " + getTypes()[i] + " so is not complete for this set.");
                     }
                     return false;
                 }
@@ -736,8 +735,8 @@ public class RemoteEntityData implements EntityData {
             }
             super.release();
 
-            if( log.isDebugEnabled() ) {
-                log.debug("Releasing watched entity:" + watchId );
+            if( log.isLoggable(Level.DEBUG) ) {
+                log.log(Level.DEBUG, "Releasing watched entity:" + watchId );
             }
 
             watchedEntities.remove(watchId);
@@ -758,12 +757,12 @@ public class RemoteEntityData implements EntityData {
 
         @SuppressWarnings("unchecked")
         public void entityComponents( ResultComponentsMessage msg ) {
-            if( log.isTraceEnabled() ) {
-                log.trace("entityComponents(" + msg + ")");
+            if( log.isLoggable(Level.TRACE) ) {
+                log.log(Level.TRACE, "entityComponents(" + msg + ")");
             }
             PendingRequest request = pendingRequests.remove(msg.getRequestId());
             if( request == null ) {
-                log.error("Received component data but no request is pending, id:" + msg.getRequestId());
+                log.log(Level.ERROR, "Received component data but no request is pending, id:" + msg.getRequestId());
                 return;
             }
 
@@ -771,21 +770,21 @@ public class RemoteEntityData implements EntityData {
         }
 
         public void entityData( EntityDataMessage msg ) {
-            if( log.isTraceEnabled() ) {
-                log.trace("entityData(" + msg + ")");
+            if( log.isLoggable(Level.TRACE)) {
+                log.log(Level.TRACE, "entityData(" + msg + ")");
             }
             RemoteEntitySet set = activeSets.get(msg.getSetId());
             if( set == null ) {
                 // Probably it was released before we got this message... ships
                 // passing in the night.  Just in case, we'll log a warning at
                 // least.
-                log.warn("entityData() Set not found for ID:" + msg.getSetId() + "  May have been released.");
+                log.log(Level.WARNING, "entityData() Set not found for ID:" + msg.getSetId() + "  May have been released.");
                 return;
             }
 
             for( ComponentData d : msg.getData() ) {
-                if( log.isTraceEnabled() ) {
-                    log.trace("ComponentData for:" + msg.getSetId() + " :" + d);
+                if( log.isLoggable(Level.TRACE) ) {
+                    log.log(Level.TRACE, "ComponentData for:" + msg.getSetId() + " :" + d);
                 }
                 DefaultEntity e = new DefaultEntity(RemoteEntityData.this,
                                                     d.getEntityId(),
@@ -796,8 +795,8 @@ public class RemoteEntityData implements EntityData {
         }
 
         public void componentChange( ComponentChangeMessage msg ) {
-            if( log.isTraceEnabled() ) {
-                log.trace("componentChange(" + msg + ")");
+            if( log.isLoggable(Level.TRACE) ) {
+                log.log(Level.TRACE, "componentChange(" + msg + ")");
             }
             for( EntityChange c : msg.getData() ) {
                 entityChange(c);
@@ -806,12 +805,12 @@ public class RemoteEntityData implements EntityData {
 
         @SuppressWarnings("unchecked")
         public void entityIds( EntityIdsMessage msg ) {
-            if( log.isTraceEnabled() ) {
-                log.trace("entityIds(" + msg + ")");
+            if( log.isLoggable(Level.TRACE) ) {
+                log.log(Level.TRACE, "entityIds(" + msg + ")");
             }
             PendingRequest request = pendingRequests.remove(msg.getRequestId());
             if( request == null ) {
-                log.error("Received result entity IDs but no request is pending, id:" + msg.getRequestId());
+                log.log(Level.ERROR, "Received result entity IDs but no request is pending, id:" + msg.getRequestId());
                 return;
             }
 
@@ -820,12 +819,12 @@ public class RemoteEntityData implements EntityData {
 
         @SuppressWarnings("unchecked")
         public void stringId( StringIdMessage msg ) {
-            if( log.isTraceEnabled() ) {
-                log.trace("stringId(" + msg + ")");
+            if( log.isLoggable(Level.TRACE) ) {
+                log.log(Level.TRACE, "stringId(" + msg + ")");
             }
             PendingRequest request = pendingRequests.remove(msg.getRequestId());
             if( request == null ) {
-                log.error("Received result string ID message but no request is pending, id:" + msg.getRequestId());
+                log.log(Level.ERROR, "Received result string ID message but no request is pending, id:" + msg.getRequestId());
                 return;
             }
 
@@ -833,31 +832,31 @@ public class RemoteEntityData implements EntityData {
         }
 
         public void entitySetError( EntitySetErrorMessage msg ) {
-            if( log.isTraceEnabled() ) {
-                log.trace("entitySetError(" + msg + ")");
+            if( log.isLoggable(Level.TRACE) ) {
+                log.log(Level.TRACE, "entitySetError(" + msg + ")");
             }
             RemoteEntitySet set = activeSets.get(msg.getSetId());
             if( set == null ) {
                 // Probably it was released before we got this message... ships
                 // passing in the night.  Just in case, we'll log a warning at
                 // least.
-                log.warn("entitySetError() Set not found for ID:" + msg.getSetId() + "  May have been released.");
+                log.log(Level.WARNING, "entitySetError() Set not found for ID:" + msg.getSetId() + "  May have been released.");
                 return;
             }
             set.setError(msg.getError());
         }
 
         public void purgeIds( PurgeIdsMessage msg ) {
-            if( log.isTraceEnabled() ) {
-                log.trace("purgeIds(" + msg + ")");
+            if( log.isLoggable(Level.TRACE) ) {
+                log.log(Level.TRACE, "purgeIds(" + msg + ")");
             }
-            log.info("purgeIds(" + msg + ")");
+            log.log(Level.INFO, "purgeIds(" + msg + ")");
             RemoteEntitySet set = activeSets.get(msg.getSetId());
             if( set == null ) {
                 // Probably it was released before we got this message... ships
                 // passing in the night.  Just in case, we'll log a warning at
                 // least.
-                log.warn("purgedIds() Set not found for ID:" + msg.getSetId() + "  May have been released.");
+                log.log(Level.WARNING, "purgedIds() Set not found for ID:" + msg.getSetId() + "  May have been released.");
                 return;
             }
             for( EntityId id : msg.getIds() ) {

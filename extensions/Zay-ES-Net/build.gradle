@@ -9,7 +9,6 @@ plugins {
 version='1.7.0-SNAPSHOT'
 
 ext.jmeVersion='3.1.0-stable'
-ext.slf4jVersion = '1.7.32'
 
 // Set this module's maven pom description
 publishing.publications.library(MavenPublication).pom {
@@ -19,7 +18,6 @@ publishing.publications.library(MavenPublication).pom {
 dependencies {
     api rootProject
     api "org.jmonkeyengine:jme3-networking:${jmeVersion}"
-    implementation "org.slf4j:slf4j-api:$slf4jVersion"
 }
 
 

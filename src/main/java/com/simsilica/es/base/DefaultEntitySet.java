@@ -34,13 +34,11 @@
 
 package com.simsilica.es.base;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.MoreObjects;
 
 import com.simsilica.es.*;
 
@@ -54,7 +52,7 @@ import com.simsilica.es.*;
 public class DefaultEntitySet extends AbstractSet<Entity>
                               implements EntitySet {
 
-    static Logger log = LoggerFactory.getLogger(DefaultEntitySet.class);
+    static Logger log = System.getLogger(DefaultEntitySet.class.getName());
 
     /**
      *  Constant used during transaction processing to mark
@@ -568,8 +566,8 @@ public class DefaultEntitySet extends AbstractSet<Entity>
 
         // Is this even a type we watch?
         if( !hasType(change.getComponentType()) ) {
-            if( log.isTraceEnabled() )
-                log.trace( "   not our type." );
+            if( log.isLoggable(Level.TRACE) )
+                log.log(Level.TRACE, "   not our type." );
             return false;  // doesn't matter to us
         }
 
@@ -602,14 +600,14 @@ public class DefaultEntitySet extends AbstractSet<Entity>
     }
 
     protected void entityChange( EntityChange change ) {
-        if( log.isTraceEnabled() ) {
-            log.trace("entityChange(" + change + ")");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "entityChange(" + change + ")");
         }
         if( !isRelevantChange(change) ) {
             return;
         }
-        if( log.isTraceEnabled() ) {
-            log.trace("Adding change:" + change);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "Adding change:" + change);
         }
         // Accumulate the change for the next update pass
         changes.add(change);
@@ -641,15 +639,15 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             boolean rechecking = false;
             if( array[i] == null ) {
                 // Fill it in
-                if( log.isDebugEnabled() ) {
-                    log.debug("Pulling component type:" + types[i] + " for id:" + e.getId());
+                if( log.isLoggable(Level.DEBUG) ) {
+                    log.log(Level.DEBUG, "Pulling component type:" + types[i] + " for id:" + e.getId());
                 }
                 array[i] = ed.getComponent(e.getId(), types[i]);
 
                 // If we get nothing back then this entity can't be completed
                 if( array[i] == null ) {
-                    if( log.isDebugEnabled() ) {
-                        log.debug("Entity " + e.getId() + " could not be completed for type:" + types[i]);
+                    if( log.isLoggable(Level.DEBUG) ) {
+                        log.log(Level.DEBUG, "Entity " + e.getId() + " could not be completed for type:" + types[i]);
                     }
                     return false;
                 }
@@ -690,13 +688,16 @@ public class DefaultEntitySet extends AbstractSet<Entity>
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(getClass().getSimpleName())
-            .add("types", Arrays.asList(types))
-            .add("criteria", criteria)
-            .add("entityCount", entities.size())
-            .add("changeCount", changes.size())
-            .add("released", released)
-            .toString();
+        return new StringBuilder(getClass().getSimpleName())
+                .append("{types=").append(Arrays.toString(types))
+                .append(", criteria=").append(criteria)
+                .append(", entityCount=").append(entities.size())
+                .append(", changeCount=").append(changes.size())
+                .append(", released=").append(released)
+                .append("}")
+                .toString();
+        
+        
     }
 
     private class EntityIterator implements Iterator<Entity> {
@@ -783,7 +784,7 @@ public class DefaultEntitySet extends AbstractSet<Entity>
             // so we'll just log it for now.  -pspeed:2025-01-22
             Entity existing = getEntity(e.getId());
             if( existing != null ) {
-                log.warn("Fully replacing existing entity:" + existing + " with:" + e);
+                log.log(Level.WARNING, "Fully replacing existing entity:" + existing + " with:" + e);
             }
             adds.put(e.getId(), e);
 

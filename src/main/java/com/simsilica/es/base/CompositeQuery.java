@@ -41,11 +41,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.MoreObjects;
-
 import com.simsilica.es.EntityId;
 import com.simsilica.es.Query;
 
@@ -56,7 +51,6 @@ import com.simsilica.es.Query;
  *  @author    Paul Speed
  */
 public class CompositeQuery implements Query {
-    static Logger log = LoggerFactory.getLogger(CompositeQuery.class);
 
     private List<Query> children;
 
@@ -114,9 +108,10 @@ public class CompositeQuery implements Query {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(getClass().getSimpleName())
-            .add("children", children)
-            .toString();
+        return new StringBuilder(getClass().getSimpleName())
+                .append("{children=").append(children)
+                .append("}")
+                .toString();
     }
 }
 

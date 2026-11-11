@@ -34,13 +34,10 @@
 
 package com.simsilica.es.sql;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.sql.*;
 import java.util.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Joiner;
 
 import com.simsilica.es.ComponentFilter;
 import com.simsilica.es.EntityId;
@@ -56,7 +53,7 @@ import com.simsilica.es.filter.FieldFilter;
  */
 public class ComponentTable<T extends EntityComponent> {
 
-    static Logger log = LoggerFactory.getLogger(ComponentTable.class);
+    static Logger log = System.getLogger(ComponentTable.class.getName());
 
     private final boolean cached = true;
     private final SqlComponentFactory<T>  componentFactory;
@@ -99,7 +96,7 @@ public class ComponentTable<T extends EntityComponent> {
         StringBuilder sql = new StringBuilder("UPDATE " + tableName);
         sql.append(" SET (");
 
-        Joiner.on(", ").appendTo(sql, dbFieldNames);
+        sql.append(String.join(", ", dbFieldNames));
         sql.append(")");
 
         sql.append(" = ");
@@ -119,7 +116,7 @@ public class ComponentTable<T extends EntityComponent> {
         StringBuilder sql = new StringBuilder("INSERT INTO " + tableName);
         sql.append(" (");
 
-        Joiner.on(", ").appendTo(sql, dbFieldNames);
+        sql.append(String.join(", ", dbFieldNames));
         if( dbFieldNames.length > 0 ) {
             // It's possible for a component to have no fields in which case
             // we don't want the comma.
@@ -146,13 +143,13 @@ public class ComponentTable<T extends EntityComponent> {
         // See if the table exists
         DatabaseMetaData md = session.getConnection().getMetaData();
 
-        log.info("Checking for table:" + tableName);
+        log.log(Level.INFO, "Checking for table:" + tableName);
         ResultSet rs = md.getColumns(null, "PUBLIC", tableName, null);
         Map<String,Integer> dbFields = new HashMap<String,Integer>();
         try {
             while( rs.next() ) {
-                if( log.isTraceEnabled() ) {
-                    log.trace(rs.getString("TABLE_NAME") + " :" + rs.getString("COLUMN_NAME"));
+                if( log.isLoggable(Level.TRACE) ) {
+                    log.log(Level.TRACE, rs.getString("TABLE_NAME") + " :" + rs.getString("COLUMN_NAME"));
                 }
                 dbFields.put(rs.getString("COLUMN_NAME"), rs.getInt("DATA_TYPE"));
             }
@@ -163,10 +160,10 @@ public class ComponentTable<T extends EntityComponent> {
             rs.close();
         }
 
-        if( log.isTraceEnabled() ) {
-            log.trace("TABLE:" + tableName);
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "TABLE:" + tableName);
             for( Map.Entry<String, Integer> e : dbFields.entrySet() ) {
-                log.trace("    " + e);
+                log.log(Level.TRACE, "    " + e);
             }
         }
 
@@ -187,10 +184,10 @@ public class ComponentTable<T extends EntityComponent> {
             rs.close();
         }
 
-        if( log.isTraceEnabled() ) {
-            log.trace("INDEXED FIELDS:");
+        if( log.isLoggable(Level.TRACE) ) {
+            log.log(Level.TRACE, "INDEXED FIELDS:");
             for( String s : indexedFields ) {
-                log.trace("    " + s);
+                log.log(Level.TRACE, "    " + s);
             }
         }
 
@@ -224,13 +221,13 @@ public class ComponentTable<T extends EntityComponent> {
         }
         sb.append("\n)");
 
-        log.info("Create statement:\n" + sb);
+        log.log(Level.INFO, "Create statement:\n" + sb);
 
         Statement st = session.getConnection().createStatement();
         int i = st.executeUpdate(sb.toString());
         st.close();
 
-        log.info("Result:" + i);
+        log.log(Level.INFO, "Result:" + i);
 
         for( Map.Entry<String,FieldType> entry : defs.entrySet() ) {
             if( entry.getValue().isIndexed() ) {
@@ -240,35 +237,35 @@ public class ComponentTable<T extends EntityComponent> {
     }
 
     protected void createIndex( SqlSession session, String tableName, String column ) throws SQLException {
-        log.info("creating index for:" + tableName + " column:" + column);
+        log.log(Level.INFO, "creating index for:" + tableName + " column:" + column);
         // CREATE INDEX spawn_pos_bin_id_index ON "PUBLIC"."SPAWNPOSITION" (BINID);
         StringBuilder sb = new StringBuilder("CREATE");
         sb.append(" INDEX");
         sb.append(" " + tableName + "_" + column + "_IDX");
         sb.append(" ON " + tableName);
         sb.append(" (" + column + ")");
-        log.info("Create index statement:" + sb);
+        log.log(Level.INFO, "Create index statement:" + sb);
 
         Statement st = session.getConnection().createStatement();
         int i = st.executeUpdate(sb.toString());
         st.close();
 
-        log.info("Result:" + i);
+        log.log(Level.INFO, "Result:" + i);
     }
 
     protected boolean addField( SqlSession session, String tableName, String columnName, FieldType ft ) throws SQLException {
-        log.info("add field for:" + tableName + " field:" + ft);
+        log.log(Level.INFO, "add field for:" + tableName + " field:" + ft);
         StringBuilder sb = new StringBuilder( "ALTER TABLE" );
         sb.append( " " + tableName + "\n" );
         sb.append( " ADD COLUMN " + columnName + " " + ft.getDbType() );
 
-        log.info("Add field statement:" + sb);
+        log.log(Level.INFO, "Add field statement:" + sb);
 
         Statement st = session.getConnection().createStatement();
         int i = st.executeUpdate(sb.toString());
         st.close();
 
-        log.info("Result:" + i);
+        log.log(Level.INFO, "Result:" + i);
 
         // The poblem left is how to provide values for the new fields other than
         // defaults or null.
@@ -282,8 +279,8 @@ public class ComponentTable<T extends EntityComponent> {
                                    Map<String,Integer> dbFields,
                                    Set<String> indexedFields ) throws SQLException {
 
-        log.info("Table fields:" + dbFields);
-        log.info("Object fields:" + defs);
+        log.log(Level.INFO, "Table fields:" + dbFields);
+        log.log(Level.INFO, "Object fields:" + defs);
 
         Set<String> newFields = new HashSet<String>();
         Set<String> removedFields = new HashSet<String>();
@@ -327,9 +324,9 @@ public class ComponentTable<T extends EntityComponent> {
             newIndex.add(entry.getKey());
         }
 
-        log.info("New fields:" + newFields);
-        log.info("Removed fields:" + removedFields);
-        log.info("New index fields:" + newIndex);
+        log.log(Level.INFO, "New fields:" + newFields);
+        log.log(Level.INFO, "Removed fields:" + removedFields);
+        log.log(Level.INFO, "New index fields:" + newIndex);
 
         if( !newFields.isEmpty() ) {
             // See if we can add any of the new fields... even if we can't
@@ -357,7 +354,7 @@ public class ComponentTable<T extends EntityComponent> {
         if( !removedFields.isEmpty() ) {
             // In theory, this should be ok but we'll issue a warning.  Extra
             // fields just take up extra space.
-            log.warn("Removed fields.  Schema mismatch, table fields:" + dbFields
+            log.log(Level.WARNING, "Removed fields.  Schema mismatch, table fields:" + dbFields
                                         + " object fields:" + defs.keySet());
         }
     }
@@ -422,7 +419,7 @@ public class ComponentTable<T extends EntityComponent> {
 
         StringBuilder sql = new StringBuilder("SELECT ");
         if( dbFieldNames.length > 0 ) {
-            Joiner.on(", ").appendTo(sql, dbFieldNames);
+            sql.append(String.join(", ", dbFieldNames));
         } else {
             // 2022-08-16 We need 'some' field just to make the SQL work in
             // the case of no other fields.  Since we will ignore it anyway
@@ -635,7 +632,7 @@ public class ComponentTable<T extends EntityComponent> {
 
         StringBuilder sql = new StringBuilder("SELECT ");
         if( dbFieldNames.length > 0 ) {
-            Joiner.on(", ").appendTo(sql, dbFieldNames);
+            sql.append(String.join(", ", dbFieldNames));
             sql.append(", entityId");
         } else {
             // 2022-08-16 For components with no fields, just the entityID is all we need

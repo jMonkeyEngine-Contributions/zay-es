@@ -34,9 +34,10 @@
 
 package com.simsilica.es.server;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import com.jme3.network.HostedConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.simsilica.es.net.AbstractMessageDelegator;
 
 
@@ -51,7 +52,7 @@ import com.simsilica.es.net.AbstractMessageDelegator;
  */
 public class SessionDataDelegator extends AbstractMessageDelegator<HostedConnection> {
  
-    static Logger log = LoggerFactory.getLogger(SessionDataDelegator.class);
+    static Logger log = System.getLogger(SessionDataDelegator.class.getName());
     
     private String attributeName;
  
@@ -74,7 +75,7 @@ public class SessionDataDelegator extends AbstractMessageDelegator<HostedConnect
     }
  
     protected void miss( HostedConnection source ) {
-        log.warn("Session data is null for:" + attributeName + " on connection:" + source);
+        log.log(Level.WARNING, "Session data is null for:" + attributeName + " on connection:" + source);
     }
     
     protected Object getSourceDelegate( HostedConnection source ) {

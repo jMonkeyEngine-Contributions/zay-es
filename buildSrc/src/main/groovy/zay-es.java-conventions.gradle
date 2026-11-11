@@ -18,18 +18,16 @@ repositories {
 //    maxWarnings = 0
 //}
 
-compileJava { // compile-time options:
+compileJava {
     options.encoding = 'UTF-8'
     options.compilerArgs << '-Xlint:unchecked'
     options.deprecation = true
-    if( JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_1_10) ) {
-        options.release = 8
-    }
+    options.release = 11
 }
 
 java {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
     withJavadocJar()
     withSourcesJar()
 }

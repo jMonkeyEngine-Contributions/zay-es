@@ -34,7 +34,7 @@
 
 package com.simsilica.es;
 
-import org.slf4j.*;
+import java.lang.System.Logger;
 
 /**
  *  Represents the name of an entity as a standardized component.
@@ -43,7 +43,7 @@ import org.slf4j.*;
  */
 public class Name implements EntityComponent, PersistentComponent {
 
-    static Logger log = LoggerFactory.getLogger(Name.class);
+    static Logger log = System.getLogger(Name.class.getName());
 
     @StringType(maxLength=80)
     private String name;
@@ -58,7 +58,7 @@ public class Name implements EntityComponent, PersistentComponent {
     public Name( String name, boolean truncate ) {
         if( name.length() >= 80 ) {
             if( truncate ) {
-                log.info("Truncating name, exceeds 80 characters:" + name);
+                log.log(System.Logger.Level.INFO, "Truncating name, exceeds 80 characters:" + name);
                 name = name.substring(0, 77) + "...";
             } else {
                 throw new IllegalArgumentException("Name exceeds 80 characters:" + name);
